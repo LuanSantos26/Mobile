@@ -6,13 +6,13 @@ import { Feather } from '@expo/vector-icons';
 export default function LoginScreen() {
   return (
     <LinearGradient
-      // Cores do degradê: do azul escuro, passando pelo verde água, até o amarelo
+      
       colors={['#4ba3c3', '#77a9a1', '#d6b856']}
       style={styles.container}
     >
       <SafeAreaView style={styles.content}>
         
-        {/* Cabeçalho com Logo */}
+        
         <View style={styles.header}>
           <View style={styles.logoContainer}>
             <Feather name="shopping-cart" size={50} color="#FFF" />
@@ -22,7 +22,7 @@ export default function LoginScreen() {
           <Text style={styles.description}>Gerenciamento inteligente</Text>
         </View>
 
-        {/* Formulário de Login */}
+        
         <View style={styles.form}>
           <View style={styles.inputContainer}>
             <Feather name="user" size={20} color="#F4B41A" style={styles.icon} />
@@ -52,17 +52,11 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Imagem do Cacto - Comentada para evitar o erro de arquivo não encontrado */}
-        {/* <Image 
-          source={require('../assets/cacto.png')}
-          style={styles.cactusImage}
-          resizeMode="contain"
-        /> 
-        */}
+        
 
       </SafeAreaView>
 
-      {/* Rodapé fixo na parte inferior */}
+      
       <View style={styles.footer}>
         <TouchableOpacity style={styles.footerButton}>
           <Feather name="user-plus" size={20} color="#4ba3c3" />
