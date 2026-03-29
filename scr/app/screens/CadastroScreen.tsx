@@ -2,17 +2,14 @@ import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
   Alert,
   ScrollView,
   Animated,
-  ImageBackground,
   SafeAreaView,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -23,6 +20,11 @@ import { useAuth } from '../context/AuthContext';
 import { COLORS, FONTES, ESPACOS, BORDAS, SOMBRAS } from '../constants/theme';
 import { RootStackParamList } from '../navigation/RootNavigator';
 
+import FundoAnimado    from '../components/FundoAnimado';
+import CampoTexto      from '../components/CampoTexto';
+import BotaoPrincipal  from '../components/BotaoPrincipal';
+import RodapeNavegacao from '../components/RodapeNavegacao';
+
 interface CadastroScreenProps {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Cadastro'>;
 }
@@ -30,32 +32,29 @@ interface CadastroScreenProps {
 export default function CadastroScreen({ navigation }: CadastroScreenProps) {
   const { cadastrar, carregando } = useAuth();
 
-  const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
+  const [nome, setNome]         = useState('');
+  const [email, setEmail]       = useState('');
   const [telefone, setTelefone] = useState('');
-  const [senha, setSenha] = useState('');
+  const [senha, setSenha]       = useState('');
   const [confirmar, setConfirmar] = useState('');
-
-  const [senhaVisivel, setSenhaVisivel] = useState(false);
-  const [confirmarVisivel, setConfirmarVisivel] = useState(false);
 
   const shakeAnim = useRef(new Animated.Value(0)).current;
 
   const sacudir = () => {
     Animated.sequence([
-      Animated.timing(shakeAnim, { toValue: 10, duration: 60, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 10,  duration: 60, useNativeDriver: true }),
       Animated.timing(shakeAnim, { toValue: -10, duration: 60, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: 6, duration: 60, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: -6, duration: 60, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: 0, duration: 60, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 6,   duration: 60, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: -6,  duration: 60, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 0,   duration: 60, useNativeDriver: true }),
     ]).start();
   };
 
   const validar = (): string | null => {
-    if (!nome.trim()) return 'Informe seu nome completo.';
-    if (!email.includes('@')) return 'Informe um e-mail válido.';
-    if (senha.length < 6) return 'A senha deve ter pelo menos 6 caracteres.';
-    if (senha !== confirmar) return 'As senhas não coincidem.';
+    if (!nome.trim())          return 'Informe seu nome completo.';
+    if (!email.includes('@'))  return 'Informe um e-mail válido.';
+    if (senha.length < 6)      return 'A senha deve ter pelo menos 6 caracteres.';
+    if (senha !== confirmar)   return 'As senhas não coincidem.';
     return null;
   };
 
@@ -79,11 +78,11 @@ export default function CadastroScreen({ navigation }: CadastroScreenProps) {
   };
 
   const forcaSenha = (): { nivel: number; label: string; cor: string } => {
-    if (senha.length === 0) return { nivel: 0, label: '', cor: 'transparent' };
-    if (senha.length < 4) return { nivel: 1, label: 'Fraca', cor: COLORS.erro };
-    if (senha.length < 6) return { nivel: 2, label: 'Média', cor: COLORS.alerta };
-    if (senha.length < 10) return { nivel: 3, label: 'Boa', cor: COLORS.azul };
-    return { nivel: 4, label: 'Forte', cor: COLORS.sucesso };
+    if (senha.length === 0)  return { nivel: 0, label: '',       cor: 'transparent' };
+    if (senha.length < 4)    return { nivel: 1, label: 'Fraca',  cor: COLORS.erro };
+    if (senha.length < 6)    return { nivel: 2, label: 'Média',  cor: COLORS.alerta };
+    if (senha.length < 10)   return { nivel: 3, label: 'Boa',    cor: COLORS.azul };
+    return                          { nivel: 4, label: 'Forte',  cor: COLORS.sucesso };
   };
   const { nivel, label, cor } = forcaSenha();
 
@@ -91,15 +90,11 @@ export default function CadastroScreen({ navigation }: CadastroScreenProps) {
     <View style={estilos.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      <ImageBackground
-        source={{ uri: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800' }}
-        style={estilos.imagemFundo}
-        resizeMode="cover"
-        pointerEvents="none"
-      >
-        <BlurView intensity={75} tint="dark" style={StyleSheet.absoluteFillObject} />
-        <View style={estilos.overlay} />
-      </ImageBackground>
+      <FundoAnimado
+        uri="https://admin.cnnbrasil.com.br/wp-content/uploads/sites/12/Reuters_Direct_Media/BrazilOnlineReportWorldNews/tagreuters.com2024binary_LYNXMPEK0S0QB-FILEDIMAGE.jpg"
+        intensidade={75}
+        overlayOpacity={0.55}
+      />
 
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView
@@ -127,81 +122,50 @@ export default function CadastroScreen({ navigation }: CadastroScreenProps) {
 
             <Animated.View style={[estilos.card, { transform: [{ translateX: shakeAnim }] }]}>
               <BlurView intensity={40} tint="light" style={estilos.cardBlur}>
+
                 <Text style={estilos.label}>Nome completo</Text>
-                <View style={estilos.campoWrapper}>
-                  <Feather name="user" size={17} color={COLORS.azul} style={estilos.campoIcone} />
-                  <TextInput
-                    style={estilos.input}
-                    placeholder="Seu nome"
-                    placeholderTextColor={COLORS.cinzaMedio}
-                    autoCapitalize="words"
-                    value={nome}
-                    onChangeText={setNome}
-                    selectionColor={COLORS.azul}
-                    editable={!carregando}
-                  />
-                </View>
+                <CampoTexto
+                  icone="user"
+                  placeholder="Seu nome"
+                  value={nome}
+                  onChangeText={setNome}
+                  autoCapitalize="words"
+                  editable={!carregando}
+                />
 
                 <Text style={estilos.label}>E-mail</Text>
-                <View style={estilos.campoWrapper}>
-                  <Feather name="mail" size={17} color={COLORS.azul} style={estilos.campoIcone} />
-                  <TextInput
-                    style={estilos.input}
-                    placeholder="seu@email.com"
-                    placeholderTextColor={COLORS.cinzaMedio}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    value={email}
-                    onChangeText={setEmail}
-                    selectionColor={COLORS.azul}
-                    editable={!carregando}
-                  />
-                </View>
+                <CampoTexto
+                  icone="mail"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoComplete="email"
+                  editable={!carregando}
+                />
 
                 <Text style={estilos.label}>
                   Telefone <Text style={estilos.opcional}>(opcional)</Text>
                 </Text>
-                <View style={estilos.campoWrapper}>
-                  <Feather name="phone" size={17} color={COLORS.azul} style={estilos.campoIcone} />
-                  <TextInput
-                    style={estilos.input}
-                    placeholder="(00) 00000-0000"
-                    placeholderTextColor={COLORS.cinzaMedio}
-                    keyboardType="phone-pad"
-                    value={telefone}
-                    onChangeText={setTelefone}
-                    selectionColor={COLORS.azul}
-                    editable={!carregando}
-                  />
-                </View>
+                <CampoTexto
+                  icone="phone"
+                  placeholder="(00) 00000-0000"
+                  value={telefone}
+                  onChangeText={setTelefone}
+                  keyboardType="phone-pad"
+                  editable={!carregando}
+                />
 
                 <Text style={estilos.label}>Senha</Text>
-                <View style={estilos.campoWrapper}>
-                  <Feather name="lock" size={17} color={COLORS.azul} style={estilos.campoIcone} />
-                  <TextInput
-                    style={[estilos.input, { flex: 1 }]}
-                    placeholder="Mínimo 6 caracteres"
-                    placeholderTextColor={COLORS.cinzaMedio}
-                    secureTextEntry={!senhaVisivel}
-                    value={senha}
-                    onChangeText={setSenha}
-                    selectionColor={COLORS.azul}
-                    editable={!carregando}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setSenhaVisivel(!senhaVisivel)}
-                    style={estilos.olhoBtn}
-                    disabled={carregando}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  >
-                    <Feather
-                      name={senhaVisivel ? 'eye' : 'eye-off'}
-                      size={17}
-                      color={COLORS.cinzaMedio}
-                    />
-                  </TouchableOpacity>
-                </View>
+                <CampoTexto
+                  icone="lock"
+                  placeholder="Mínimo 6 caracteres"
+                  value={senha}
+                  onChangeText={setSenha}
+                  secureText
+                  mostrarOlho
+                  editable={!carregando}
+                />
 
                 {senha.length > 0 && (
                   <View style={estilos.forcaContainer}>
@@ -219,60 +183,31 @@ export default function CadastroScreen({ navigation }: CadastroScreenProps) {
                 )}
 
                 <Text style={estilos.label}>Confirmar senha</Text>
-                <View style={estilos.campoWrapper}>
-                  <Feather name="shield" size={17} color={COLORS.azul} style={estilos.campoIcone} />
-                  <TextInput
-                    style={[estilos.input, { flex: 1 }]}
-                    placeholder="Repita a senha"
-                    placeholderTextColor={COLORS.cinzaMedio}
-                    secureTextEntry={!confirmarVisivel}
-                    value={confirmar}
-                    onChangeText={setConfirmar}
-                    selectionColor={COLORS.azul}
-                    editable={!carregando}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setConfirmarVisivel(!confirmarVisivel)}
-                    style={estilos.olhoBtn}
-                    disabled={carregando}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  >
-                    <Feather
-                      name={confirmarVisivel ? 'eye' : 'eye-off'}
-                      size={17}
-                      color={COLORS.cinzaMedio}
-                    />
-                  </TouchableOpacity>
-                </View>
+                <CampoTexto
+                  icone="shield"
+                  placeholder="Repita a senha"
+                  value={confirmar}
+                  onChangeText={setConfirmar}
+                  secureText
+                  mostrarOlho
+                  editable={!carregando}
+                />
 
-                <TouchableOpacity
-                  style={[estilos.botao, carregando && estilos.botaoDesabilitado]}
+                <BotaoPrincipal
+                  texto="Criar minha conta"
+                  icone="user-plus"
                   onPress={aoCadastrar}
-                  activeOpacity={0.85}
-                  disabled={carregando}
-                >
-                  {carregando ? (
-                    <ActivityIndicator color={COLORS.branco} size="small" />
-                  ) : (
-                    <>
-                      <Feather name="user-plus" size={18} color={COLORS.branco} />
-                      <Text style={estilos.botaoTexto}>Criar minha conta</Text>
-                    </>
-                  )}
-                </TouchableOpacity>
+                  carregando={carregando}
+                />
               </BlurView>
             </Animated.View>
 
-            <View style={estilos.rodape}>
-              <Text style={estilos.rodapeTexto}>Já tem uma conta?</Text>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Login')}
-                disabled={carregando}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Text style={estilos.rodapeLink}> Entrar</Text>
-              </TouchableOpacity>
-            </View>
+            <RodapeNavegacao
+              texto="Já tem uma conta?"
+              textoLink=" Entrar"
+              onPress={() => navigation.navigate('Login')}
+              desabilitado={carregando}
+            />
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -284,13 +219,6 @@ const estilos = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0d2a1f',
-  },
-  imagemFundo: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(5, 30, 15, 0.55)',
   },
   scroll: {
     paddingHorizontal: ESPACOS.lg,
@@ -341,29 +269,6 @@ const estilos = StyleSheet.create({
     color: COLORS.cinzaMedio,
     fontWeight: FONTES.regular,
   },
-  campoWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.88)',
-    borderRadius: BORDAS.xl,
-    paddingHorizontal: ESPACOS.md,
-    paddingVertical: Platform.OS === 'ios' ? 13 : 10,
-    borderWidth: 1,
-    borderColor: 'rgba(59,189,212,0.20)',
-    minHeight: 50,
-  },
-  campoIcone: {
-    marginRight: ESPACOS.sm,
-  },
-  input: {
-    flex: 1,
-    fontSize: FONTES.md,
-    color: COLORS.preto,
-    paddingVertical: 0,
-  },
-  olhoBtn: {
-    padding: ESPACOS.xs,
-  },
   forcaContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -381,39 +286,5 @@ const estilos = StyleSheet.create({
     fontWeight: FONTES.bold,
     minWidth: 40,
     textAlign: 'right',
-  },
-  botao: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.azul,
-    borderRadius: BORDAS.circulo,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    marginTop: ESPACOS.md,
-    ...SOMBRAS.media,
-  },
-  botaoDesabilitado: {
-    opacity: 0.65,
-  },
-  botaoTexto: {
-    color: COLORS.branco,
-    fontSize: FONTES.lg,
-    fontWeight: FONTES.bold,
-    letterSpacing: 0.5,
-  },
-  rodape: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: ESPACOS.lg,
-  },
-  rodapeTexto: {
-    color: 'rgba(255,255,255,0.75)',
-    fontSize: FONTES.md,
-  },
-  rodapeLink: {
-    color: COLORS.amarelo,
-    fontSize: FONTES.md,
-    fontWeight: FONTES.bold,
   },
 });

@@ -2,12 +2,12 @@ import React from 'react';
 import { View, StyleSheet, StatusBar } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import Dashboard from '../Dashboard';
-import QuickBar  from '../components/QuickBar';
+import Dashboard      from '../screens/Dashboard';
+import LoginScreen    from '../screens/LoginScreen';
+import CadastroScreen from '../screens/CadastroScreen';
 
 export type AppStackParamList = {
   Dashboard: undefined;
-  // jogar aqui novas telas
 };
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
@@ -21,7 +21,6 @@ export default function AppNavigator() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Dashboard" component={Dashboard} />
       </Stack.Navigator>
-      <QuickBar />
     </View>
   );
 }
