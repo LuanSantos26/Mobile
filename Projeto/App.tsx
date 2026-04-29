@@ -1,31 +1,28 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, SafeAreaView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 
-export default function App() {
-  const [usuario, setUsuario] = useState('');
-  const [senha, setSenha] = useState('');
-
+export default function LoginScreen() {
   return (
     <LinearGradient
-      // As cores originais do seu degradê
+      
       colors={['#4ba3c3', '#77a9a1', '#d6b856']}
       style={styles.container}
     >
       <SafeAreaView style={styles.content}>
         
-        {/* Cabeçalho Fiel à Imagem Original */}
+        
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <Feather name="shopping-cart" size={56} color="#FFF" />
+            <Feather name="shopping-cart" size={50} color="#FFF" />
             <Text style={styles.logoText}>QuickBar</Text>
           </View>
           <Text style={styles.subtitle}>BEM-VINDO AO QUICKBAR</Text>
           <Text style={styles.description}>Gerenciamento inteligente</Text>
         </View>
 
-        {/* Formulário Original */}
+        
         <View style={styles.form}>
           <View style={styles.inputContainer}>
             <Feather name="user" size={20} color="#F4B41A" style={styles.icon} />
@@ -33,9 +30,6 @@ export default function App() {
               style={styles.input} 
               placeholder="Digite seu usuário" 
               placeholderTextColor="#77a9a1"
-              value={usuario}
-              onChangeText={setUsuario}
-              autoCapitalize="none"
             />
           </View>
 
@@ -45,8 +39,6 @@ export default function App() {
               style={styles.input} 
               placeholder="Digite sua senha" 
               placeholderTextColor="#77a9a1"
-              value={senha}
-              onChangeText={setSenha}
               secureTextEntry
             />
           </View>
@@ -60,17 +52,14 @@ export default function App() {
           </TouchableOpacity>
         </View>
 
-        {/* Cacto posicionado no canto inferior direito */}
-        <View style={styles.cactusContainer}>
-           <MaterialCommunityIcons name="cactus" size={130} color="#2d6a4f" />
-        </View>
+        
 
       </SafeAreaView>
 
-      {/* Rodapé Original de Criar Conta */}
+      
       <View style={styles.footer}>
         <TouchableOpacity style={styles.footerButton}>
-          <Feather name="user-plus" size={22} color="#4ba3c3" />
+          <Feather name="user-plus" size={20} color="#4ba3c3" />
           <Text style={styles.footerText}>Cria conta</Text>
         </TouchableOpacity>
       </View>
@@ -86,12 +75,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 30,
     justifyContent: 'center',
-    zIndex: 2,
   },
   header: {
     alignItems: 'center',
     marginBottom: 40,
-    marginTop: Platform.OS === 'android' ? 40 : 0,
   },
   logoContainer: {
     flexDirection: 'row',
@@ -99,7 +86,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   logoText: {
-    fontSize: 52,
+    fontSize: 42,
     color: '#FFF',
     fontWeight: 'bold',
     marginLeft: 10,
@@ -116,7 +103,7 @@ const styles = StyleSheet.create({
   },
   form: {
     width: '100%',
-    zIndex: 3,
+    zIndex: 2,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -134,7 +121,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#333',
-    outlineStyle: 'none', // Remove a borda padrão do navegador web
   },
   loginButton: {
     backgroundColor: '#F4B41A', 
@@ -155,12 +141,13 @@ const styles = StyleSheet.create({
     marginTop: 15,
     textDecorationLine: 'underline',
   },
-  cactusContainer: {
+  cactusImage: {
     position: 'absolute',
-    bottom: -15,
-    right: -15,
+    bottom: -35,
+    right: 0,
+    width: 130,
+    height: 220,
     zIndex: 1,
-    opacity: 0.8,
   },
   footer: {
     backgroundColor: '#E5E5E5',
@@ -169,7 +156,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    zIndex: 4,
+    zIndex: 3,
   },
   footerButton: {
     flexDirection: 'row',
