@@ -1,4 +1,4 @@
-import React from 'react';
+'111import React from 'react';
 import { AuthProvider } from './scr/app/context/AuthContext';
 import RootNavigator from './scr/app/navigation/RootNavigator';
 
