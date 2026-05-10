@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image } from 'react-native';
 import { Background } from '../components/Background';
 import { CustomButton } from '../components/CustomButton';
 import { useNavigation } from '@react-navigation/native';
+import { WelcomeHeader } from '../components/welcomeHeader';
 
 export function WelcomeScreen() {
   const navigation = useNavigation<any>();
@@ -10,12 +11,7 @@ export function WelcomeScreen() {
   return (
     <Background>
       <View style={styles.content}>
-        {}
-        {}
-        
-        <Text style={styles.title}>Quickstock</Text>
-        <Text style={styles.subtitle}>BEM-VINDO AO QUICKSTOCK</Text>
-        <Text style={styles.description}>Gerenciamento inteligente</Text>
+        <WelcomeHeader hideReturnButton={true}/>
       </View>
 
       <View style={styles.footer}>
@@ -37,22 +33,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
     alignItems: 'center' 
   },
-
-  title: 
-  { fontSize: 40, 
-    color: '#FFF', 
-    fontWeight: 'bold', 
-    marginBottom: 10 },
-
-  subtitle: 
-  { fontSize: 16, 
-    color: '#FFF', 
-    letterSpacing: 1 },
-
-  description: 
-  { fontSize: 14, 
-    color: '#FFF', 
-    marginBottom: 40 },
 
   footer: 
   { width: '100%', 

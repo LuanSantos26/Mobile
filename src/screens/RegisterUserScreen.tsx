@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Background } from '../components/Background';
 import { CustomInput } from '../components/CustomInput';
 import { CustomButton } from '../components/CustomButton';
+import { WelcomeHeader } from '../components/welcomeHeader';
 
 export function RegisterUserScreen() {
   return (
@@ -13,8 +14,7 @@ export function RegisterUserScreen() {
         contentContainerStyle={styles.scrollContent} 
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Quickstock</Text>
-          <Text style={styles.subtitle}>Gerenciamento inteligente</Text>
+          <WelcomeHeader/>
         </View>
 
         <View style={styles.form}>

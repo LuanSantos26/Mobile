@@ -1,17 +1,17 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React from 'react'; 
+import { View, Text, StyleSheet, TouchableOpacity, Button } from 'react-native';
 import { Background } from '../components/Background';
 import { useNavigation } from '@react-navigation/native';
+import { WelcomeHeader } from '../components/welcomeHeader';
 
 export function AccountTypeScreen() {
   const navigation = useNavigation<any>(); 
 
   return (
     <Background>
+      
       <View style={styles.header}>
-        <Text style={styles.title}>Quickstock</Text>
-        <Text style={styles.subtitle}>BEM-VINDO AO QUICKSTOCK</Text>
-        <Text style={styles.description}>Gerenciamento inteligente</Text>
+        <WelcomeHeader/>
       </View>
 
       <View style={styles.content}>

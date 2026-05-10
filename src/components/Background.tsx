@@ -9,7 +9,7 @@ interface BackgroundProps {
 export function Background({ children }: BackgroundProps) {
   return (
     <LinearGradient
-      colors={['#5DB4CD', '#F1B95B', '#EFA037']} // Cores aproximadas
+      colors={['#5DB4CD', '#F1B95B', '#EFA037']}
       style={styles.container}
     >
       <SafeAreaView style={styles.safeArea}>
