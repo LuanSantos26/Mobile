@@ -11,15 +11,18 @@ export function WelcomeScreen() {
   return (
     <Background>
       <View style={styles.content}>
-        <WelcomeHeader hideReturnButton={true}/>
+        <WelcomeHeader hideReturnButton={true} />
       </View>
 
       <View style={styles.footer}>
-        <CustomButton title="Entrar" onPress={() => console.log('Login')} />
-        <CustomButton 
-          title="Criar conta" 
-          variant="secondary" 
-          onPress={() => navigation.navigate('AccountType')} 
+        <CustomButton
+          title="Entrar"
+          onPress={() => navigation.navigate('Login')}
+        />
+        <CustomButton
+          title="Criar conta"
+          variant="secondary"
+          onPress={() => navigation.navigate('AccountType')}
         />
       </View>
     </Background>
@@ -27,14 +30,16 @@ export function WelcomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: 
-  { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  content:
+  {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
 
-  footer: 
-  { width: '100%', 
-    paddingBottom: 40 },
+  footer:
+  {
+    width: '100%',
+    paddingBottom: 40
+  },
 });
