@@ -1,14 +1,31 @@
 import React from 'react';
-
 import {
-  View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, SafeAreaView,
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  TextInput, 
+  TouchableOpacity, 
+  SafeAreaView,
 } from 'react-native';
-import { Background } from '../components/Background';
-import { WelcomeHeader } from '../components/welcomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { Background } from '../components/Background';
+import { WelcomeHeader } from '../components/welcomeHeader';
+// 1. Importe o seu botão reutilizável aqui (ajuste o caminho da pasta se precisar)
+import { CustomButton } from '../components/CustomButton'; 
 
 export default function LoginScreen() {
+
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+
+  const handleLogin = () => {
+    navigation.replace('Home');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
@@ -18,12 +35,13 @@ export default function LoginScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          style={{ width: '100%' }} // Adicionado para garantir que o ScrollView ocupe a tela toda no celular
         >
           <View style={styles.header}>
             <WelcomeHeader />
           </View>
 
-        
+          {/* Campo de Usuário */}
           <View style={styles.inputContainer}>
             <Ionicons
               name="person-outline"
@@ -31,7 +49,6 @@ export default function LoginScreen() {
               color="#D4A017"
               style={styles.icon}
             />
-
             <TextInput
               placeholder="Digite seu usuário"
               placeholderTextColor="#7DA4C2"
@@ -39,7 +56,7 @@ export default function LoginScreen() {
             />
           </View>
 
-        
+          {/* Campo de Senha */}
           <View style={styles.inputContainer}>
             <Ionicons
               name="lock-closed-outline"
@@ -47,7 +64,6 @@ export default function LoginScreen() {
               color="#D4A017"
               style={styles.icon}
             />
-
             <TextInput
               placeholder="Digite sua senha"
               placeholderTextColor="#7DA4C2"
@@ -56,11 +72,15 @@ export default function LoginScreen() {
             />
           </View>
 
-       
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
+          {/* Botão de Login usando seu componente CustomButton */}
+          <View style={styles.buttonWrapper}>
+            <CustomButton 
+              title="Login" 
+              onPress={handleLogin} 
+            />
+          </View>
 
+          {/* Esqueci a Senha */}
           <TouchableOpacity>
             <Text style={styles.forgotPassword}>
               Esqueceu a senha
@@ -78,23 +98,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1E1E1E',
   },
-
   gradient: {
     flex: 1,
     paddingTop: 50,
     alignItems: 'center',
   },
-
   scrollContent: {
     width: '100%',
     alignItems: 'center',
     paddingBottom: 40,
   },
-
   header: {
     marginBottom: 40,
   },
-
   inputContainer: {
     width: '80%',
     height: 45,
@@ -107,37 +123,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5BF2E',
   },
-
   icon: {
     marginRight: 8,
   },
-
   input: {
     flex: 1,
     color: '#333',
   },
-
-  button: {
+  // Nova View para segurar o botão e garantir o tamanho correto
+  buttonWrapper: {
     width: '80%',
-    height: 45,
-    backgroundColor: '#F2BC1B',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-
-  forgotPassword: {
     marginTop: 15,
+  },
+  forgotPassword: {
+    marginTop: 20, 
     color: 'white',
     textDecorationLine: 'underline',
-    fontSize: 12,
+    fontSize: 14,
   },
-
 });

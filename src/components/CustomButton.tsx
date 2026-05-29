@@ -1,17 +1,19 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, TouchableOpacityProps } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, TouchableOpacityProps, StyleProp, ViewStyle } from 'react-native';
 
 interface CustomButtonProps extends TouchableOpacityProps {
   title: string;
   variant?: 'primary' | 'secondary';
+  style?: StyleProp<ViewStyle>; // Adicionado para aceitar estilos extras
 }
 
-export function CustomButton({ title, variant = 'primary', ...rest }: CustomButtonProps) {
+export function CustomButton({ title, variant = 'primary', style, ...rest }: CustomButtonProps) {
   const isSecondary = variant === 'secondary';
 
   return (
     <TouchableOpacity 
-      style={[styles.button, isSecondary && styles.buttonSecondary]} 
+      // Agora ele junta o estilo padrão com o estilo extra que você mandar da tela
+      style={[styles.button, isSecondary && styles.buttonSecondary, style]} 
       {...rest}
     >
       <Text style={[styles.text, isSecondary && styles.textSecondary]}>
