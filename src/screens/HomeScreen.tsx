@@ -105,6 +105,7 @@ export default function HomeScreen() {
         {/* CABEÇALHO */}
         <ScreenHeader
           showGreeting
+          greeting="Bem vindo."
           name={user?.nome?.split(' ')[0] ?? 'Usuário'}
         />
 
