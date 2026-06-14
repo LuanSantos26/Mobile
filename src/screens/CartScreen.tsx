@@ -32,16 +32,145 @@ import { formatarDataCurta } from '../utils/dateFormat';
 
 const { width } = Dimensions.get('window');
 
-function LogoAvatar({ nome, logoUrl }: { nome: string; logoUrl?: string }) {
+const H_PADDING = 15;
+const CARD_GAP = 12;
+const FEATURED_WIDTH = width - H_PADDING * 2;
+const FEATURED_HEIGHT = Math.round(FEATURED_WIDTH * 0.42);
+const PARTNER_CARD_WIDTH = Math.round((width - H_PADDING * 2 - CARD_GAP * 2) / 2.15);
+const PARTNER_COVER_HEIGHT = Math.round(PARTNER_CARD_WIDTH * 0.58);
+
+function LogoAvatar({
+  nome,
+  logoUrl,
+  size = 50,
+  style,
+}: {
+  nome: string;
+  logoUrl?: string;
+  size?: number;
+  style?: object;
+}) {
   return (
     <RemoteImage
       uri={getImageUrl(logoUrl)}
-      style={styles.avatarImage}
+      style={[
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+        },
+        style,
+      ]}
       fallbackLabel={nome}
       resizeMode="cover"
     />
   );
 }
+
+function CoverImage({
+  capaUrl,
+  nome,
+  style,
+}: {
+  capaUrl?: string;
+  nome: string;
+  style?: object;
+}) {
+  const uri = getImageUrl(capaUrl);
+  if (uri) {
+    return (
+      <RemoteImage
+        uri={uri}
+        style={[styles.coverFill, style]}
+        fallbackLabel={nome}
+        resizeMode="cover"
+      />
+    );
+  }
+  return (
+    <LinearGradient
+      colors={['#F8B125', '#FFD76A']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[styles.coverFill, style]}
+    />
+  );
+}
+
+interface FeaturedBannerProps {
+  fornecedor: Fornecedor;
+  onPress: () => void;
+}
+
+const FeaturedBanner = ({ fornecedor, onPress }: FeaturedBannerProps) => (
+  <TouchableOpacity
+    style={styles.featuredCard}
+    activeOpacity={0.88}
+    onPress={onPress}
+  >
+    <CoverImage capaUrl={fornecedor.capaUrl} nome={fornecedor.nome} />
+    <LinearGradient
+      colors={['rgba(0,0,0,0.05)', 'rgba(0,0,0,0.45)', 'rgba(0,0,0,0.78)']}
+      locations={[0.35, 0.72, 1]}
+      style={StyleSheet.absoluteFillObject}
+    />
+    <View style={styles.featuredFooter}>
+      <LogoAvatar
+        nome={fornecedor.nome}
+        logoUrl={fornecedor.logoUrl}
+        size={48}
+        style={styles.featuredLogo}
+      />
+      <View style={styles.featuredTextWrap}>
+        <Text style={styles.featuredTitle} numberOfLines={1}>
+          {fornecedor.nome}
+        </Text>
+        <Text style={styles.featuredSubtitle} numberOfLines={1}>
+          {labelTipoFornecedor(fornecedor.tipo)} · {fornecedor.totalProdutos} produtos
+        </Text>
+      </View>
+      <View style={styles.featuredBadge}>
+        <Text style={styles.featuredBadgeText}>Ver loja</Text>
+        <Ionicons name="chevron-forward" size={14} color="#F8B125" />
+      </View>
+    </View>
+  </TouchableOpacity>
+);
+
+interface PartnerCardProps {
+  fornecedor: Fornecedor;
+  onPress: () => void;
+}
+
+const PartnerCard = ({ fornecedor, onPress }: PartnerCardProps) => (
+  <TouchableOpacity
+    style={styles.partnerCard}
+    activeOpacity={0.88}
+    onPress={onPress}
+  >
+    <View style={styles.partnerCoverWrap}>
+      <CoverImage capaUrl={fornecedor.capaUrl} nome={fornecedor.nome} />
+      <LinearGradient
+        colors={['transparent', 'rgba(0,0,0,0.35)']}
+        style={styles.partnerCoverGradient}
+      />
+    </View>
+    <View style={styles.partnerBody}>
+      <LogoAvatar
+        nome={fornecedor.nome}
+        logoUrl={fornecedor.logoUrl}
+        size={42}
+        style={styles.partnerLogo}
+      />
+      <Text style={styles.partnerName} numberOfLines={2}>
+        {fornecedor.nome}
+      </Text>
+      <Text style={styles.partnerMeta} numberOfLines={1}>
+        {fornecedor.totalProdutos} produtos
+      </Text>
+    </View>
+  </TouchableOpacity>
+);
 
 interface HorizontalCardProps {
   fornecedor: Fornecedor;
@@ -51,7 +180,7 @@ interface HorizontalCardProps {
 
 const HorizontalCard = ({ fornecedor, subtitle, onPress }: HorizontalCardProps) => (
   <TouchableOpacity style={styles.horizontalCard} activeOpacity={0.8} onPress={onPress}>
-    <LogoAvatar nome={fornecedor.nome} logoUrl={fornecedor.logoUrl} />
+    <LogoAvatar nome={fornecedor.nome} logoUrl={fornecedor.logoUrl} style={styles.avatarImage} />
     <View style={styles.cardTextContainer}>
       <Text style={styles.cardTitle} numberOfLines={2}>{fornecedor.nome}</Text>
       <Text style={styles.cardSubtitle} numberOfLines={2}>{subtitle}</Text>
@@ -66,19 +195,26 @@ interface StoreCardProps {
 
 const StoreCard = ({ fornecedor, onPress }: StoreCardProps) => (
   <TouchableOpacity style={styles.storeCard} activeOpacity={0.8} onPress={onPress}>
-    <LogoAvatar nome={fornecedor.nome} logoUrl={fornecedor.logoUrl} />
-    <View style={styles.storeTextContainer}>
-      <Text style={styles.cardTitle}>{fornecedor.nome}</Text>
-      <View style={styles.ratingContainer}>
-        <Ionicons name="storefront-outline" size={14} color="#F8B125" />
-        <Text style={styles.ratingText}>{labelTipoFornecedor(fornecedor.tipo)}</Text>
-        <Text style={styles.reviewsText}>({fornecedor.totalProdutos} produtos)</Text>
+    <View style={styles.storeCoverWrap}>
+      <CoverImage capaUrl={fornecedor.capaUrl} nome={fornecedor.nome} />
+    </View>
+    <View style={styles.storeContent}>
+      <View style={styles.storeHeaderRow}>
+        <LogoAvatar nome={fornecedor.nome} logoUrl={fornecedor.logoUrl} size={46} style={styles.storeLogo} />
+        <View style={styles.storeTextContainer}>
+          <Text style={styles.cardTitle} numberOfLines={1}>{fornecedor.nome}</Text>
+          <View style={styles.ratingContainer}>
+            <Ionicons name="storefront-outline" size={14} color="#F8B125" />
+            <Text style={styles.ratingText}>{labelTipoFornecedor(fornecedor.tipo)}</Text>
+            <Text style={styles.reviewsText}>({fornecedor.totalProdutos} produtos)</Text>
+          </View>
+        </View>
+        <Ionicons name="chevron-forward" size={22} color="#F8B125" />
       </View>
       <Text style={styles.deliveryText} numberOfLines={2}>
         {fornecedor.descricao || 'Bebidas para revenda em atacado.'}
       </Text>
     </View>
-    <Ionicons name="chevron-forward" size={22} color="#F8B125" />
   </TouchableOpacity>
 );
 
@@ -198,44 +334,33 @@ export function CartScreen() {
         ) : null}
 
         {fornecedoresFiltrados.length > 0 ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.bannerScroll}
-            contentContainerStyle={styles.bannerListPadding}
-          >
-            {fornecedoresFiltrados.map((fornecedor) => {
-              const capaUri = getImageUrl(fornecedor.capaUrl);
-              return (
-                <TouchableOpacity
-                  key={`capa-${fornecedor.id}`}
-                  style={styles.bannerCard}
-                  activeOpacity={0.85}
-                  onPress={() => abrirFornecedor(fornecedor)}
+          <View style={styles.featuredSection}>
+            <Text style={styles.sectionTitle}>Em destaque</Text>
+            <ScrollView
+              horizontal
+              pagingEnabled={false}
+              decelerationRate="fast"
+              snapToInterval={FEATURED_WIDTH + CARD_GAP}
+              snapToAlignment="start"
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.featuredListPadding}
+            >
+              {fornecedoresFiltrados.map((fornecedor, index) => (
+                <View
+                  key={`destaque-${fornecedor.id}`}
+                  style={[
+                    styles.featuredItemWrap,
+                    index === fornecedoresFiltrados.length - 1 && styles.featuredItemWrapLast,
+                  ]}
                 >
-                  {capaUri ? (
-                    <RemoteImage
-                      uri={capaUri}
-                      style={styles.bannerImage}
-                      fallbackLabel={fornecedor.nome}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <LinearGradient
-                      colors={['#F8B125', '#FFD76A']}
-                      style={styles.bannerImage}
-                    />
-                  )}
-                  <View style={styles.bannerOverlay}>
-                    <Text style={styles.bannerText} numberOfLines={1}>{fornecedor.nome}</Text>
-                    <Text style={styles.bannerSubtext} numberOfLines={1}>
-                      {fornecedor.totalProdutos} produtos
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
+                  <FeaturedBanner
+                    fornecedor={fornecedor}
+                    onPress={() => abrirFornecedor(fornecedor)}
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
         ) : null}
 
         {loading ? (
@@ -258,12 +383,15 @@ export function CartScreen() {
                     : 'Nenhuma distribuidora disponível no momento.'}
                 </Text>
               ) : (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalListPadding}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.partnerListPadding}
+                >
                   {fornecedoresFiltrados.map((fornecedor) => (
-                    <HorizontalCard
+                    <PartnerCard
                       key={fornecedor.id}
                       fornecedor={fornecedor}
-                      subtitle={`${labelTipoFornecedor(fornecedor.tipo)} · ${fornecedor.totalProdutos} produtos`}
                       onPress={() => abrirFornecedor(fornecedor)}
                     />
                   ))}
@@ -351,29 +479,132 @@ const styles = StyleSheet.create({
     padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#A5D6A7',
   },
   successBannerText: { color: '#2E7D32', flex: 1, marginRight: 8 },
-  bannerScroll: { marginBottom: 25 },
-  bannerListPadding: { paddingHorizontal: 15 },
-  bannerCard: {
-    width: width * 0.75,
-    height: 140,
-    borderRadius: 20,
-    marginRight: 15,
-    overflow: 'hidden',
-    elevation: 3,
-  },
-  bannerImage: {
+  coverFill: {
+    ...StyleSheet.absoluteFillObject,
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
-  bannerOverlay: {
+  featuredSection: {
+    marginBottom: 22,
+  },
+  featuredListPadding: {
+    paddingHorizontal: H_PADDING,
+  },
+  featuredItemWrap: {
+    width: FEATURED_WIDTH,
+    marginRight: CARD_GAP,
+  },
+  featuredItemWrapLast: {
+    marginRight: 0,
+  },
+  featuredCard: {
+    width: FEATURED_WIDTH,
+    height: FEATURED_HEIGHT,
+    borderRadius: 18,
+    overflow: 'hidden',
+    backgroundColor: '#E8E8E8',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.14,
+    shadowRadius: 6,
+  },
+  featuredFooter: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  featuredLogo: {
+    borderWidth: 2,
+    borderColor: '#FFF',
+    backgroundColor: '#FFF',
+  },
+  featuredTextWrap: {
+    flex: 1,
+    marginLeft: 10,
+    marginRight: 8,
+  },
+  featuredTitle: {
+    color: '#FFF',
+    fontSize: 17,
+    fontWeight: 'bold',
+  },
+  featuredSubtitle: {
+    color: 'rgba(255,255,255,0.92)',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  featuredBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 14,
+    gap: 2,
+  },
+  featuredBadgeText: {
+    color: '#333',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  partnerListPadding: {
+    paddingHorizontal: H_PADDING,
+    paddingBottom: 4,
+  },
+  partnerCard: {
+    width: PARTNER_CARD_WIDTH,
+    marginRight: CARD_GAP,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: '#F0E6CC',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+  },
+  partnerCoverWrap: {
+    width: '100%',
+    height: PARTNER_COVER_HEIGHT,
+    backgroundColor: '#E8E8E8',
+    overflow: 'hidden',
+  },
+  partnerCoverGradient: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    justifyContent: 'flex-end',
-    padding: 14,
   },
-  bannerText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
-  bannerSubtext: { color: '#FFF', fontSize: 12, marginTop: 2, opacity: 0.9 },
+  partnerBody: {
+    paddingHorizontal: 12,
+    paddingTop: 22,
+    paddingBottom: 12,
+    minHeight: 96,
+  },
+  partnerLogo: {
+    position: 'absolute',
+    top: -21,
+    left: 12,
+    borderWidth: 2,
+    borderColor: '#FFF',
+    backgroundColor: '#FFF',
+  },
+  partnerName: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#222',
+    marginBottom: 4,
+    lineHeight: 17,
+  },
+  partnerMeta: {
+    fontSize: 11,
+    color: '#777',
+  },
   section: { marginBottom: 20 },
   sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#333', marginLeft: 15, marginBottom: 10 },
   emptyText: { marginHorizontal: 15, color: '#666' },
@@ -388,9 +619,6 @@ const styles = StyleSheet.create({
     marginRight: 15, width: 220, height: 75,
   },
   avatarImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
     marginRight: 10,
   },
   avatarFallback: {
@@ -411,14 +639,36 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 13, fontWeight: 'bold', color: '#000' },
   cardSubtitle: { fontSize: 11, color: '#666', marginTop: 2 },
   storeCard: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF',
-    borderWidth: 1.5, borderColor: '#F8B125', borderRadius: 25, padding: 15, marginBottom: 15,
+    backgroundColor: '#FFF',
+    borderWidth: 1.5,
+    borderColor: '#F8B125',
+    borderRadius: 18,
+    marginBottom: 15,
+    overflow: 'hidden',
   },
-  storeTextContainer: { flex: 1, justifyContent: 'center' },
+  storeCoverWrap: {
+    width: '100%',
+    height: 96,
+    backgroundColor: '#E8E8E8',
+    overflow: 'hidden',
+  },
+  storeContent: {
+    padding: 14,
+  },
+  storeHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  storeLogo: {
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#F0E6CC',
+  },
+  storeTextContainer: { flex: 1, justifyContent: 'center', marginRight: 4 },
   ratingContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 2, marginBottom: 2 },
   ratingText: { fontSize: 12, fontWeight: 'bold', color: '#000', marginLeft: 4, marginRight: 4 },
   reviewsText: { fontSize: 11, color: '#666' },
-  deliveryText: { fontSize: 11, color: '#333' },
+  deliveryText: { fontSize: 11, color: '#333', marginTop: 8 },
   bottomBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0, height: 70,
     backgroundColor: '#F8B125', flexDirection: 'row', justifyContent: 'space-between',
