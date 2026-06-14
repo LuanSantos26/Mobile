@@ -19,8 +19,6 @@ import { useSafeTopPadding } from '../utils/safeArea';
 import HeaderGreeting from '../components/HeaderGreeting';
 import { formatarDiaSemana } from '../utils/dateFormat';
 
-//Precisa ligar essa página a página de Apps//
-
 const { width } = Dimensions.get('window');
 
 export function StoreVitrine() {
