@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   Modal,
   TextInput,
   Pressable,
@@ -15,9 +14,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import { TabScreenLayout } from '../components/TabScreenLayout';
 import { PagePrimaryButton } from '../components/PagePrimaryButton';
 import { BottomTabBar } from '../components/BottomTabBar';
+import { IconActionButton } from '../components/IconActionButton';
 import { CartoesCadastradosModal } from '../components/CartoesCadastradosModal';
 import { PixCadastradosModal } from '../components/PixCadastradosModal';
 import { useAuth } from '../context/AuthContext';
+import { useConfirmDialog } from '../context/ConfirmDialogContext';
 import { TipoCartao } from '../services/cartaoPagamentoService';
 import {
   FormaPagamentoSalva,
@@ -54,6 +55,7 @@ export function FormasPagamentoScreen() {
   const { user } = useAuth();
   const empresaId = user?.empresa?.id;
   const cnpjEmpresa = user?.empresa?.cnpj;
+  const { confirm } = useConfirmDialog();
 
   const [formas, setFormas] = useState<FormaPagamentoSalva[]>([]);
   const [loading, setLoading] = useState(false);
@@ -146,28 +148,16 @@ export function FormasPagamentoScreen() {
   const confirmarRemocao = (forma: FormaPagamentoSalva) => {
     if (!empresaId) return;
 
-    Alert.alert(
-      'Remover forma de pagamento',
-      `Deseja remover "${forma.apelido}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await removerFormaPagamento(forma.id, empresaId);
-              await carregar();
-            } catch (err) {
-              Alert.alert(
-                'Erro',
-                err instanceof Error ? err.message : 'Erro ao remover forma de pagamento.',
-              );
-            }
-          },
-        },
-      ],
-    );
+    confirm({
+      title: 'Remover forma de pagamento',
+      message: `Deseja remover "${forma.apelido}"?`,
+      confirmText: 'Remover',
+      destructive: true,
+      onConfirm: async () => {
+        await removerFormaPagamento(forma.id, empresaId);
+        await carregar();
+      },
+    });
   };
 
   return (
@@ -204,38 +194,39 @@ export function FormasPagamentoScreen() {
           </View>
         ) : (
           formas.map((forma) => (
-            <TouchableOpacity
-              key={forma.id}
-              style={styles.formaCard}
-              activeOpacity={isFormaComDetalhes(forma.tipo) ? 0.75 : 1}
-              onPress={() => handlePressForma(forma)}
-              disabled={!isFormaComDetalhes(forma.tipo)}
-            >
-              <View style={styles.formaIconWrap}>
-                <Ionicons
-                  name={iconeTipoPagamento(forma.tipo)}
-                  size={22}
-                  color="#F8B125"
-                />
-              </View>
-              <View style={styles.formaInfo}>
-                <Text style={styles.formaApelido}>{forma.apelido}</Text>
-                <Text style={styles.formaTipo}>
-                  {forma.label || labelTipoPagamento(forma.tipo)}
-                  {forma.principal ? ' · Principal' : ''}
-                  {hintForma(forma.tipo)}
-                </Text>
-              </View>
-              {isFormaComDetalhes(forma.tipo) ? (
-                <Ionicons name="chevron-forward" size={20} color="#999" style={styles.chevron} />
-              ) : null}
+            <View key={forma.id} style={styles.formaCard}>
               <TouchableOpacity
-                onPress={() => confirmarRemocao(forma)}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={styles.formaMain}
+                activeOpacity={isFormaComDetalhes(forma.tipo) ? 0.75 : 1}
+                onPress={() => handlePressForma(forma)}
+                disabled={!isFormaComDetalhes(forma.tipo)}
               >
-                <Ionicons name="trash-outline" size={22} color="#D64545" />
+                <View style={styles.formaIconWrap}>
+                  <Ionicons
+                    name={iconeTipoPagamento(forma.tipo)}
+                    size={22}
+                    color="#F8B125"
+                  />
+                </View>
+                <View style={styles.formaInfo}>
+                  <Text style={styles.formaApelido}>{forma.apelido}</Text>
+                  <Text style={styles.formaTipo}>
+                    {forma.label || labelTipoPagamento(forma.tipo)}
+                    {forma.principal ? ' · Principal' : ''}
+                    {hintForma(forma.tipo)}
+                  </Text>
+                </View>
+                {isFormaComDetalhes(forma.tipo) ? (
+                  <Ionicons name="chevron-forward" size={20} color="#999" style={styles.chevron} />
+                ) : null}
               </TouchableOpacity>
-            </TouchableOpacity>
+              <IconActionButton
+                name="trash-outline"
+                size={22}
+                accessibilityLabel="Remover forma de pagamento"
+                onPress={() => confirmarRemocao(forma)}
+              />
+            </View>
           ))
         )}
       </TabScreenLayout>
@@ -258,8 +249,9 @@ export function FormasPagamentoScreen() {
       ) : null}
 
       <Modal visible={modalVisible} transparent animationType="slide" onRequestClose={() => setModalVisible(false)}>
-        <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
-          <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+        <View style={styles.modalOverlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setModalVisible(false)} />
+          <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Nova forma de pagamento</Text>
 
             <Text style={styles.modalLabel}>Tipo</Text>
@@ -329,8 +321,8 @@ export function FormasPagamentoScreen() {
                 )}
               </TouchableOpacity>
             </View>
-          </Pressable>
-        </Pressable>
+          </View>
+        </View>
       </Modal>
     </>
   );
@@ -349,6 +341,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 2,
+  },
+  formaMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   formaIconWrap: {
     width: 44,
@@ -413,6 +410,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 16,
     padding: 20,
     paddingBottom: 32,
+    zIndex: 1,
   },
   modalTitle: {
     fontSize: 18,

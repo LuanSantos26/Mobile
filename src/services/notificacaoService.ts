@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '../config/api';
 
-export type TipoNotificacao = 'compra' | 'promocao' | 'oferta';
+export type TipoNotificacao = 'compra' | 'promocao' | 'oferta' | 'sistema';
 
 export interface Notificacao {
   id: string;
@@ -38,11 +38,13 @@ export async function listarNotificacoes(empresaCompradoraId: number): Promise<N
 export function labelTipoNotificacao(tipo: TipoNotificacao): string {
   if (tipo === 'compra') return 'Compra';
   if (tipo === 'promocao') return 'Promoção';
+  if (tipo === 'sistema') return 'Sistema';
   return 'Oferta';
 }
 
 export function iconeTipoNotificacao(tipo: TipoNotificacao): string {
   if (tipo === 'compra') return 'bag-check-outline';
   if (tipo === 'promocao') return 'pricetag-outline';
+  if (tipo === 'sistema') return 'sparkles-outline';
   return 'flash-outline';
 }

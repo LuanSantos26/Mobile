@@ -31,6 +31,7 @@ export interface EtapaPedido {
 
 export interface SolicitacaoCompra {
   id: number;
+  pedidoId?: number;
   fornecedorId: number;
   fornecedorNome: string;
   status: string;
@@ -62,6 +63,8 @@ export interface SolicitacaoCompraPayload {
   metodoPagamento: MetodoPagamento;
   enderecoEntregaId: number;
   taxaEntrega?: number;
+  pagamentoReferencia?: string;
+  pagamentoDetalhes?: string;
   itens: ItemSolicitacaoPayload[];
 }
 
@@ -95,6 +98,7 @@ function normalizeProduto(data: Produto): Produto {
 function normalizeSolicitacao(data: SolicitacaoCompra): SolicitacaoCompra {
   return {
     ...data,
+    pedidoId: data.pedidoId != null ? Number(data.pedidoId) : undefined,
     valorTotal: Number(data.valorTotal),
     taxaEntrega: data.taxaEntrega != null ? Number(data.taxaEntrega) : undefined,
     previsaoEntregaMinutos:

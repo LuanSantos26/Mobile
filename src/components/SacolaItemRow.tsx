@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { RemoteImage } from './RemoteImage';
+import { IconActionButton } from './IconActionButton';
 import { CartItem } from '../services/purchaseCartStorage';
 import { formatarPreco } from '../services/productService';
 
@@ -67,14 +68,11 @@ export function SacolaItemRow({
               <Ionicons name="add" size={16} color="#333" />
             </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={styles.removeButton}
-            onPress={onRemove}
-            activeOpacity={0.7}
+          <IconActionButton
+            name="trash-outline"
             accessibilityLabel="Remover item"
-          >
-            <Ionicons name="trash-outline" size={18} color="#D64545" />
-          </TouchableOpacity>
+            onPress={onRemove}
+          />
         </View>
       ) : null}
     </View>

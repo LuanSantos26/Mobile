@@ -15,6 +15,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
 import { getImageUrl } from '../config/api';
+import { NOME_PRODUTO_MAX, prepararImagemProduto } from '../utils/productImage';
 import {
   Produto,
   ProdutoPayload,
@@ -43,6 +44,7 @@ export function ProductFormModal({
 
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
+  const [estoque, setEstoque] = useState('');
   const [unidade, setUnidade] = useState('UN');
   const [descricao, setDescricao] = useState('');
   const [imagemUrl, setImagemUrl] = useState<string | undefined>();
@@ -56,6 +58,7 @@ export function ProductFormModal({
 
     setNome(produto?.nome ?? '');
     setPreco(produto ? String(produto.precoVenda) : '');
+    setEstoque(produto?.estoque != null ? String(produto.estoque) : '0');
     setUnidade(produto?.unidade ?? 'UN');
     setDescricao(produto?.descricao ?? '');
     setImagemUrl(produto?.imagemUrl);
@@ -73,17 +76,21 @@ export function ProductFormModal({
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
+      allowsEditing: false,
+      quality: 1,
     });
 
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
-      setLocalImageUri(asset.uri);
-      setLocalImageMime(asset.mimeType ?? 'image/jpeg');
-      setImagemUrl(undefined);
-      setError('');
+      try {
+        const preparada = await prepararImagemProduto(asset.uri);
+        setLocalImageUri(preparada.uri);
+        setLocalImageMime(preparada.mimeType);
+        setImagemUrl(undefined);
+        setError('');
+      } catch {
+        setError('Não foi possível processar a imagem. Tente outra foto.');
+      }
     }
   };
 
@@ -95,9 +102,20 @@ export function ProductFormModal({
       return;
     }
 
+    if (nome.trim().length > NOME_PRODUTO_MAX) {
+      setError(`Nome do produto deve ter no máximo ${NOME_PRODUTO_MAX} caracteres.`);
+      return;
+    }
+
     const precoNumero = Number(preco.replace(',', '.'));
     if (Number.isNaN(precoNumero) || precoNumero < 0) {
       setError('Informe um preço válido.');
+      return;
+    }
+
+    const estoqueNumero = Number(estoque.replace(',', '.'));
+    if (Number.isNaN(estoqueNumero) || estoqueNumero < 0) {
+      setError('Informe uma quantidade em estoque válida.');
       return;
     }
 
@@ -116,6 +134,7 @@ export function ProductFormModal({
         unidade: unidade.trim().toUpperCase(),
         descricao: descricao.trim() || undefined,
         imagemUrl: resolvedImageUrl,
+        estoque: Math.floor(estoqueNumero),
         empresaId: Number(empresaId),
       };
 
@@ -157,7 +176,7 @@ export function ProductFormModal({
           <ScrollView showsVerticalScrollIndicator={false}>
             <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
               {previewUri ? (
-                <Image source={{ uri: previewUri }} style={styles.previewImage} />
+                <Image source={{ uri: previewUri }} style={styles.previewImage} resizeMode="cover" />
               ) : (
                 <View style={styles.imagePlaceholder}>
                   <Feather name="camera" size={32} color="#F8B125" />
@@ -172,7 +191,13 @@ export function ProductFormModal({
               value={nome}
               onChangeText={setNome}
               placeholder="Nome do produto"
+              maxLength={NOME_PRODUTO_MAX}
             />
+            {nome.length > NOME_PRODUTO_MAX - 30 ? (
+              <Text style={styles.charHint}>
+                {nome.length}/{NOME_PRODUTO_MAX} caracteres
+              </Text>
+            ) : null}
 
             <Text style={styles.label}>Preço de venda</Text>
             <TextInput
@@ -195,6 +220,15 @@ export function ProductFormModal({
               onChangeText={setUnidade}
               placeholder="UN, CX, L..."
               autoCapitalize="characters"
+            />
+
+            <Text style={styles.label}>Quantidade em estoque</Text>
+            <TextInput
+              style={styles.input}
+              value={estoque}
+              onChangeText={setEstoque}
+              placeholder="0"
+              keyboardType="number-pad"
             />
 
             <Text style={styles.label}>Descrição (opcional)</Text>
@@ -260,9 +294,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   previewImage: {
-    width: 120,
-    height: 120,
+    width: 160,
+    height: 160,
     borderRadius: 16,
+    backgroundColor: '#F0F0F0',
   },
   imagePlaceholder: {
     width: 120,
@@ -305,6 +340,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: '#F8B125',
     fontWeight: '600',
+  },
+  charHint: {
+    marginTop: -8,
+    marginBottom: 12,
+    fontSize: 11,
+    color: '#888',
+    textAlign: 'right',
   },
   errorText: {
     color: '#D64545',

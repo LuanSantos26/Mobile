@@ -14,6 +14,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { BackTitleHeader } from '../components/BackTitleHeader';
 import { useAppGoBack } from '../hooks/useAppGoBack';
 import { useAuth } from '../context/AuthContext';
+import { useProdutos } from '../context/ProductsContext';
 import {
   EtapaPedido,
   SolicitacaoCompra,
@@ -123,6 +124,7 @@ export function PedidoAcompanhamentoScreen() {
   const goBack = useAppGoBack('Cart');
   const route = useRoute<any>();
   const { user } = useAuth();
+  const { refresh: refreshProdutos } = useProdutos();
 
   const pedidosIds: number[] = route.params?.pedidosIds ?? [route.params?.pedidoId];
   const [pedidoAtivoId, setPedidoAtivoId] = useState<number>(route.params?.pedidoId);
@@ -133,6 +135,7 @@ export function PedidoAcompanhamentoScreen() {
   const [loading, setLoading] = useState(!pedidoInicial);
   const [error, setError] = useState('');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const entregueCreditadoRef = useRef(false);
 
   const carregarPedido = useCallback(async (silencioso = false) => {
     if (!user?.empresa?.id || !pedidoAtivoId) return;
@@ -143,12 +146,16 @@ export function PedidoAcompanhamentoScreen() {
     try {
       const dados = await buscarSolicitacao(pedidoAtivoId, user.empresa.id);
       setPedido(dados);
+      if (dados.status === 'entregue' && !entregueCreditadoRef.current) {
+        entregueCreditadoRef.current = true;
+        await refreshProdutos();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar pedido.');
     } finally {
       if (!silencioso) setLoading(false);
     }
-  }, [pedidoAtivoId, user?.empresa?.id]);
+  }, [pedidoAtivoId, refreshProdutos, user?.empresa?.id]);
 
   useEffect(() => {
     setPedido(null);

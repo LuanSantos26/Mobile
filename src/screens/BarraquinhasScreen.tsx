@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -15,12 +14,16 @@ import { BottomTabBar } from '../components/BottomTabBar';
 import { BarracaCard } from '../components/BarracaCard';
 import { BarracaFormModal } from '../components/BarracaFormModal';
 import { useAuth } from '../context/AuthContext';
+import { useConfirmDialog } from '../context/ConfirmDialogContext';
 import { useBarraquinhas } from '../context/BarraquinhasContext';
+import { useProdutos } from '../context/ProductsContext';
 import { Barraquinha, removerBarraquinha } from '../services/barracaService';
 
 export function BarraquinhasScreen() {
   const { user } = useAuth();
   const { barraquinhas, loading, error, refresh } = useBarraquinhas();
+  const { refresh: refreshProdutos } = useProdutos();
+  const { confirm } = useConfirmDialog();
   const empresaId = user?.empresa?.id;
   const responsavelId = user?.id;
 
@@ -31,7 +34,8 @@ export function BarraquinhasScreen() {
   useFocusEffect(
     useCallback(() => {
       refresh();
-    }, [refresh]),
+      refreshProdutos();
+    }, [refresh, refreshProdutos]),
   );
 
   const listaFiltrada = useMemo(() => {
@@ -53,27 +57,16 @@ export function BarraquinhasScreen() {
   const confirmarRemocao = (barraquinha: Barraquinha) => {
     if (!empresaId) return;
 
-    Alert.alert(
-      'Remover barraquinha',
-      `Deseja remover "${barraquinha.nome}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await removerBarraquinha(barraquinha.id, empresaId);
-              await refresh();
-            } catch (err) {
-              const message =
-                err instanceof Error ? err.message : 'Erro ao remover barraquinha.';
-              Alert.alert('Erro', message);
-            }
-          },
-        },
-      ],
-    );
+    confirm({
+      title: 'Remover barraquinha',
+      message: `Deseja remover "${barraquinha.nome}"?`,
+      confirmText: 'Remover',
+      destructive: true,
+      onConfirm: async () => {
+        await removerBarraquinha(barraquinha.id, empresaId);
+        await refresh();
+      },
+    });
   };
 
   return (

@@ -19,27 +19,3 @@ export function normalizarCep(cep: string): string {
   }
   return `${digits.slice(0, 5)}-${digits.slice(5)}`;
 }
-
-export interface DadosCep {
-  logradouro: string;
-  bairro: string;
-  cidade: string;
-  uf: string;
-}
-
-export async function buscarCep(cep: string): Promise<DadosCep | null> {
-  const digits = cepDigitos(cep);
-  if (digits.length !== 8) return null;
-
-  const response = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
-  const data = await response.json().catch(() => null);
-
-  if (!data || data.erro) return null;
-
-  return {
-    logradouro: data.logradouro ?? '',
-    bairro: data.bairro ?? '',
-    cidade: data.localidade ?? '',
-    uf: data.uf ?? '',
-  };
-}

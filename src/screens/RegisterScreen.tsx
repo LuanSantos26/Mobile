@@ -17,6 +17,7 @@ import { WelcomeHeader, WelcomeBackButton } from '../components/welcomeHeader';
 import { cadastrarConta } from '../services/authService';
 import { LAYOUT } from '../theme/theme';
 import { RootStackParamList } from '../../App';
+import { formatarCnpjInput, formatarTelefoneInput } from '../utils/pixUtils';
 export function RegisterScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const scrollRef = useRef<ScrollView>(null);
@@ -111,17 +112,19 @@ export function RegisterScreen() {
               />
               <CustomInput
                 iconName="file-text"
-                placeholder="CNPJ"
+                placeholder="00.000.000/0000-00"
                 keyboardType="numeric"
                 value={cnpj}
-                onChangeText={setCnpj}
+                onChangeText={(text) => setCnpj(formatarCnpjInput(text))}
+                maxLength={18}
               />
               <CustomInput
                 iconName="phone"
-                placeholder="Telefone (opcional)"
+                placeholder="(00) 00000-0000"
                 keyboardType="phone-pad"
                 value={telefone}
-                onChangeText={setTelefone}
+                onChangeText={(text) => setTelefone(formatarTelefoneInput(text))}
+                maxLength={15}
               />
               <CustomInput
                 iconName="user"

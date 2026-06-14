@@ -59,7 +59,7 @@ export function NotificationsModal({
     try {
       const [lista, lidasSet] = await Promise.all([
         listarNotificacoes(empresaId),
-        obterNotificacoesLidas(),
+        obterNotificacoesLidas(empresaId),
       ]);
       setNotificacoes(lista);
       setLidas(lidasSet);
@@ -76,7 +76,7 @@ export function NotificationsModal({
   }, [visible, carregar]);
 
   const handlePress = async (notificacao: Notificacao) => {
-    await marcarComoLida(notificacao.id);
+    await marcarComoLida(empresaId, notificacao.id);
     const nextLidas = new Set(lidas);
     nextLidas.add(notificacao.id);
     setLidas(nextLidas);
@@ -88,6 +88,9 @@ export function NotificationsModal({
       navigation.navigate('Cart');
       return;
     }
+    if (notificacao.tipo === 'sistema') {
+      return;
+    }
     if (notificacao.fornecedorId && notificacao.fornecedorNome) {
       navigation.navigate('StoreVitrine', {
         fornecedorId: notificacao.fornecedorId,
@@ -97,8 +100,9 @@ export function NotificationsModal({
   };
 
   const marcarTodas = async () => {
+    if (!empresaId) return;
     const ids = notificacoes.map((n) => n.id);
-    await marcarTodasComoLidas(ids);
+    await marcarTodasComoLidas(empresaId, ids);
     const nextLidas = new Set(ids);
     setLidas(nextLidas);
     onUnreadChange?.(0);
@@ -106,8 +110,9 @@ export function NotificationsModal({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+      <View style={styles.overlay}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <View style={styles.sheet}>
           <View style={styles.handle} />
           <View style={styles.header}>
             <Text style={styles.title}>Notificações</Text>
@@ -142,7 +147,9 @@ export function NotificationsModal({
                     ? styles.iconCompra
                     : notificacao.tipo === 'promocao'
                       ? styles.iconPromocao
-                      : styles.iconOferta;
+                      : notificacao.tipo === 'sistema'
+                        ? styles.iconSistema
+                        : styles.iconOferta;
                 return (
                   <TouchableOpacity
                     key={notificacao.id}
@@ -171,8 +178,8 @@ export function NotificationsModal({
           <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
             <Text style={styles.closeBtnText}>Fechar</Text>
           </TouchableOpacity>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }
@@ -189,6 +196,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     maxHeight: '82%',
     paddingBottom: 20,
+    zIndex: 1,
   },
   handle: {
     width: 40,
@@ -234,6 +242,7 @@ const styles = StyleSheet.create({
   },
   iconCompra: { backgroundColor: '#E8F5E9' },
   iconPromocao: { backgroundColor: '#FFF3E0' },
+  iconSistema: { backgroundColor: '#F3E5F5' },
   iconOferta: { backgroundColor: '#E3F2FD' },
   itemBody: { flex: 1 },
   itemTop: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 },

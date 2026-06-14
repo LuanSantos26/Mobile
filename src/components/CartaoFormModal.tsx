@@ -10,19 +10,19 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
+  Dimensions,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TipoCartao, salvarCartao } from '../services/cartaoPagamentoService';
 import {
   detectarBandeira,
   extrairUltimosDigitos,
   formatarNumeroCartaoInput,
   formatarValidadeInput,
-  mascararTitular,
-  mascararValidade,
+  formatarCvvInput,
   numeroCartaoValido,
   validadeValida,
+  cvvValido,
 } from '../utils/cartaoUtils';
 
 interface CartaoFormModalProps {
@@ -37,8 +37,23 @@ const EMPTY = {
   apelido: '',
   numero: '',
   validade: '',
+  cvv: '',
   titular: '',
 };
+
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+
+function LabelObrigatorio({ children }: { children: string }) {
+  return (
+    <Text style={styles.label}>
+      {children} <Text style={styles.obrigatorio}>*</Text>
+    </Text>
+  );
+}
+
+function LabelOpcional({ children }: { children: string }) {
+  return <Text style={styles.label}>{children}</Text>;
+}
 
 export function CartaoFormModal({
   visible,
@@ -47,9 +62,12 @@ export function CartaoFormModal({
   onClose,
   onSaved,
 }: CartaoFormModalProps) {
+  const insets = useSafeAreaInsets();
   const [form, setForm] = useState(EMPTY);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const sheetMaxHeight = SCREEN_HEIGHT * 0.92 - insets.top;
 
   useEffect(() => {
     if (!visible) return;
@@ -64,20 +82,29 @@ export function CartaoFormModal({
   const handleSave = async () => {
     setError('');
 
-    if (!form.apelido.trim()) {
-      setError('Informe um apelido para o cartão.');
-      return;
-    }
     if (!numeroCartaoValido(form.numero)) {
-      setError('Informe um número de cartão válido.');
+      setError('Número do cartão é obrigatório e deve ser válido.');
       return;
     }
     if (!validadeValida(form.validade)) {
-      setError('Informe a validade no formato MM/AA.');
+      setError('Validade é obrigatória (formato MM/AA).');
+      return;
+    }
+    if (!form.cvv.trim()) {
+      setError('CVV é obrigatório.');
+      return;
+    }
+    if (!cvvValido(form.cvv, form.numero)) {
+      const bandeira = detectarBandeira(form.numero);
+      setError(
+        bandeira === 'Amex'
+          ? 'CVV (CID) deve ter 4 dígitos.'
+          : 'CVV deve ter 3 dígitos.',
+      );
       return;
     }
     if (!form.titular.trim()) {
-      setError('Informe o nome do titular.');
+      setError('Nome do titular é obrigatório.');
       return;
     }
 
@@ -86,12 +113,12 @@ export function CartaoFormModal({
       const ultimosDigitos = extrairUltimosDigitos(form.numero);
       await salvarCartao({
         empresaId,
-        apelido: form.apelido.trim(),
+        apelido: form.apelido.trim() || undefined,
         tipo,
         bandeira: detectarBandeira(form.numero),
         ultimosDigitos,
-        titularMascarado: mascararTitular(form.titular),
-        validadeMascarada: mascararValidade(),
+        validade: form.validade.trim(),
+        titular: form.titular.trim(),
       });
       onSaved();
       onClose();
@@ -105,101 +132,129 @@ export function CartaoFormModal({
   const titulo = tipo === 'credito' ? 'Novo cartão de crédito' : 'Novo cartão de débito';
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.overlay} onPress={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      statusBarTranslucent
+      onRequestClose={onClose}
+    >
+      <View style={styles.root}>
+        <TouchableOpacity
+          style={styles.backdrop}
+          activeOpacity={1}
+          onPress={onClose}
+          accessibilityLabel="Fechar"
+        />
+
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.keyboardWrap}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={[styles.sheetContainer, { maxHeight: sheetMaxHeight, paddingBottom: insets.bottom }]}
         >
-          <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
-            <View style={styles.handle} />
-            <Text style={styles.title}>{titulo}</Text>
-            <Text style={styles.subtitle}>
-              Apenas os últimos 4 dígitos e dados mascarados serão armazenados.
-            </Text>
+          <View style={styles.handle} />
+          <Text style={styles.title}>{titulo}</Text>
 
-            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-              <Text style={styles.label}>Apelido</Text>
-              <TextInput
-                style={styles.input}
-                value={form.apelido}
-                onChangeText={(v) => update('apelido', v)}
-                placeholder="Ex: Cartão principal"
-              />
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator
+            bounces
+            nestedScrollEnabled
+          >
+            <LabelOpcional>Apelido</LabelOpcional>
+            <TextInput
+              style={styles.input}
+              value={form.apelido}
+              onChangeText={(v) => update('apelido', v)}
+              placeholder="Ex: Cartão principal"
+            />
 
-              <Text style={styles.label}>Número do cartão</Text>
-              <TextInput
-                style={styles.input}
-                value={form.numero}
-                onChangeText={(v) => update('numero', formatarNumeroCartaoInput(v))}
-                placeholder="0000 0000 0000 0000"
-                keyboardType="number-pad"
-                maxLength={19}
-              />
+            <LabelObrigatorio>Número do cartão</LabelObrigatorio>
+            <TextInput
+              style={styles.input}
+              value={form.numero}
+              onChangeText={(v) => update('numero', formatarNumeroCartaoInput(v))}
+              placeholder="0000 0000 0000 0000"
+              keyboardType="number-pad"
+              maxLength={19}
+            />
 
-              <View style={styles.row}>
-                <View style={styles.rowItem}>
-                  <Text style={styles.label}>Validade</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={form.validade}
-                    onChangeText={(v) => update('validade', formatarValidadeInput(v))}
-                    placeholder="MM/AA"
-                    keyboardType="number-pad"
-                    maxLength={5}
-                  />
-                </View>
-                <View style={styles.rowItemWide}>
-                  <Text style={styles.label}>Titular</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={form.titular}
-                    onChangeText={(v) => update('titular', v)}
-                    placeholder="Nome impresso no cartão"
-                    autoCapitalize="characters"
-                  />
-                </View>
+            <View style={styles.row}>
+              <View style={styles.rowItem}>
+                <LabelObrigatorio>Validade</LabelObrigatorio>
+                <TextInput
+                  style={styles.input}
+                  value={form.validade}
+                  onChangeText={(v) => update('validade', formatarValidadeInput(v))}
+                  placeholder="MM/AA"
+                  keyboardType="number-pad"
+                  maxLength={5}
+                />
               </View>
+              <View style={styles.rowItem}>
+                <LabelObrigatorio>CVV</LabelObrigatorio>
+                <TextInput
+                  style={styles.input}
+                  value={form.cvv}
+                  onChangeText={(v) => update('cvv', formatarCvvInput(v))}
+                  placeholder="123"
+                  keyboardType="number-pad"
+                  maxLength={4}
+                  secureTextEntry
+                />
+              </View>
+            </View>
 
-              {error ? <Text style={styles.errorText}>{error}</Text> : null}
-            </ScrollView>
+            <LabelObrigatorio>Titular</LabelObrigatorio>
+            <TextInput
+              style={styles.input}
+              value={form.titular}
+              onChangeText={(v) => update('titular', v)}
+              placeholder="Nome impresso no cartão"
+              autoCapitalize="characters"
+            />
 
-            <TouchableOpacity
-              style={[styles.saveBtn, loading && styles.saveBtnDisabled]}
-              onPress={handleSave}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#FFF" />
-              ) : (
-                <Text style={styles.saveBtnText}>Salvar cartão</Text>
-              )}
-            </TouchableOpacity>
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          </ScrollView>
 
-            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
-              <Text style={styles.cancelBtnText}>Cancelar</Text>
-            </TouchableOpacity>
-          </Pressable>
+          <TouchableOpacity
+            style={[styles.saveBtn, loading && styles.saveBtnDisabled]}
+            onPress={handleSave}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={styles.saveBtnText}>Salvar cartão</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+            <Text style={styles.cancelBtnText}>Cancelar</Text>
+          </TouchableOpacity>
         </KeyboardAvoidingView>
-      </Pressable>
+      </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
+  root: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'flex-end',
   },
-  keyboardWrap: { width: '100%' },
-  sheet: {
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  sheetContainer: {
+    width: '100%',
     backgroundColor: '#FFF',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingHorizontal: 20,
-    paddingBottom: 24,
-    maxHeight: '92%',
+    paddingTop: 8,
   },
   handle: {
     width: 40,
@@ -207,12 +262,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#DDD',
     borderRadius: 2,
     alignSelf: 'center',
-    marginTop: 10,
     marginBottom: 12,
   },
-  title: { fontSize: 20, fontWeight: 'bold', color: '#333' },
-  subtitle: { fontSize: 13, color: '#666', marginTop: 4, marginBottom: 16 },
-  label: { fontSize: 12, fontWeight: '600', color: '#555', marginBottom: 4, marginTop: 8 },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  scroll: {
+    flexGrow: 0,
+    flexShrink: 1,
+  },
+  scrollContent: {
+    paddingBottom: 8,
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#555',
+    marginBottom: 4,
+    marginTop: 8,
+  },
+  obrigatorio: {
+    color: '#D64545',
+    fontWeight: '700',
+  },
   input: {
     borderWidth: 1,
     borderColor: '#EAEAEA',
@@ -222,19 +296,40 @@ const styles = StyleSheet.create({
     fontSize: 14,
     backgroundColor: '#FAFAFA',
   },
-  row: { flexDirection: 'row', gap: 10 },
-  rowItem: { flex: 1 },
-  rowItemWide: { flex: 2 },
-  errorText: { color: '#D64545', marginTop: 10, textAlign: 'center' },
+  row: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  rowItem: {
+    flex: 1,
+  },
+  errorText: {
+    color: '#D64545',
+    marginTop: 10,
+    textAlign: 'center',
+  },
   saveBtn: {
     backgroundColor: '#F8B125',
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 12,
   },
-  saveBtnDisabled: { opacity: 0.7 },
-  saveBtnText: { color: '#FFF', fontWeight: 'bold', fontSize: 15 },
-  cancelBtn: { alignItems: 'center', paddingVertical: 12 },
-  cancelBtnText: { color: '#888', fontWeight: '600' },
+  saveBtnDisabled: {
+    opacity: 0.7,
+  },
+  saveBtnText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  cancelBtn: {
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginBottom: 4,
+  },
+  cancelBtnText: {
+    color: '#888',
+    fontWeight: '600',
+  },
 });

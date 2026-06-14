@@ -4,9 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSafeTopPadding } from './src/utils/safeArea';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { ConfirmDialogProvider } from './src/context/ConfirmDialogContext';
 import { ProductsProvider } from './src/context/ProductsContext';
 import { BarraquinhasProvider } from './src/context/BarraquinhasContext';
 import { PurchaseCartProvider } from './src/context/PurchaseCartContext';
@@ -64,6 +66,9 @@ export type RootStackParamList = {
     imagemUrl?: string;
     unidade?: string;
     precoVenda?: number;
+    estoque?: number;
+    codigo?: string;
+    origem?: 'catalogo' | 'marketplace';
     fornecedorDescricao?: string;
     fornecedorLogoUrl?: string;
     fornecedorTipo?: string;
@@ -133,13 +138,17 @@ function AppNavigator() {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <NavigationContainer>
-          <AppNavigator />
-        </NavigationContainer>
-      </AuthProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider initialWindowMetrics={initialWindowMetrics}>
+        <ConfirmDialogProvider>
+          <AuthProvider>
+            <NavigationContainer>
+              <AppNavigator />
+            </NavigationContainer>
+          </AuthProvider>
+        </ConfirmDialogProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
