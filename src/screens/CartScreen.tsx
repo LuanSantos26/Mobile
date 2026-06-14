@@ -14,7 +14,7 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { ScreenHeader } from '../components/ScreenHeader';
-import { BottomTabBar } from '../components/BottomTabBar';
+import { BottomTabBar, useTabBarScrollPadding } from '../components/BottomTabBar';
 import { RemoteImage } from '../components/RemoteImage';
 import { useAuth } from '../context/AuthContext';
 import { usePurchaseCart } from '../context/PurchaseCartContext';
@@ -95,7 +95,9 @@ export function CartScreen() {
   const [error, setError] = useState('');
   const [busca, setBusca] = useState('');
   const [successBanner, setSuccessBanner] = useState(
-    route.params?.solicitacaoEnviada ? 'Solicitação enviada com sucesso!' : '',
+    route.params?.solicitacaoEnviada
+      ? route.params?.mensagemSucesso ?? 'Solicitação enviada com sucesso!'
+      : '',
   );
 
   const fornecedoresPorId = useMemo(
@@ -112,6 +114,8 @@ export function CartScreen() {
         (f.descricao?.toLowerCase().includes(termo) ?? false),
     );
   }, [fornecedores, busca]);
+
+  const scrollBottomPadding = useTabBarScrollPadding();
 
   const carregarDados = useCallback(async () => {
     if (!empresaId) return;
@@ -137,11 +141,13 @@ export function CartScreen() {
   useFocusEffect(
     useCallback(() => {
       if (route.params?.solicitacaoEnviada) {
-        setSuccessBanner('Solicitação enviada com sucesso!');
-        navigation.setParams({ solicitacaoEnviada: undefined });
+        setSuccessBanner(
+          route.params?.mensagemSucesso ?? 'Solicitação enviada com sucesso!',
+        );
+        navigation.setParams({ solicitacaoEnviada: undefined, mensagemSucesso: undefined });
       }
       carregarDados();
-    }, [carregarDados, navigation, route.params?.solicitacaoEnviada]),
+    }, [carregarDados, navigation, route.params?.solicitacaoEnviada, route.params?.mensagemSucesso]),
   );
 
   const abrirFornecedor = (fornecedor: Fornecedor) => {
@@ -156,12 +162,12 @@ export function CartScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollBottomPadding }]}
         showsVerticalScrollIndicator={false}
       >
         <ScreenHeader
@@ -171,10 +177,11 @@ export function CartScreen() {
         />
 
         <View style={styles.searchContainer}>
-            <Ionicons name="search" size={24} color="#F8B125" />
+            <Ionicons name="search" size={18} color="#F8B125" />
             <TextInput
               style={styles.searchInput}
               placeholder="Buscar distribuidora..."
+              placeholderTextColor="#999"
               value={busca}
               onChangeText={setBusca}
           />
@@ -187,18 +194,6 @@ export function CartScreen() {
               <Ionicons name="close" size={18} color="#2E7D32" />
             </TouchableOpacity>
           </View>
-        ) : null}
-
-        {itemCount > 0 ? (
-          <TouchableOpacity
-            style={styles.checkoutBanner}
-            onPress={() => navigation.navigate('Sacola')}
-          >
-            <Text style={styles.checkoutBannerText}>
-              Ver carrinho ({itemCount} {itemCount === 1 ? 'item' : 'itens'})
-            </Text>
-            <Ionicons name="arrow-forward" size={20} color="#FFF" />
-          </TouchableOpacity>
         ) : null}
 
         {fornecedoresFiltrados.length > 0 ? (
@@ -327,25 +322,32 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FAFAFA' },
   topGradient: { position: 'absolute', top: 0, left: 0, right: 0, height: 350 },
   scrollView: { flex: 1 },
-  scrollContent: { flexGrow: 1, paddingBottom: 100 },
+  scrollContent: { flexGrow: 1 },
   searchContainer: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff',
-    marginHorizontal: 15, marginBottom: 12, paddingHorizontal: 15, height: 45,
-    borderRadius: 25, borderWidth: 1, borderColor: '#F8B125',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    marginHorizontal: 15,
+    marginBottom: 10,
+    paddingHorizontal: 12,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#F0E6CC',
   },
-  searchInput: { flex: 1, marginLeft: 10, fontSize: 16 },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#333',
+    paddingVertical: 0,
+  },
   successBanner: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     backgroundColor: '#E8F5E9', marginHorizontal: 15, marginBottom: 10,
     padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#A5D6A7',
   },
   successBannerText: { color: '#2E7D32', flex: 1, marginRight: 8 },
-  checkoutBanner: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#F8B125', marginHorizontal: 15, marginBottom: 12,
-    padding: 14, borderRadius: 14,
-  },
-  checkoutBannerText: { color: '#FFF', fontWeight: 'bold', fontSize: 15 },
   bannerScroll: { marginBottom: 25 },
   bannerListPadding: { paddingHorizontal: 15 },
   bannerCard: {

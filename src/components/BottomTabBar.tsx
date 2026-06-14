@@ -2,7 +2,15 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePurchaseCart } from '../context/PurchaseCartContext';
+
+export const TAB_BAR_HEIGHT = 68;
+
+export function useTabBarScrollPadding(extraSpacing = 32): number {
+  const insets = useSafeAreaInsets();
+  return TAB_BAR_HEIGHT + insets.bottom + extraSpacing;
+}
 
 export type BottomTabRoute = 'Home' | 'Barraquinhas' | 'Cart' | 'Sacola' | 'Cards' | 'FormasPagamento' | 'AddItem';
 
@@ -13,12 +21,13 @@ interface BottomTabBarProps {
 export function BottomTabBar({ activeRoute }: BottomTabBarProps) {
   const navigation = useNavigation<any>();
   const { itemCount } = usePurchaseCart();
+  const insets = useSafeAreaInsets();
 
   const iconColor = (route: BottomTabRoute) =>
     activeRoute === route ? '#FFF' : 'rgba(255,255,255,0.85)';
 
   return (
-    <View style={styles.bottomBar}>
+    <View style={[styles.bottomBar, { paddingBottom: insets.bottom, minHeight: TAB_BAR_HEIGHT + insets.bottom }]}>
       <TouchableOpacity
         style={styles.tabItem}
         onPress={() => activeRoute !== 'Home' && navigation.navigate('Home')}
@@ -33,6 +42,13 @@ export function BottomTabBar({ activeRoute }: BottomTabBarProps) {
         <Feather name="box" size={24} color={iconColor('Barraquinhas')} />
       </TouchableOpacity>
 
+      <TouchableOpacity
+        style={styles.tabItem}
+        onPress={() => activeRoute !== 'Cart' && navigation.navigate('Cart')}
+      >
+        <Ionicons name={activeRoute === 'Cart' ? 'cart' : 'cart-outline'} size={24} color={iconColor('Cart')} />
+      </TouchableOpacity>
+
       <View style={styles.floatingButtonContainer}>
         <TouchableOpacity
           style={styles.floatingButton}
@@ -41,13 +57,6 @@ export function BottomTabBar({ activeRoute }: BottomTabBarProps) {
           <Ionicons name="add" size={34} color="#F8B125" />
         </TouchableOpacity>
       </View>
-
-      <TouchableOpacity
-        style={styles.tabItem}
-        onPress={() => activeRoute !== 'Cart' && navigation.navigate('Cart')}
-      >
-        <Ionicons name={activeRoute === 'Cart' ? 'cart' : 'cart-outline'} size={24} color={iconColor('Cart')} />
-      </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.tabItem}
@@ -94,7 +103,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 68,
     backgroundColor: '#F8B125',
     flexDirection: 'row',
     justifyContent: 'space-between',

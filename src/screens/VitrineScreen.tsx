@@ -6,14 +6,16 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
   Dimensions,
-  Platform,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { HamburgerButton } from '../components/HamburgerButton';
+import { BackButton } from '../components/BackButton';
+import { useAppGoBack } from '../hooks/useAppGoBack';
+import { useSafeTopPadding } from '../utils/safeArea';
 import HeaderGreeting from '../components/HeaderGreeting';
 import { formatarDiaSemana } from '../utils/dateFormat';
 
@@ -22,8 +24,14 @@ import { formatarDiaSemana } from '../utils/dateFormat';
 const { width } = Dimensions.get('window');
 
 export function StoreVitrine() {
+  const goBack = useAppGoBack('Cart');
+  const safeTopPadding = useSafeTopPadding();
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { paddingTop: safeTopPadding }]}
+      edges={['left', 'right', 'bottom']}
+    >
       <StatusBar barStyle="light-content" />
       
       <View style={styles.headerYellow}>
@@ -59,9 +67,7 @@ export function StoreVitrine() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
         <View style={styles.navActions}>
-          <TouchableOpacity style={styles.backBtn}>
-            <Ionicons name="chevron-back" size={24} color="#F8B125" />
-          </TouchableOpacity>
+          <BackButton onPress={goBack} />
           <TouchableOpacity>
             <Ionicons name="heart-outline" size={28} color="#F8B125" />
           </TouchableOpacity>
@@ -124,7 +130,7 @@ const styles = StyleSheet.create({
   headerYellow: {
     backgroundColor: '#F8B125',
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 20 : 50,
+    paddingTop: 20,
     paddingBottom: 25,
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
@@ -143,8 +149,7 @@ const styles = StyleSheet.create({
   
   scrollContent: { paddingBottom: 100 },
   navActions: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, marginTop: 15 },
-  backBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center' },
-  
+
   storeProfileContainer: { alignItems: 'center', marginTop: -20 },
   storeAvatarBox: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#DDD', zIndex: 2, borderWidth: 3, borderColor: '#FFF' },
   storeCard: { backgroundColor: '#FFF', width: '90%', borderRadius: 20, padding: 20, marginTop: -40, paddingTop: 50, elevation: 5 },

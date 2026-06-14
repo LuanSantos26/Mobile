@@ -1,0 +1,15 @@
+flowchart LR
+    subgraph client [Aplicativo Mobile]
+        UI[Telas React Native]
+        CTX[Contexts]
+        SVC[Services HTTP]
+    end
+    subgraph server [Backend Spring Boot]
+        CTRL[Controllers REST]
+        SRV[Services]
+        REPO[Repositories JPA]
+    end
+    DB[(PostgreSQL quickstock)]
+    UI --> CTX --> SVC
+    SVC -->|JSON REST porta 8080| CTRL
+    CTRL --> SRV --> REPO --> DB

@@ -1,5 +1,7 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeTopPadding } from './src/utils/safeArea';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -19,6 +21,7 @@ import { SacolaScreen } from './src/screens/SacolaScreen';
 import { PedidoAcompanhamentoScreen } from './src/screens/PedidoAcompanhamentoScreen';
 import { ConfiguracoesScreen } from './src/screens/ConfiguracoesScreen';
 import { FormasPagamentoScreen } from './src/screens/FormasPagamentoScreen';
+import { EnderecosScreen } from './src/screens/EnderecosScreen';
 import { ManageProductsScreen } from './src/screens/ManageProductsScreen';
 import { CardsScreen } from './src/screens/CardsScreen';
 import { StoreVitrineScreen } from './src/screens/StoreVitrineScreen';
@@ -32,13 +35,15 @@ export type RootStackParamList = {
   Barraquinhas: undefined;
   Configuracoes: undefined;
   FormasPagamento: undefined;
+  Enderecos: undefined;
   AddItem: undefined;
-  Cart: { solicitacaoEnviada?: boolean } | undefined;
+  Cart: { solicitacaoEnviada?: boolean; mensagemSucesso?: string } | undefined;
   Checkout: undefined;
   Sacola: undefined;
   PedidoAcompanhamento: {
     pedidoId: number;
     pedidoInicial?: import('./src/services/marketplaceService').SolicitacaoCompra;
+    pedidosIds?: number[];
   };
   Cards: undefined;
   StoreVitrine: {
@@ -72,12 +77,12 @@ function AuthenticatedNavigator() {
   return (
     <ProductsProvider>
       <BarraquinhasProvider>
-        <PurchaseCartProvider>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Barraquinhas" component={BarraquinhasScreen} />
             <Stack.Screen name="Configuracoes" component={ConfiguracoesScreen} />
             <Stack.Screen name="FormasPagamento" component={FormasPagamentoScreen} />
+            <Stack.Screen name="Enderecos" component={EnderecosScreen} />
             <Stack.Screen name="AddItem" component={ManageProductsScreen} />
             <Stack.Screen name="Cart" component={CartScreen} />
             <Stack.Screen name="Checkout" component={CheckoutScreen} />
@@ -87,7 +92,6 @@ function AuthenticatedNavigator() {
             <Stack.Screen name="StoreVitrine" component={StoreVitrineScreen} />
             <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
           </Stack.Navigator>
-        </PurchaseCartProvider>
       </BarraquinhasProvider>
     </ProductsProvider>
   );
@@ -105,16 +109,26 @@ function GuestNavigator() {
 
 function AppNavigator() {
   const { isLoading, isAuthenticated } = useAuth();
+  const safeTopPadding = useSafeTopPadding();
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <SafeAreaView
+        style={[styles.loadingContainer, { paddingTop: safeTopPadding }]}
+        edges={['left', 'right', 'bottom']}
+      >
         <ActivityIndicator size="large" color="#F8B125" />
-      </View>
+      </SafeAreaView>
     );
   }
 
-  return isAuthenticated ? <AuthenticatedNavigator /> : <GuestNavigator />;
+  return isAuthenticated ? (
+    <PurchaseCartProvider>
+      <AuthenticatedNavigator />
+    </PurchaseCartProvider>
+  ) : (
+    <GuestNavigator />
+  );
 }
 
 export default function App() {

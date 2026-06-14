@@ -80,7 +80,7 @@ export function HeaderActions({
           onPress={() => setNotificationsOpen(true)}
           activeOpacity={0.8}
         >
-            <Ionicons name="notifications-outline" size={22} color="#F8B125" />
+            <Ionicons name="notifications-outline" size={18} color="#F8B125" />
             {unreadCount > 0 ? (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
@@ -121,17 +121,17 @@ const styles = StyleSheet.create({
   },
   calendarIcon: { marginLeft: 4 },
   iconButton: {
-    width: 38,
-    height: 38,
+    width: 32,
+    height: 32,
     backgroundColor: '#FFF',
-    borderRadius: 19,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
   badge: {
     position: 'absolute',
-    top: -2,
-    right: -2,
+    top: -1,
+    right: -1,
     minWidth: 16,
     height: 16,
     borderRadius: 8,

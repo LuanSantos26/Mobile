@@ -1,46 +1,36 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import AntDesign from '@expo/vector-icons/AntDesign';
-import { useNavigation } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet } from "react-native";
 import { SPACING } from '../../theme/theme';
+import { BackButton } from '../BackButton';
+import { useAppGoBack } from '../../hooks/useAppGoBack';
+import { useHeaderTopPadding } from '../../utils/safeArea';
 
 interface WelcomeHeaderProps {
     hideReturnButton?: boolean;
 }
 
 export function WelcomeBackButton() {
-    const navigation = useNavigation<any>();
-    const insets = useSafeAreaInsets();
+    const goBack = useAppGoBack('Welcome');
+    const topPadding = useHeaderTopPadding(SPACING.xs);
 
     return (
-        <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={[
-                styles.topBackButton,
-                { paddingTop: insets.top + SPACING.sm },
-            ]}
-            activeOpacity={0.7}
-        >
-            <AntDesign name="arrow-left" size={22} color="white" />
-        </TouchableOpacity>
+        <View style={[styles.topBackWrap, { paddingTop: topPadding }]}>
+            <BackButton onPress={goBack} style={styles.backButtonCorner} />
+        </View>
     );
 }
 
 export function WelcomeHeader({ hideReturnButton = false }: WelcomeHeaderProps) {
-    const navigation = useNavigation<any>();
+    const goBack = useAppGoBack('Welcome');
+    const topPadding = useHeaderTopPadding(SPACING.xs);
 
     return (
         <View style={styles.container}>
-            {!hideReturnButton &&
-                <TouchableOpacity
-                    onPress={() => navigation.goBack()}
-                    style={styles.backButton}
-                    activeOpacity={0.7}
-                >
-                    <AntDesign name="arrow-left" size={22} color="white" />
-                </TouchableOpacity>
-            }
+            {!hideReturnButton ? (
+                <View style={[styles.backRow, { paddingTop: topPadding }]}>
+                    <BackButton onPress={goBack} style={styles.backButtonCorner} />
+                </View>
+            ) : null}
 
             <View style={[styles.content, hideReturnButton && styles.contentWithoutBack]}>
                 <Text style={styles.title}>Quickstock</Text>
@@ -56,22 +46,23 @@ const styles = StyleSheet.create({
         width: '100%',
         position: 'relative',
     },
-    backButton: {
-        position: 'absolute',
-        left: 0,
-        top: 10,
-        padding: 8,
-        zIndex: 10,
-    },
-    topBackButton: {
+    topBackWrap: {
         alignSelf: 'flex-start',
-        paddingHorizontal: SPACING.sm,
+        marginLeft: -16,
         paddingBottom: SPACING.sm,
+    },
+    backRow: {
+        alignSelf: 'flex-start',
+        marginLeft: -16,
+        marginBottom: SPACING.sm,
+    },
+    backButtonCorner: {
+        marginLeft: 0,
     },
     content: {
         justifyContent: 'center',
         alignItems: 'center',
-        paddingTop: 20,
+        paddingTop: 8,
     },
     contentWithoutBack: {
         paddingTop: 0,

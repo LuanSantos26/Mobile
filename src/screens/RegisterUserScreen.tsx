@@ -3,36 +3,35 @@ import {
   View, 
   StyleSheet, 
   ScrollView, 
-  SafeAreaView, 
   KeyboardAvoidingView, 
   Platform 
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; // Removido Ionicons pois não estava em uso
 import { CustomInput } from '../components/CustomInput';
 import { CustomButton } from '../components/CustomButton';
-import { WelcomeHeader } from '../components/welcomeHeader';
+import { WelcomeHeader, WelcomeBackButton } from '../components/welcomeHeader';
 
 export function RegisterUserScreen() {
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView 
-        style={styles.keyboardView} 
+    <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        
-        <LinearGradient 
-          colors={['#4FA7D3', '#E5BF2E']} 
+        <LinearGradient
+          colors={['#4FA7D3', '#E5BF2E']}
           style={styles.container}
         >
-          
-          <ScrollView 
+          <WelcomeBackButton />
+
+          <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
-            {/* CORREÇÃO: Agora o headerContainer está mapeado corretamente no StyleSheet */}
             <View style={styles.headerContainer}>
-              <WelcomeHeader />
+              <WelcomeHeader hideReturnButton />
             </View>
 
             <View style={styles.form}>

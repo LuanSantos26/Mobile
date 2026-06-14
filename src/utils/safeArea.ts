@@ -1,4 +1,5 @@
 import { Platform, StatusBar } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SPACING } from '../theme/theme';
 
 const ANDROID_STATUS_BAR_FALLBACK = 24;
@@ -11,4 +12,16 @@ export function getHeaderTopPadding(insetTop: number, extraSpacing = SPACING.md)
       : 0;
 
   return Math.max(insetTop, statusBarHeight) + extraSpacing;
+}
+
+/** Padding superior para telas/cabeçalhos (respeita notch e barra de status no Android). */
+export function useHeaderTopPadding(extraSpacing = SPACING.md): number {
+  const insets = useSafeAreaInsets();
+  return getHeaderTopPadding(insets.top, extraSpacing);
+}
+
+/** Padding superior mínimo, sem espaço extra (telas sem cabeçalho dedicado). */
+export function useSafeTopPadding(): number {
+  const insets = useSafeAreaInsets();
+  return getHeaderTopPadding(insets.top, 0);
 }
