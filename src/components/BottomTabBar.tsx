@@ -2,14 +2,19 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePurchaseCart } from '../context/PurchaseCartContext';
+import { useBottomInset } from '../utils/safeArea';
 
 export const TAB_BAR_HEIGHT = 68;
 
-export function useTabBarScrollPadding(extraSpacing = 32): number {
-  const insets = useSafeAreaInsets();
-  return TAB_BAR_HEIGHT + insets.bottom + extraSpacing;
+/** Espaço extra no fim do scroll (tab bar não sobrepõe mais o conteúdo). */
+export function useTabBarScrollPadding(extraSpacing = 24): number {
+  return extraSpacing;
+}
+
+export function useBottomTabBarHeight(): number {
+  const bottomInset = useBottomInset();
+  return TAB_BAR_HEIGHT + bottomInset;
 }
 
 export type BottomTabRoute = 'Home' | 'Barraquinhas' | 'Cart' | 'Sacola' | 'Cards' | 'FormasPagamento' | 'AddItem';
@@ -21,89 +26,90 @@ interface BottomTabBarProps {
 export function BottomTabBar({ activeRoute }: BottomTabBarProps) {
   const navigation = useNavigation<any>();
   const { itemCount } = usePurchaseCart();
-  const insets = useSafeAreaInsets();
+  const bottomInset = useBottomInset();
 
   const iconColor = (route: BottomTabRoute) =>
     activeRoute === route ? '#FFF' : 'rgba(255,255,255,0.85)';
 
   return (
-    <View style={[styles.bottomBar, { paddingBottom: insets.bottom, minHeight: TAB_BAR_HEIGHT + insets.bottom }]}>
-      <TouchableOpacity
-        style={styles.tabItem}
-        onPress={() => activeRoute !== 'Home' && navigation.navigate('Home')}
-      >
-        <Ionicons name={activeRoute === 'Home' ? 'home' : 'home-outline'} size={24} color={iconColor('Home')} />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.tabItem}
-        onPress={() => activeRoute !== 'Barraquinhas' && navigation.navigate('Barraquinhas')}
-      >
-        <Feather name="box" size={24} color={iconColor('Barraquinhas')} />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.tabItem}
-        onPress={() => activeRoute !== 'Cart' && navigation.navigate('Cart')}
-      >
-        <Ionicons name={activeRoute === 'Cart' ? 'cart' : 'cart-outline'} size={24} color={iconColor('Cart')} />
-      </TouchableOpacity>
-
-      <View style={styles.floatingButtonContainer}>
+    <View style={[styles.shell, { paddingBottom: bottomInset }]}>
+      <View style={styles.bottomBar}>
         <TouchableOpacity
-          style={styles.floatingButton}
-          onPress={() => navigation.navigate('AddItem')}
+          style={styles.tabItem}
+          onPress={() => activeRoute !== 'Home' && navigation.navigate('Home')}
         >
-          <Ionicons name="add" size={34} color="#F8B125" />
+          <Ionicons name={activeRoute === 'Home' ? 'home' : 'home-outline'} size={24} color={iconColor('Home')} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.tabItem}
+          onPress={() => activeRoute !== 'Barraquinhas' && navigation.navigate('Barraquinhas')}
+        >
+          <Feather name="box" size={24} color={iconColor('Barraquinhas')} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.tabItem}
+          onPress={() => activeRoute !== 'Cart' && navigation.navigate('Cart')}
+        >
+          <Ionicons name={activeRoute === 'Cart' ? 'cart' : 'cart-outline'} size={24} color={iconColor('Cart')} />
+        </TouchableOpacity>
+
+        <View style={styles.floatingButtonContainer}>
+          <TouchableOpacity
+            style={styles.floatingButton}
+            onPress={() => navigation.navigate('AddItem')}
+          >
+            <Ionicons name="add" size={34} color="#F8B125" />
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          style={styles.tabItem}
+          onPress={() => activeRoute !== 'Sacola' && navigation.navigate('Sacola')}
+        >
+          <View>
+            <Ionicons
+              name={activeRoute === 'Sacola' ? 'bag-handle' : 'bag-handle-outline'}
+              size={24}
+              color={iconColor('Sacola')}
+            />
+            {itemCount > 0 ? (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{itemCount > 99 ? '99+' : itemCount}</Text>
+              </View>
+            ) : null}
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.tabItem}
+          onPress={() => activeRoute !== 'FormasPagamento' && navigation.navigate('FormasPagamento')}
+        >
+          <Ionicons
+            name={activeRoute === 'FormasPagamento' ? 'wallet' : 'wallet-outline'}
+            size={24}
+            color={iconColor('FormasPagamento')}
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.tabItem}
+          onPress={() => activeRoute !== 'Cards' && navigation.navigate('Cards')}
+        >
+          <Ionicons name={activeRoute === 'Cards' ? 'card' : 'card-outline'} size={24} color={iconColor('Cards')} />
         </TouchableOpacity>
       </View>
-
-      <TouchableOpacity
-        style={styles.tabItem}
-        onPress={() => activeRoute !== 'Sacola' && navigation.navigate('Sacola')}
-      >
-        <View>
-          <Ionicons
-            name={activeRoute === 'Sacola' ? 'bag-handle' : 'bag-handle-outline'}
-            size={24}
-            color={iconColor('Sacola')}
-          />
-          {itemCount > 0 ? (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{itemCount > 99 ? '99+' : itemCount}</Text>
-            </View>
-          ) : null}
-        </View>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.tabItem}
-        onPress={() => activeRoute !== 'FormasPagamento' && navigation.navigate('FormasPagamento')}
-      >
-        <Ionicons
-          name={activeRoute === 'FormasPagamento' ? 'wallet' : 'wallet-outline'}
-          size={24}
-          color={iconColor('FormasPagamento')}
-        />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.tabItem}
-        onPress={() => activeRoute !== 'Cards' && navigation.navigate('Cards')}
-      >
-        <Ionicons name={activeRoute === 'Cards' ? 'card' : 'card-outline'} size={24} color={iconColor('Cards')} />
-      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+  shell: {
     backgroundColor: '#F8B125',
+  },
+  bottomBar: {
+    height: TAB_BAR_HEIGHT,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

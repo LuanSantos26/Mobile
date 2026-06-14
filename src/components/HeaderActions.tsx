@@ -37,7 +37,7 @@ export function HeaderActions({
     if (!empresaId) return;
     try {
       const lista = await listarNotificacoes(empresaId);
-      const count = await contarNaoLidas(lista.map((n) => n.id));
+      const count = await contarNaoLidas(empresaId, lista.map((n) => n.id));
       setUnreadCount(count);
     } catch {
       setUnreadCount(0);

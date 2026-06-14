@@ -10,17 +10,21 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, Feather } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { CalendarDatePill } from '../components/CalendarDatePill';
 import { BottomTabBar, useTabBarScrollPadding } from '../components/BottomTabBar';
+import { ScreenTopGradient } from '../components/ScreenTopGradient';
 import { ProductStockCard } from '../components/ProductCard';
 import { FinancialDonutChart } from '../components/FinancialDonutChart';
 import { useAuth } from '../context/AuthContext';
 import { useProdutos } from '../context/ProductsContext';
-import { formatarPreco } from '../services/productService';
+import {
+  formatarPreco,
+  normalizarEstoque,
+  Produto,
+} from '../services/productService';
 import { buscarResumoFinanceiro, extrairTotaisFinanceiros, FinanceiroResumo } from '../services/financeiroService';
 
 const { width } = Dimensions.get('window');
@@ -56,6 +60,30 @@ export default function HomeScreen() {
 
   const totalCatalogo = produtos.length;
   const valorCatalogo = produtos.reduce((acc, item) => acc + item.precoVenda, 0);
+  const totalUnidadesEstoque = produtos.reduce(
+    (acc, item) => acc + normalizarEstoque(item.estoque),
+    0,
+  );
+
+  const abrirDetalheProduto = useCallback(
+    (produto: Produto) => {
+      navigation.navigate('ProductDetail', {
+        produtoId: produto.id,
+        fornecedorId: user?.empresa?.id,
+        fornecedorNome: user?.empresa?.nome ?? 'Minha empresa',
+        productName: produto.nome,
+        price: formatarPreco(produto.precoVenda),
+        precoVenda: produto.precoVenda,
+        descricao: produto.descricao,
+        imagemUrl: produto.imagemUrl,
+        unidade: produto.unidade,
+        estoque: produto.estoque,
+        codigo: produto.codigo,
+        origem: 'catalogo',
+      });
+    },
+    [navigation, user?.empresa?.id, user?.empresa?.nome],
+  );
 
   const { totalCompras, totalVendas, lucroTotal, margemPercentual } = useMemo(
     () => extrairTotaisFinanceiros(resumoFinanceiro),
@@ -64,13 +92,15 @@ export default function HomeScreen() {
   const scrollBottomPadding = useTabBarScrollPadding();
 
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right']}>
-      <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
+    <View style={styles.root}>
+      <SafeAreaView style={styles.container} edges={['left', 'right']}>
+        <ScreenTopGradient />
 
-      <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollBottomPadding }]}
-        showsVerticalScrollIndicator={false}
-      >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollBottomPadding }]}
+          showsVerticalScrollIndicator={false}
+        >
         
         {/* CABEÇALHO */}
         <ScreenHeader
@@ -97,7 +127,20 @@ export default function HomeScreen() {
             </View>
             <CalendarDatePill compact />
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+            <View style={styles.tagsContainer}>
+            <View style={styles.tag}>
+              <Text style={styles.tagText}>{totalCatalogo} produto(s)</Text>
+            </View>
+            <View style={styles.tag}>
+              <Text style={styles.tagText}>{totalUnidadesEstoque} un. em estoque</Text>
+            </View>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.horizontalScroll}
+            contentContainerStyle={styles.horizontalScrollContent}
+          >
             {loading ? (
               <ActivityIndicator color="#F8B125" style={{ marginVertical: 12 }} />
             ) : produtos.length === 0 ? (
@@ -107,13 +150,7 @@ export default function HomeScreen() {
                 <ProductStockCard
                   key={produto.id}
                   produto={produto}
-                  total="—"
-                  onPress={() =>
-                    navigation.navigate('ProductDetail', {
-                      productName: produto.nome,
-                      price: formatarPreco(produto.precoVenda),
-                    })
-                  }
+                  onPress={() => abrirDetalheProduto(produto)}
                 />
               ))
             )}
@@ -131,24 +168,25 @@ export default function HomeScreen() {
           </View>
           <View style={styles.tagsContainer}>
             <View style={styles.tag}>
-              <Text style={styles.tagText}>{totalCatalogo} produtos no catálogo</Text>
-            </View>
-            <View style={styles.tag}>
               <Text style={styles.tagText}>Valor ref. {formatarPreco(valorCatalogo)}</Text>
             </View>
+            <View style={styles.tag}>
+              <Text style={styles.tagText}>
+                {user?.empresa?.nome ?? 'Sua empresa'}
+              </Text>
+            </View>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.horizontalScroll}
+            contentContainerStyle={styles.horizontalScrollContent}
+          >
             {produtos.slice(0, 6).map((produto) => (
               <ProductStockCard
                 key={`online-${produto.id}`}
                 produto={produto}
-                total="—"
-                onPress={() =>
-                  navigation.navigate('ProductDetail', {
-                    productName: produto.nome,
-                    price: formatarPreco(produto.precoVenda),
-                  })
-                }
+                onPress={() => abrirDetalheProduto(produto)}
               />
             ))}
           </ScrollView>
@@ -181,9 +219,10 @@ export default function HomeScreen() {
         </View>
 
       </ScrollView>
+      </SafeAreaView>
 
       <BottomTabBar activeRoute="Home" />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -194,6 +233,13 @@ const styles = StyleSheet.create({
   container: { 
     flex: 1, 
     backgroundColor: '#FAFAFA',
+  },
+  root: {
+    flex: 1,
+    backgroundColor: '#FAFAFA',
+  },
+  scrollView: {
+    flex: 1,
   },
   topGradient: { 
     position: 'absolute', 
@@ -308,6 +354,10 @@ const styles = StyleSheet.create({
   // ==========================================
   horizontalScroll: { 
     flexDirection: 'row',
+  },
+  horizontalScrollContent: {
+    paddingVertical: 4,
+    paddingRight: 4,
   },
   stockItemCard: { 
     flexDirection: 'row', 

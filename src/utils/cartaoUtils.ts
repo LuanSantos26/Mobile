@@ -50,6 +50,21 @@ export function mascararValidade(): string {
   return '••/••';
 }
 
+export function formatarCvvInput(valor: string): string {
+  return valor.replace(/\D/g, '').slice(0, 4);
+}
+
+export function cvvValido(cvv: string, numeroCartao?: string): boolean {
+  const digits = cvv.replace(/\D/g, '');
+  const bandeira = numeroCartao ? detectarBandeira(numeroCartao) : '';
+  const tamanhoEsperado = bandeira === 'Amex' ? 4 : 3;
+  return digits.length === tamanhoEsperado;
+}
+
+export function mascararCvv(): string {
+  return '•••';
+}
+
 export function formatarCartaoExibicao(ultimosDigitos: string): string {
   return `•••• •••• •••• ${ultimosDigitos}`;
 }

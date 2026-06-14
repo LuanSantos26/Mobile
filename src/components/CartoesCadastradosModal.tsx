@@ -7,17 +7,19 @@ import {
   TouchableOpacity,
   Pressable,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import {
   CartaoSalvo,
   TipoCartao,
+  labelCartao,
   listarCartoesPorTipo,
   removerCartao,
 } from '../services/cartaoPagamentoService';
 import { formatarCartaoExibicao } from '../utils/cartaoUtils';
 import { CartaoFormModal } from './CartaoFormModal';
+import { IconActionButton } from './IconActionButton';
+import { useConfirmDialog } from '../context/ConfirmDialogContext';
 
 interface CartoesCadastradosModalProps {
   visible: boolean;
@@ -35,6 +37,7 @@ export function CartoesCadastradosModal({
   const [cartoes, setCartoes] = useState<CartaoSalvo[]>([]);
   const [loading, setLoading] = useState(false);
   const [formVisible, setFormVisible] = useState(false);
+  const { confirm } = useConfirmDialog();
 
   const carregar = useCallback(async () => {
     setLoading(true);
@@ -55,33 +58,29 @@ export function CartoesCadastradosModal({
   }, [visible, carregar]);
 
   const confirmarRemocao = (cartao: CartaoSalvo) => {
-    Alert.alert(
-      'Remover cartão',
-      `Deseja remover "${cartao.apelido}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: async () => {
-            await removerCartao(empresaId, cartao.id);
-            await carregar();
-          },
-        },
-      ],
-    );
+    confirm({
+      title: 'Remover cartão',
+      message: `Deseja remover "${labelCartao(cartao)}"?`,
+      confirmText: 'Remover',
+      destructive: true,
+      onConfirm: async () => {
+        await removerCartao(empresaId, cartao.id);
+        await carregar();
+      },
+    });
   };
 
   const titulo = tipo === 'credito' ? 'Cartões de crédito' : 'Cartões de débito';
 
   return (
     <>
-      <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-        <Pressable style={styles.overlay} onPress={onClose}>
-          <Pressable style={styles.content} onPress={(e) => e.stopPropagation()}>
+      <Modal visible={visible && !formVisible} transparent animationType="slide" onRequestClose={onClose}>
+        <View style={styles.overlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+          <View style={styles.content}>
             <Text style={styles.title}>{titulo}</Text>
             <Text style={styles.subtitle}>
-              Dados protegidos — exibimos apenas informações mascaradas.
+              Número completo e CVV não são armazenados.
             </Text>
 
             {loading ? (
@@ -101,17 +100,19 @@ export function CartoesCadastradosModal({
                     <Ionicons name="card-outline" size={22} color="#F8B125" />
                   </View>
                   <View style={styles.cartaoInfo}>
-                    <Text style={styles.cartaoApelido}>{cartao.apelido}</Text>
+                    <Text style={styles.cartaoApelido}>{labelCartao(cartao)}</Text>
                     <Text style={styles.cartaoNumero}>
-                      {formatarCartaoExibicao(cartao.ultimosDigitos)}
+                      {cartao.numeroMascarado || formatarCartaoExibicao(cartao.ultimosDigitos)}
                     </Text>
                     <Text style={styles.cartaoMeta}>
-                      {cartao.bandeira} · {cartao.titularMascarado} · Val. {cartao.validadeMascarada}
+                      {cartao.bandeira} · {cartao.titular} · Val. {cartao.validade}
                     </Text>
                   </View>
-                  <TouchableOpacity onPress={() => confirmarRemocao(cartao)}>
-                    <Ionicons name="trash-outline" size={20} color="#D64545" />
-                  </TouchableOpacity>
+                  <IconActionButton
+                    name="trash-outline"
+                    accessibilityLabel="Remover cartão"
+                    onPress={() => confirmarRemocao(cartao)}
+                  />
                 </View>
               ))
             )}
@@ -124,8 +125,8 @@ export function CartoesCadastradosModal({
             <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
               <Text style={styles.closeBtnText}>Fechar</Text>
             </TouchableOpacity>
-          </Pressable>
-        </Pressable>
+          </View>
+        </View>
       </Modal>
 
       <CartaoFormModal
@@ -152,6 +153,7 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 32,
     maxHeight: '80%',
+    zIndex: 1,
   },
   title: {
     fontSize: 18,

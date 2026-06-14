@@ -12,6 +12,8 @@ import {
   Platform,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { getImageUrl } from '../config/api';
+import { RemoteImage } from './RemoteImage';
 import { useProdutos } from '../context/ProductsContext';
 import {
   Barraquinha,
@@ -131,7 +133,15 @@ export function BarracaFormModal({
             ) : (
               produtos.map((produto) => (
                 <View key={produto.id} style={styles.productRow}>
-                  <Text style={styles.productName}>{produto.nome}</Text>
+                  <RemoteImage
+                    uri={getImageUrl(produto.imagemUrl)}
+                    style={styles.productThumb}
+                    fallbackLabel={produto.nome}
+                    resizeMode="cover"
+                  />
+                  <Text style={styles.productName} numberOfLines={2}>
+                    {produto.nome}
+                  </Text>
                   <TextInput
                     style={styles.qtyInput}
                     value={quantidades[produto.id] ?? ''}
@@ -225,7 +235,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
-    gap: 8,
+    gap: 10,
+  },
+  productThumb: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: '#F0F0F0',
   },
   productName: {
     flex: 1,

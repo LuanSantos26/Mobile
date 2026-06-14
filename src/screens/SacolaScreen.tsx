@@ -20,9 +20,7 @@ import {
 
 } from 'react-native';
 
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { BottomTabBar, useTabBarScrollPadding } from '../components/BottomTabBar';
 
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
@@ -30,13 +28,15 @@ import { TabScreenLayout } from '../components/TabScreenLayout';
 
 import { PagePrimaryButton } from '../components/PagePrimaryButton';
 
-import { BottomTabBar, TAB_BAR_HEIGHT, useTabBarScrollPadding } from '../components/BottomTabBar';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { SacolaItemRow } from '../components/SacolaItemRow';
 
 import { EnderecoFormModal } from '../components/EnderecoFormModal';
+import { CheckoutPaymentModal, CheckoutPaymentResult } from '../components/CheckoutPaymentModal';
 
 import { useAuth } from '../context/AuthContext';
+import { useProdutos } from '../context/ProductsContext';
 
 import { TAXA_ENTREGA, usePurchaseCart } from '../context/PurchaseCartContext';
 
@@ -72,15 +72,22 @@ import { cartItemKey } from '../services/purchaseCartStorage';
 
 
 
+const METODOS_PADRAO: { id: MetodoPagamento; label: string }[] = [
+  { id: 'pix', label: 'PIX' },
+  { id: 'credito', label: 'Crédito' },
+  { id: 'debito', label: 'Débito' },
+  { id: 'dinheiro', label: 'Dinheiro' },
+];
+
 export function SacolaScreen() {
 
   const navigation = useNavigation<any>();
 
-  const insets = useSafeAreaInsets();
   const scrollBottomPadding = useTabBarScrollPadding();
-  const scrollBottomPaddingWithFooter = useTabBarScrollPadding(52);
+  const scrollBottomPaddingWithFooter = useTabBarScrollPadding(72);
 
   const { user } = useAuth();
+  const { refresh: refreshProdutos } = useProdutos();
 
   const {
 
@@ -129,6 +136,7 @@ export function SacolaScreen() {
   const [error, setError] = useState('');
 
   const [successMessage, setSuccessMessage] = useState('');
+  const [modalPagamento, setModalPagamento] = useState(false);
 
 
 
@@ -328,133 +336,81 @@ export function SacolaScreen() {
 
 
 
-  const handleSubmit = async () => {
-
+  const handleSubmit = () => {
     setError('');
-
     setSuccessMessage('');
 
-
-
     if (!user?.empresa?.id || !user.id || gruposFornecedor.length === 0) {
-
       setError('Carrinho inválido. Adicione produtos antes de finalizar.');
-
       return;
-
     }
-
     if (!enderecoSelecionado) {
-
       setError('Cadastre ou selecione um endereço de entrega.');
-
       return;
-
     }
-
     if (!metodoPagamento) {
-
-      setError('Selecione ou cadastre uma forma de pagamento.');
-
-      return;
-
+      setMetodoPagamento('pix');
     }
 
+    setModalPagamento(true);
+  };
 
+  const processarCheckout = async (pagamento: CheckoutPaymentResult) => {
+    setModalPagamento(false);
+    setError('');
+    setSuccessMessage('');
+
+    if (!user?.empresa?.id || !user.id || !enderecoSelecionado) return;
 
     setLoading(true);
-
     const falhas: string[] = [];
     const pedidosCriados: SolicitacaoCompra[] = [];
 
     try {
-
       for (const grupo of gruposFornecedor) {
-
         try {
-
           const pedido = await criarSolicitacaoCompra({
-
             empresaCompradoraId: user.empresa.id,
-
             empresaFornecedoraId: grupo.fornecedorId,
-
             usuarioId: user.id,
-
-            metodoPagamento,
-
+            metodoPagamento: pagamento.metodoPagamento,
             enderecoEntregaId: enderecoSelecionado.id,
-
             taxaEntrega: TAXA_ENTREGA,
-
+            pagamentoReferencia: pagamento.pagamentoReferencia,
+            pagamentoDetalhes: pagamento.pagamentoDetalhes,
             itens: grupo.itens.map((item) => ({
-
               produtoId: item.produtoId,
-
               quantidade: item.quantidade,
-
             })),
-
           });
-
           pedidosCriados.push(pedido);
-
         } catch {
-
           falhas.push(grupo.fornecedorNome);
-
         }
-
       }
-
-
 
       if (falhas.length === 0 && pedidosCriados.length > 0) {
-
         clear();
-
+        await refreshProdutos();
         const primeiro = pedidosCriados[0];
-
         navigation.navigate('PedidoAcompanhamento', {
-
           pedidoId: primeiro.id,
-
           pedidoInicial: primeiro,
-
           pedidosIds: pedidosCriados.map((p) => p.id),
-
         });
-
         return;
-
       }
-
-
 
       if (falhas.length === gruposFornecedor.length) {
-
         setError('Não foi possível enviar os pedidos. Tente novamente.');
-
       } else {
-
-        setError(
-
-          `Falha ao enviar pedido(s) de: ${falhas.join(', ')}. Tente novamente.`,
-
-        );
-
+        setError(`Falha ao enviar pedido(s) de: ${falhas.join(', ')}. Tente novamente.`);
       }
-
     } catch (err) {
-
       setError(err instanceof Error ? err.message : 'Erro ao finalizar pedido.');
-
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
 
@@ -491,7 +447,7 @@ export function SacolaScreen() {
 
           !sacolaVazia ? (
 
-            <View style={[styles.footer, { paddingBottom: TAB_BAR_HEIGHT + insets.bottom }]}>
+            <View style={styles.footer}>
 
               <TouchableOpacity
 
@@ -732,82 +688,40 @@ export function SacolaScreen() {
         <Text style={styles.sectionTitle}>Forma de pagamento</Text>
 
         {loadingFormas ? (
-
           <ActivityIndicator color="#F8B125" style={{ marginVertical: 12 }} />
-
-        ) : formasPagamento.length === 0 ? (
-
-          <TouchableOpacity
-
-            style={styles.paymentEmptyCard}
-
-            onPress={() => navigation.navigate('FormasPagamento')}
-
-          >
-
-            <Ionicons name="wallet-outline" size={24} color="#F8B125" />
-
-            <View style={styles.paymentEmptyInfo}>
-
-              <Text style={styles.paymentEmptyTitle}>Cadastre uma forma de pagamento</Text>
-
-              <Text style={styles.paymentEmptyHint}>
-
-                {formasErro || 'Toque para adicionar PIX, cartão ou dinheiro'}
-
-              </Text>
-
-            </View>
-
-            <Ionicons name="chevron-forward" size={20} color="#999" />
-
-          </TouchableOpacity>
-
         ) : (
-
           <View style={styles.paymentRow}>
-
-            {formasPagamento.map((forma) => {
-
-              const selected = metodoPagamento === forma.tipo;
-
+            {(formasPagamento.length > 0
+              ? formasPagamento.map((f) => ({ id: f.tipo as MetodoPagamento, label: f.apelido }))
+              : METODOS_PADRAO
+            ).map((forma) => {
+              const selected = (metodoPagamento ?? 'pix') === forma.id;
               return (
-
                 <TouchableOpacity
-
                   key={forma.id}
-
                   style={[styles.paymentChip, selected && styles.paymentChipSelected]}
-
-                  onPress={() => setMetodoPagamento(forma.tipo as MetodoPagamento)}
-
+                  onPress={() => setMetodoPagamento(forma.id)}
                 >
-
                   <Ionicons
-
-                    name={iconeTipoPagamento(forma.tipo)}
-
+                    name={iconeTipoPagamento(forma.id)}
                     size={16}
-
                     color={selected ? '#FFF' : '#F8B125'}
-
                   />
-
                   <Text style={[styles.paymentLabel, selected && styles.paymentLabelSelected]}>
-
-                    {forma.apelido}
-
+                    {forma.label}
                   </Text>
-
                 </TouchableOpacity>
-
               );
-
             })}
-
           </View>
-
         )}
+        {formasPagamento.length === 0 && !loadingFormas ? (
+          <TouchableOpacity onPress={() => navigation.navigate('FormasPagamento')}>
+            <Text style={styles.paymentHint}>
+              Toque aqui para cadastrar cartões e chaves PIX
+            </Text>
+          </TouchableOpacity>
+        ) : null}
 
         {formasErro && formasPagamento.length > 0 ? (
 
@@ -947,6 +861,19 @@ export function SacolaScreen() {
 
         />
 
+      ) : null}
+
+      {user?.empresa?.id ? (
+        <CheckoutPaymentModal
+          visible={modalPagamento}
+          total={totalComTaxa}
+          metodoInicial={metodoPagamento ?? 'pix'}
+          empresaId={user.empresa.id}
+          cnpjEmpresa={user.empresa.cnpj}
+          enderecoResumo={enderecoSelecionado?.resumo}
+          onClose={() => setModalPagamento(false)}
+          onConfirm={processarCheckout}
+        />
       ) : null}
 
     </>
@@ -1244,6 +1171,12 @@ const styles = StyleSheet.create({
   paymentLabel: { fontSize: 11, fontWeight: '600', color: '#F8B125' },
 
   paymentLabelSelected: { color: '#FFF' },
+  paymentHint: {
+    fontSize: 12,
+    color: '#F8B125',
+    marginBottom: 12,
+    fontWeight: '600',
+  },
 
   summaryCard: {
 

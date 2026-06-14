@@ -85,6 +85,7 @@ export function StoreVitrineScreen() {
       unidade: produto.unidade,
       precoVenda: produto.precoVenda,
       estoque: produto.estoque,
+      codigo: produto.codigo,
       fornecedorDescricao: descricao,
       fornecedorLogoUrl: logoUrl,
       fornecedorTipo: tipo,
@@ -121,6 +122,9 @@ export function StoreVitrineScreen() {
       </View>
       <Text style={styles.price}>{formatarPreco(produto.precoVenda)}</Text>
       <Text style={styles.name} numberOfLines={2}>{produto.nome}</Text>
+      <Text style={styles.productCode}>
+        {produto.codigo ? `ID ${produto.codigo}` : `#${produto.id}`}
+      </Text>
       <Text style={[styles.stockHint, { color: corEstoque(estoqueQtd) }]}>
         {labelEstoque(estoqueQtd)}
       </Text>
@@ -431,6 +435,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#000',
     marginTop: 1,
+  },
+  productCode: {
+    fontSize: 10,
+    color: '#888',
+    fontWeight: '600',
+    marginTop: 2,
   },
   stockHint: {
     fontSize: 10,

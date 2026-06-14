@@ -13,9 +13,8 @@ import {
   Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { criarEndereco, EnderecoEntrega } from '../services/enderecoService';
+import { criarEndereco, consultarCep, EnderecoEntrega } from '../services/enderecoService';
 import {
-  buscarCep,
   cepValido,
   formatarCepInput,
   normalizarCep,
@@ -81,7 +80,7 @@ export function EnderecoFormModal({
     setLoadingCep(true);
     setCepAviso('');
     try {
-      const dados = await buscarCep(cep);
+      const dados = await consultarCep(cep);
       if (!dados) {
         setCepAviso('CEP não encontrado. Preencha o endereço manualmente.');
         return;

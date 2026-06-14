@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Pressable,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import {
@@ -17,6 +16,8 @@ import {
 } from '../services/pixChaveService';
 import { labelTipoChavePix } from '../utils/pixUtils';
 import { PixFormModal } from './PixFormModal';
+import { IconActionButton } from './IconActionButton';
+import { useConfirmDialog } from '../context/ConfirmDialogContext';
 
 interface PixCadastradosModalProps {
   visible: boolean;
@@ -34,6 +35,7 @@ export function PixCadastradosModal({
   const [chaves, setChaves] = useState<PixSalvo[]>([]);
   const [loading, setLoading] = useState(false);
   const [formVisible, setFormVisible] = useState(false);
+  const { confirm } = useConfirmDialog();
 
   const carregar = useCallback(async () => {
     setLoading(true);
@@ -54,28 +56,24 @@ export function PixCadastradosModal({
   }, [visible, carregar]);
 
   const confirmarRemocao = (chave: PixSalvo) => {
-    Alert.alert(
-      'Remover chave PIX',
-      `Deseja remover "${chave.apelido}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: async () => {
-            await removerChavePix(empresaId, chave.id);
-            await carregar();
-          },
-        },
-      ],
-    );
+    confirm({
+      title: 'Remover chave PIX',
+      message: `Deseja remover "${chave.apelido}"?`,
+      confirmText: 'Remover',
+      destructive: true,
+      onConfirm: async () => {
+        await removerChavePix(empresaId, chave.id);
+        await carregar();
+      },
+    });
   };
 
   return (
     <>
       <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-        <Pressable style={styles.overlay} onPress={onClose}>
-          <Pressable style={styles.content} onPress={(e) => e.stopPropagation()}>
+        <View style={styles.overlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+          <View style={styles.content}>
             <Text style={styles.title}>Chaves PIX</Text>
             <Text style={styles.subtitle}>
               Dados protegidos — exibimos apenas chaves mascaradas.
@@ -102,9 +100,11 @@ export function PixCadastradosModal({
                     <Text style={styles.pixChave}>{chave.chaveMascarada}</Text>
                     <Text style={styles.pixMeta}>{labelTipoChavePix(chave.tipoChave)}</Text>
                   </View>
-                  <TouchableOpacity onPress={() => confirmarRemocao(chave)}>
-                    <Ionicons name="trash-outline" size={20} color="#D64545" />
-                  </TouchableOpacity>
+                  <IconActionButton
+                    name="trash-outline"
+                    accessibilityLabel="Remover chave PIX"
+                    onPress={() => confirmarRemocao(chave)}
+                  />
                 </View>
               ))
             )}
@@ -117,8 +117,8 @@ export function PixCadastradosModal({
             <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
               <Text style={styles.closeBtnText}>Fechar</Text>
             </TouchableOpacity>
-          </Pressable>
-        </Pressable>
+          </View>
+        </View>
       </Modal>
 
       <PixFormModal
@@ -145,6 +145,7 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 32,
     maxHeight: '80%',
+    zIndex: 1,
   },
   title: {
     fontSize: 18,

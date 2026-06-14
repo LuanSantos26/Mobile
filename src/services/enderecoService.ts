@@ -32,11 +32,19 @@ export interface EnderecoEntregaPayload {
   principal?: boolean;
 }
 
+export interface DadosCep {
+  cep: string;
+  logradouro: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
+}
+
 function extractErrorMessage(data: Record<string, unknown>, fallback: string): string {
   if (typeof data.erro === 'string' && data.erro.trim()) return data.erro;
   if (typeof data.message === 'string' && data.message.trim()) return data.message;
-  if (typeof data.error === 'string' && data.error.trim()) {
-    if (data.error === 'Method Not Allowed') {
+    if (typeof data.error === 'string' && data.error.trim()) {
+    if (data.error === 'Method Not Allowed' || data.error === 'Not Found') {
       return 'Servidor desatualizado. Reinicie o backend e tente novamente.';
     }
     return data.error;
@@ -55,6 +63,32 @@ export async function listarEnderecos(empresaId: number): Promise<EnderecoEntreg
   }
 
   return data as EnderecoEntrega[];
+}
+
+export async function consultarCep(cep: string): Promise<DadosCep | null> {
+  const digits = cep.replace(/\D/g, '');
+  if (digits.length !== 8) return null;
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/enderecos/cep/${digits}`);
+  } catch {
+    throw new Error(
+      `Não foi possível conectar ao servidor (${API_BASE_URL}). Verifique se o backend está rodando.`,
+    );
+  }
+
+  const data = await response.json().catch(() => ({}));
+
+  if (response.status === 404) return null;
+
+  if (!response.ok) {
+    throw new Error(
+      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível consultar o CEP.'),
+    );
+  }
+
+  return data as DadosCep;
 }
 
 export async function criarEndereco(payload: EnderecoEntregaPayload): Promise<EnderecoEntrega> {

@@ -5,26 +5,27 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, Feather } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { BottomTabBar, useTabBarScrollPadding } from '../components/BottomTabBar';
 import { ProductFormModal } from '../components/ProductFormModal';
+import { RemoteImage } from '../components/RemoteImage';
+import { ScreenTopGradient } from '../components/ScreenTopGradient';
+import { IconActionButton } from '../components/IconActionButton';
 import { useAuth } from '../context/AuthContext';
+import { useConfirmDialog } from '../context/ConfirmDialogContext';
 import { useProdutos } from '../context/ProductsContext';
 import { getImageUrl } from '../config/api';
-import { formatarPreco, Produto, removerProduto } from '../services/productService';
+import { formatarPreco, formatarQuantidadeEstoque, Produto, removerProduto } from '../services/productService';
 
 export function ManageProductsScreen() {
-  const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { produtos, loading, error, refresh } = useProdutos();
+  const { confirm } = useConfirmDialog();
   const empresaId = user?.empresa?.id;
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -48,66 +49,66 @@ export function ManageProductsScreen() {
   };
 
   const confirmarRemocao = (produto: Produto) => {
-    Alert.alert(
-      'Remover produto',
-      `Deseja remover "${produto.nome}" do catálogo?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await removerProduto(produto.id);
-              await refresh();
-            } catch (err) {
-              const message =
-                err instanceof Error ? err.message : 'Erro ao remover produto.';
-              Alert.alert('Erro', message);
-            }
-          },
-        },
-      ],
-    );
+    confirm({
+      title: 'Remover produto',
+      message: `Deseja remover "${produto.nome}" do catálogo?`,
+      confirmText: 'Remover',
+      destructive: true,
+      onConfirm: async () => {
+        await removerProduto(produto.id, empresaId);
+        await refresh();
+      },
+    });
   };
 
   const renderItem = ({ item }: { item: Produto }) => (
-    <TouchableOpacity style={styles.productCard} onPress={() => abrirEdicao(item)}>
-      {item.imagemUrl ? (
-        <Image source={{ uri: getImageUrl(item.imagemUrl) }} style={styles.thumbnail} />
-      ) : (
-        <View style={styles.thumbnailPlaceholder}>
-          <Feather name="box" size={24} color="#F8B125" />
-        </View>
-      )}
-
-      <View style={styles.productInfo}>
-        <Text style={styles.productName}>{item.nome}</Text>
-        <Text style={styles.productPrice}>{formatarPreco(item.precoVenda)}</Text>
-        <Text style={styles.productUnit}>{item.unidade}</Text>
-        {item.descricao ? (
-          <Text style={styles.productDescription} numberOfLines={2}>
-            {item.descricao}
-          </Text>
-        ) : null}
-      </View>
-
+    <View style={styles.productCard}>
       <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={() => confirmarRemocao(item)}
+        style={styles.productMain}
+        activeOpacity={0.85}
+        onPress={() => abrirEdicao(item)}
       >
-        <Ionicons name="trash-outline" size={20} color="#D64545" />
+        <RemoteImage
+          uri={getImageUrl(item.imagemUrl)}
+          style={styles.thumbnail}
+          fallbackLabel={item.nome}
+          resizeMode="cover"
+        />
+
+        <View style={styles.productInfo}>
+          <Text style={styles.productName}>{item.nome}</Text>
+          <Text style={styles.productCode}>
+            {item.codigo ? `ID ${item.codigo}` : `#${item.id}`}
+          </Text>
+          <Text style={styles.productPrice}>{formatarPreco(item.precoVenda)}</Text>
+          <Text style={styles.productStock}>
+            Estoque: {formatarQuantidadeEstoque(item)}
+          </Text>
+          <Text style={styles.productUnit}>{item.unidade}</Text>
+          {item.descricao ? (
+            <Text style={styles.productDescription} numberOfLines={2}>
+              {item.descricao}
+            </Text>
+          ) : null}
+        </View>
       </TouchableOpacity>
-    </TouchableOpacity>
+
+      <IconActionButton
+        name="trash-outline"
+        accessibilityLabel="Remover produto"
+        onPress={() => confirmarRemocao(item)}
+      />
+    </View>
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right']}>
-      <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
+    <View style={styles.root}>
+      <SafeAreaView style={styles.container} edges={['left', 'right']}>
+        <ScreenTopGradient />
 
-      <ScreenHeader />
+        <ScreenHeader />
 
-      <View style={styles.content}>
+        <View style={styles.content}>
         <Text style={styles.pageTitle}>Gerenciar produtos</Text>
         <Text style={styles.pageSubtitle}>
           Cadastre, edite ou remova os produtos exibidos no app.
@@ -144,6 +145,7 @@ export function ManageProductsScreen() {
           />
         )}
       </View>
+      </SafeAreaView>
 
       <BottomTabBar activeRoute="AddItem" />
 
@@ -156,19 +158,13 @@ export function ManageProductsScreen() {
           onSaved={refresh}
         />
       ) : null}
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#FAFAFA' },
   container: { flex: 1, backgroundColor: '#FAFAFA' },
-  topGradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 350,
-  },
   content: {
     flex: 1,
     paddingHorizontal: 15,
@@ -212,18 +208,16 @@ const styles = StyleSheet.create({
     borderColor: '#F0E6CC',
     alignItems: 'center',
   },
+  productMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   thumbnail: {
     width: 64,
     height: 64,
     borderRadius: 12,
-  },
-  thumbnailPlaceholder: {
-    width: 64,
-    height: 64,
-    borderRadius: 12,
-    backgroundColor: '#FFF9EB',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#F0F0F0',
   },
   productInfo: {
     flex: 1,
@@ -234,9 +228,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
+  productCode: {
+    fontSize: 11,
+    color: '#888',
+    fontWeight: '600',
+    marginTop: 2,
+  },
   productPrice: {
     fontSize: 14,
     color: '#F8B125',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  productStock: {
+    fontSize: 12,
+    color: '#2E7D32',
     fontWeight: '600',
     marginTop: 2,
   },
@@ -248,9 +254,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginTop: 4,
-  },
-  deleteButton: {
-    padding: 8,
   },
   emptyState: {
     alignItems: 'center',

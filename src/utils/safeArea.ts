@@ -14,10 +14,26 @@ export function getHeaderTopPadding(insetTop: number, extraSpacing = SPACING.md)
   return Math.max(insetTop, statusBarHeight) + extraSpacing;
 }
 
+const ANDROID_NAV_BAR_MIN = 48;
+
+/** Inset inferior confiável (barra de gestos / botões virtuais do Android). */
+export function getBottomInset(insetBottom: number): number {
+  if (Platform.OS === 'android') {
+    return Math.max(insetBottom, ANDROID_NAV_BAR_MIN);
+  }
+  return insetBottom;
+}
+
 /** Padding superior para telas/cabeçalhos (respeita notch e barra de status no Android). */
 export function useHeaderTopPadding(extraSpacing = SPACING.md): number {
   const insets = useSafeAreaInsets();
   return getHeaderTopPadding(insets.top, extraSpacing);
+}
+
+/** Padding inferior reservado pelo sistema operacional. */
+export function useBottomInset(): number {
+  const insets = useSafeAreaInsets();
+  return getBottomInset(insets.bottom);
 }
 
 /** Padding superior mínimo, sem espaço extra (telas sem cabeçalho dedicado). */

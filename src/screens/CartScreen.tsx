@@ -162,14 +162,15 @@ export function CartScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right']}>
-      <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
+    <View style={styles.root}>
+      <SafeAreaView style={styles.container} edges={['left', 'right']}>
+        <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollBottomPadding }]}
-        showsVerticalScrollIndicator={false}
-      >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollBottomPadding }]}
+          showsVerticalScrollIndicator={false}
+        >
         <ScreenHeader
           showCartBadge={itemCount > 0}
           cartItemCount={itemCount}
@@ -312,13 +313,15 @@ export function CartScreen() {
           </>
         )}
       </ScrollView>
+      </SafeAreaView>
 
       <BottomTabBar activeRoute="Cart" />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#FAFAFA' },
   container: { flex: 1, backgroundColor: '#FAFAFA' },
   topGradient: { position: 'absolute', top: 0, left: 0, right: 0, height: 350 },
   scrollView: { flex: 1 },

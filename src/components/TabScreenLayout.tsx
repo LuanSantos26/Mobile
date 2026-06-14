@@ -2,11 +2,12 @@ import React from 'react';
 import {
   ScrollView,
   StyleSheet,
+  View,
   ViewStyle,
   StyleProp,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+import { ScreenTopGradient } from './ScreenTopGradient';
 import { ScreenHeader } from './ScreenHeader';
 import { PageHeader } from './PageHeader';
 import { PageContent } from './PageContent';
@@ -46,40 +47,40 @@ export function TabScreenLayout({
   const scrollBottomPadding = useTabBarScrollPadding();
 
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right']}>
-      <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
+    <View style={styles.root}>
+      <SafeAreaView style={styles.container} edges={['left', 'right']}>
+        <ScreenTopGradient />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: scrollBottomPadding },
-          scrollContentStyle,
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        <ScreenHeader {...screenHeaderProps} />
-        <PageHeader title={title} subtitle={subtitle} />
-        {wrapContent ? <PageContent>{children}</PageContent> : children}
-      </ScrollView>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: scrollBottomPadding },
+            scrollContentStyle,
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          <ScreenHeader {...screenHeaderProps} />
+          <PageHeader title={title} subtitle={subtitle} />
+          {wrapContent ? <PageContent>{children}</PageContent> : children}
+        </ScrollView>
 
-      {footer}
+        {footer}
+      </SafeAreaView>
+
       {tabBar}
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
     backgroundColor: '#FAFAFA',
   },
-  topGradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 350,
+  container: {
+    flex: 1,
+    backgroundColor: '#FAFAFA',
   },
   scrollView: {
     flex: 1,

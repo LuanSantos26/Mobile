@@ -1,73 +1,126 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '../config/api';
 
 export type TipoCartao = 'credito' | 'debito';
 
 export interface CartaoSalvo {
-  id: string;
+  id: number;
   empresaId: number;
-  apelido: string;
+  apelido: string | null;
   tipo: TipoCartao;
   bandeira: string;
   ultimosDigitos: string;
-  titularMascarado: string;
-  validadeMascarada: string;
+  numeroMascarado: string;
+  validade: string;
+  titular: string;
 }
 
 export interface CartaoSalvoPayload {
   empresaId: number;
-  apelido: string;
+  apelido?: string;
   tipo: TipoCartao;
   bandeira: string;
   ultimosDigitos: string;
-  titularMascarado: string;
-  validadeMascarada: string;
+  validade: string;
+  titular: string;
 }
 
-const STORAGE_KEY_PREFIX = '@quickstock_cartoes_pagamento';
-
-function storageKey(empresaId: number): string {
-  return `${STORAGE_KEY_PREFIX}_${empresaId}`;
+function extractErrorMessage(data: Record<string, unknown>, fallback: string): string {
+  if (typeof data.erro === 'string' && data.erro.trim()) return data.erro;
+  if (typeof data.message === 'string' && data.message.trim()) return data.message;
+  if (typeof data.error === 'string' && data.error.trim()) {
+    if (data.error === 'Method Not Allowed' || data.error === 'Not Found') {
+      return 'Servidor desatualizado. Reinicie o backend e tente novamente.';
+    }
+    return data.error;
+  }
+  return fallback;
 }
 
-function gerarId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+export function labelCartao(cartao: CartaoSalvo): string {
+  if (cartao.apelido?.trim()) return cartao.apelido.trim();
+  return `${cartao.bandeira} · •••• ${cartao.ultimosDigitos}`;
 }
 
 export async function listarCartoes(empresaId: number): Promise<CartaoSalvo[]> {
-  const raw = await AsyncStorage.getItem(storageKey(empresaId));
-  if (!raw) return [];
+  const response = await fetch(`${API_BASE_URL}/api/cartoes-pagamento?empresaId=${empresaId}`);
+  const data = await response.json().catch(() => ({}));
 
-  try {
-    const parsed = JSON.parse(raw) as CartaoSalvo[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    await AsyncStorage.removeItem(storageKey(empresaId));
-    return [];
+  if (!response.ok) {
+    throw new Error(
+      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível carregar os cartões.'),
+    );
   }
+
+  return data as CartaoSalvo[];
 }
 
 export async function listarCartoesPorTipo(
   empresaId: number,
   tipo: TipoCartao,
 ): Promise<CartaoSalvo[]> {
-  const cartoes = await listarCartoes(empresaId);
-  return cartoes.filter((cartao) => cartao.tipo === tipo);
+  const response = await fetch(
+    `${API_BASE_URL}/api/cartoes-pagamento?empresaId=${empresaId}&tipo=${tipo}`,
+  );
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível carregar os cartões.'),
+    );
+  }
+
+  return data as CartaoSalvo[];
 }
 
 export async function salvarCartao(payload: CartaoSalvoPayload): Promise<CartaoSalvo> {
-  const cartoes = await listarCartoes(payload.empresaId);
-  const novo: CartaoSalvo = {
-    id: gerarId(),
-    ...payload,
+  const body: Record<string, unknown> = {
+    empresaId: payload.empresaId,
+    tipo: payload.tipo,
+    bandeira: payload.bandeira,
+    ultimosDigitos: payload.ultimosDigitos,
+    validade: payload.validade,
+    titular: payload.titular,
   };
 
-  cartoes.unshift(novo);
-  await AsyncStorage.setItem(storageKey(payload.empresaId), JSON.stringify(cartoes));
-  return novo;
+  const apelido = payload.apelido?.trim();
+  if (apelido) {
+    body.apelido = apelido;
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/cartoes-pagamento`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new Error(
+      `Não foi possível conectar ao servidor (${API_BASE_URL}). Verifique se o backend está rodando.`,
+    );
+  }
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível salvar o cartão.'),
+    );
+  }
+
+  return data as CartaoSalvo;
 }
 
-export async function removerCartao(empresaId: number, cartaoId: string): Promise<void> {
-  const cartoes = await listarCartoes(empresaId);
-  const filtrados = cartoes.filter((cartao) => cartao.id !== cartaoId);
-  await AsyncStorage.setItem(storageKey(empresaId), JSON.stringify(filtrados));
+export async function removerCartao(empresaId: number, cartaoId: number): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/cartoes-pagamento/${cartaoId}?empresaId=${empresaId}`,
+    { method: 'DELETE' },
+  );
+
+  if (!response.ok && response.status !== 204) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(
+      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível remover o cartão.'),
+    );
+  }
 }

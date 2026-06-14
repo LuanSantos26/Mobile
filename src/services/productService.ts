@@ -17,6 +17,8 @@ function extractErrorMessage(data: Record<string, unknown>, fallback: string): s
 export interface Produto {
   id: number;
   empresaId: number;
+  codigo?: string;
+  codigoOrigem?: string;
   nome: string;
   precoVenda: number;
   unidade: string;
@@ -32,7 +34,17 @@ export interface ProdutoPayload {
   unidade: string;
   descricao?: string;
   imagemUrl?: string;
+  estoque?: number;
   empresaId: number;
+}
+
+export function normalizarProduto(data: Produto): Produto {
+  return {
+    ...data,
+    precoVenda: Number(data.precoVenda),
+    estoque: normalizarEstoque(data.estoque),
+    ativo: Number(data.ativo ?? 1),
+  };
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {
@@ -54,7 +66,13 @@ export async function listarProdutos(empresaId: number): Promise<Produto[]> {
   const response = await fetch(
     `${API_BASE_URL}/api/produtos?empresaId=${empresaId}`,
   );
-  return parseResponse<Produto[]>(response);
+  const lista = await parseResponse<Produto[]>(response);
+  return lista.map(normalizarProduto);
+}
+
+export async function buscarProduto(id: number): Promise<Produto> {
+  const response = await fetch(`${API_BASE_URL}/api/produtos/${id}`);
+  return normalizarProduto(await parseResponse<Produto>(response));
 }
 
 export async function criarProduto(payload: ProdutoPayload): Promise<Produto> {
@@ -63,7 +81,7 @@ export async function criarProduto(payload: ProdutoPayload): Promise<Produto> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  return parseResponse<Produto>(response);
+  return normalizarProduto(await parseResponse<Produto>(response));
 }
 
 export async function atualizarProduto(
@@ -75,23 +93,26 @@ export async function atualizarProduto(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  return parseResponse<Produto>(response);
+  return normalizarProduto(await parseResponse<Produto>(response));
 }
 
-export async function removerProduto(id: number): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/produtos/${id}`, {
+export async function removerProduto(id: number, empresaId?: number): Promise<void> {
+  const query = empresaId != null ? `?empresaId=${empresaId}` : '';
+  const response = await fetch(`${API_BASE_URL}/api/produtos/${id}${query}`, {
     method: 'DELETE',
   });
 
-  if (!response.ok && response.status !== 204) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error(
-      extractErrorMessage(
-        data as Record<string, unknown>,
-        'Não foi possível remover o produto.',
-      ),
-    );
+  if (response.status >= 200 && response.status < 300) {
+    return;
   }
+
+  const data = await response.json().catch(() => ({}));
+  throw new Error(
+    extractErrorMessage(
+      data as Record<string, unknown>,
+      'Não foi possível remover o produto.',
+    ),
+  );
 }
 
 function resolveExtension(mimeType: string): string {
@@ -141,6 +162,11 @@ export function formatarPreco(valor: number): string {
     style: 'currency',
     currency: 'BRL',
   });
+}
+
+export function formatarQuantidadeEstoque(produto: Produto): string {
+  const qtd = normalizarEstoque(produto.estoque);
+  return `${qtd} ${produto.unidade}`;
 }
 
 export function normalizarEstoque(estoque?: number): number {

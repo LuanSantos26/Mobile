@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getImageUrl } from '../config/api';
 import { RemoteImage } from './RemoteImage';
 import { Barraquinha, EstoqueItem, formatarQuantidade } from '../services/barracaService';
 import { formatarPreco } from '../services/productService';
+import { useProdutos } from '../context/ProductsContext';
 import { formatarDiaSemana } from '../utils/dateFormat';
 
 interface BarracaCardProps {
@@ -19,10 +21,16 @@ interface BarracaCardProps {
   onDelete: () => void;
 }
 
-const CollapsedItem = ({ item }: { item: EstoqueItem }) => (
+const CollapsedItem = ({
+  item,
+  imagemUrl,
+}: {
+  item: EstoqueItem;
+  imagemUrl?: string;
+}) => (
   <View style={styles.stockItemCardCollapsed}>
     <RemoteImage
-      uri={getImageUrl(item.imagemUrl)}
+      uri={getImageUrl(imagemUrl)}
       style={styles.thumbnail}
       fallbackLabel={item.nome}
       resizeMode="cover"
@@ -39,10 +47,16 @@ const CollapsedItem = ({ item }: { item: EstoqueItem }) => (
   </View>
 );
 
-const ExpandedItem = ({ item }: { item: EstoqueItem }) => (
+const ExpandedItem = ({
+  item,
+  imagemUrl,
+}: {
+  item: EstoqueItem;
+  imagemUrl?: string;
+}) => (
   <View style={styles.stockItemCardExpanded}>
     <RemoteImage
-      uri={getImageUrl(item.imagemUrl)}
+      uri={getImageUrl(imagemUrl)}
       style={styles.expandedThumbnail}
       fallbackLabel={item.nome}
       resizeMode="cover"
@@ -62,6 +76,16 @@ const ExpandedItem = ({ item }: { item: EstoqueItem }) => (
 
 export function BarracaCard({ barraquinha, onPress, onDelete }: BarracaCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const { produtos } = useProdutos();
+  const imagemPorProdutoId = useMemo(() => {
+    const map = new Map<number, string | undefined>();
+    produtos.forEach((produto) => map.set(produto.id, produto.imagemUrl));
+    return map;
+  }, [produtos]);
+
+  const resolverImagem = (item: EstoqueItem) =>
+    item.imagemUrl ?? imagemPorProdutoId.get(item.produtoId);
+
   const itensComEstoque = barraquinha.itens.filter((item) => item.quantidade > 0);
   const dataLabel = formatarDiaSemana(barraquinha.atualizadoEm);
   const resumo = `${barraquinha.totalProdutos} produto(s) · ${barraquinha.totalUnidades} un disponíveis`;
@@ -103,7 +127,11 @@ export function BarracaCard({ barraquinha, onPress, onDelete }: BarracaCardProps
             contentContainerStyle={styles.horizontalScrollContent}
           >
             {itensComEstoque.map((item) => (
-              <CollapsedItem key={item.produtoId} item={item} />
+              <CollapsedItem
+                key={item.produtoId}
+                item={item}
+                imagemUrl={resolverImagem(item)}
+              />
             ))}
           </ScrollView>
         ) : null}
@@ -131,16 +159,23 @@ export function BarracaCard({ barraquinha, onPress, onDelete }: BarracaCardProps
               <Ionicons name="create-outline" size={18} color="#F8B125" />
               <Text style={styles.actionButtonText}>Editar</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButtonDanger} onPress={onDelete}>
+            <Pressable
+              style={({ pressed }) => [styles.actionButtonDanger, pressed && styles.actionButtonDangerPressed]}
+              onPress={onDelete}
+            >
               <Ionicons name="trash-outline" size={18} color="#D64545" />
               <Text style={styles.actionButtonDangerText}>Remover</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {itensComEstoque.length > 0 ? (
             <View style={styles.gridContainer}>
               {itensComEstoque.map((item) => (
-                <ExpandedItem key={item.produtoId} item={item} />
+                <ExpandedItem
+                  key={item.produtoId}
+                  item={item}
+                  imagemUrl={resolverImagem(item)}
+                />
               ))}
             </View>
           ) : (
@@ -264,6 +299,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+  },
+  actionButtonDangerPressed: {
+    opacity: 0.65,
   },
   actionButtonDangerText: {
     color: '#D64545',
