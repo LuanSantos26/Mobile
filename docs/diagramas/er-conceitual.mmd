@@ -1,0 +1,21 @@
+erDiagram
+    PERFIL ||--o{ USUARIO : possui
+    EMPRESA ||--o{ USUARIO : emprega
+    EMPRESA ||--o{ PRODUTO : cataloga
+    EMPRESA ||--o{ EVENTO : realiza
+    EMPRESA ||--o{ ENDERECO : possui
+    EMPRESA ||--o{ FORMA_PAGAMENTO : cadastra
+    EMPRESA ||--o{ SOLICITACAO_COMPRA : compra
+    EMPRESA ||--o{ SOLICITACAO_COMPRA : fornece
+    EVENTO ||--o{ BARRACA : contem
+    USUARIO ||--o{ BARRACA : responsavel
+    BARRACA ||--o{ ESTOQUE : mantem
+    PRODUTO ||--o{ ESTOQUE : compoe
+    BARRACA ||--o{ PEDIDO_PDV : registra
+    USUARIO ||--o{ PEDIDO_PDV : opera
+    PEDIDO_PDV ||--o{ ITEM_PEDIDO : contem
+    PRODUTO ||--o{ ITEM_PEDIDO : referencia
+    PEDIDO_PDV ||--o{ PAGAMENTO : recebe
+    USUARIO ||--o{ SOLICITACAO_COMPRA : solicita
+    SOLICITACAO_COMPRA ||--o{ ITEM_SOLICITACAO : contem
+    PRODUTO ||--o{ ITEM_SOLICITACAO : referencia

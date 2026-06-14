@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HamburgerButton } from './HamburgerButton';
 import { HeaderActions } from './HeaderActions';
+import { useHeaderTopPadding } from '../utils/safeArea';
 
 interface ScreenHeaderProps {
   name?: string;
@@ -24,10 +24,10 @@ export function ScreenHeader({
   onCartPress,
   style,
 }: ScreenHeaderProps) {
-  const insets = useSafeAreaInsets();
+  const topPadding = useHeaderTopPadding(8);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 8 }, style]}>
+    <View style={[styles.container, { paddingTop: topPadding }, style]}>
       <View style={styles.topRow}>
         <HamburgerButton />
         <HeaderActions

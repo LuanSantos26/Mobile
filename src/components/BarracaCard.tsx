@@ -5,10 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
 } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { getImageUrl } from '../config/api';
+import { RemoteImage } from './RemoteImage';
 import { Barraquinha, EstoqueItem, formatarQuantidade } from '../services/barracaService';
 import { formatarPreco } from '../services/productService';
 import { formatarDiaSemana } from '../utils/dateFormat';
@@ -21,16 +21,19 @@ interface BarracaCardProps {
 
 const CollapsedItem = ({ item }: { item: EstoqueItem }) => (
   <View style={styles.stockItemCardCollapsed}>
-    {item.imagemUrl ? (
-      <Image source={{ uri: getImageUrl(item.imagemUrl) }} style={styles.thumbnail} />
-    ) : (
-      <MaterialCommunityIcons name="bottle-wine-outline" size={35} color="#F8B125" style={styles.stockIcon} />
-    )}
-    <View style={styles.stockTextContainer}>
-      <Text style={styles.stockItemName} numberOfLines={2}>{item.nome}</Text>
-      <Text style={styles.stockItemPrice}>{formatarPreco(item.precoVenda)}</Text>
-      <Text style={styles.stockItemTotal}>
-        Total :<Text style={styles.stockItemTotalNumber}>{formatarQuantidade(item.quantidade, item.unidade)}</Text>
+    <RemoteImage
+      uri={getImageUrl(item.imagemUrl)}
+      style={styles.thumbnail}
+      fallbackLabel={item.nome}
+      resizeMode="cover"
+    />
+    <Text style={styles.stockItemName} numberOfLines={2}>
+      {item.nome}
+    </Text>
+    <Text style={styles.stockItemPrice}>{formatarPreco(item.precoVenda)}</Text>
+    <View style={styles.qtyBadge}>
+      <Text style={styles.qtyBadgeText}>
+        {formatarQuantidade(item.quantidade, item.unidade)}
       </Text>
     </View>
   </View>
@@ -38,43 +41,48 @@ const CollapsedItem = ({ item }: { item: EstoqueItem }) => (
 
 const ExpandedItem = ({ item }: { item: EstoqueItem }) => (
   <View style={styles.stockItemCardExpanded}>
-    {item.imagemUrl ? (
-      <Image source={{ uri: getImageUrl(item.imagemUrl) }} style={styles.expandedThumbnail} />
-    ) : (
-      <MaterialCommunityIcons name="bottle-wine-outline" size={35} color="#F8B125" style={styles.stockIcon} />
-    )}
-    <View style={styles.stockTextContainer}>
-      <Text style={styles.stockItemName}>{item.nome}</Text>
-      <Text style={styles.stockItemPrice}>{formatarPreco(item.precoVenda)}</Text>
-      <Text style={styles.stockItemTotal}>
-        Total :<Text style={styles.stockItemTotalNumber}>{formatarQuantidade(item.quantidade, item.unidade)}</Text>
+    <RemoteImage
+      uri={getImageUrl(item.imagemUrl)}
+      style={styles.expandedThumbnail}
+      fallbackLabel={item.nome}
+      resizeMode="cover"
+    />
+    <Text style={styles.stockItemNameExpanded} numberOfLines={2}>
+      {item.nome}
+    </Text>
+    <Text style={styles.stockItemPrice}>{formatarPreco(item.precoVenda)}</Text>
+    <Text style={styles.stockItemTotal}>
+      Estoque:{' '}
+      <Text style={styles.stockItemTotalNumber}>
+        {formatarQuantidade(item.quantidade, item.unidade)}
       </Text>
-    </View>
+    </Text>
   </View>
 );
 
 export function BarracaCard({ barraquinha, onPress, onDelete }: BarracaCardProps) {
   const [expanded, setExpanded] = useState(false);
   const itensComEstoque = barraquinha.itens.filter((item) => item.quantidade > 0);
-  const itensExibicao = itensComEstoque.length ? itensComEstoque : barraquinha.itens;
   const dataLabel = formatarDiaSemana(barraquinha.atualizadoEm);
-  const resumo = `${barraquinha.totalProdutos} produto(s) em estoque · ${barraquinha.totalUnidades} un disponíveis`;
+  const resumo = `${barraquinha.totalProdutos} produto(s) · ${barraquinha.totalUnidades} un disponíveis`;
 
   return (
     <View style={styles.mainCard}>
       <TouchableOpacity activeOpacity={0.9} onPress={() => setExpanded(!expanded)}>
         <View style={styles.cardHeader}>
           <View style={styles.cardTitleContainer}>
-            <View style={[styles.dot, { backgroundColor: '#F8B125' }]} />
-            <Text style={styles.cardTitle}>{barraquinha.nome}</Text>
+            <View style={styles.dot} />
+            <Text style={styles.cardTitle} numberOfLines={1}>
+              {barraquinha.nome}
+            </Text>
           </View>
           <View style={styles.datePillCard}>
             <Text style={styles.dateTextCard}>{dataLabel}</Text>
-            <Ionicons name="calendar-outline" size={14} color="#F8B125" style={{ marginLeft: 4 }} />
+            <Ionicons name="calendar-outline" size={13} color="#F8B125" />
           </View>
         </View>
 
-        {expanded && (
+        {expanded ? (
           <View style={styles.tagsContainer}>
             <View style={styles.tag}>
               <Text style={styles.tagText}>{resumo}</Text>
@@ -83,21 +91,37 @@ export function BarracaCard({ barraquinha, onPress, onDelete }: BarracaCardProps
               <Text style={styles.tagText}>Evento: {barraquinha.eventoNome}</Text>
             </View>
           </View>
+        ) : (
+          <Text style={styles.summaryText}>{resumo}</Text>
         )}
 
-        {!expanded && <Text style={styles.summaryText}>{resumo}</Text>}
-
-        {!expanded && itensExibicao.length > 0 ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-            {itensExibicao.map((item) => (
+        {!expanded && itensComEstoque.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.horizontalScroll}
+            contentContainerStyle={styles.horizontalScrollContent}
+          >
+            {itensComEstoque.map((item) => (
               <CollapsedItem key={item.produtoId} item={item} />
             ))}
           </ScrollView>
         ) : null}
 
-        {!expanded && itensExibicao.length === 0 ? (
+        {!expanded && itensComEstoque.length === 0 ? (
           <Text style={styles.emptyItemsText}>Nenhum produto com estoque registrado.</Text>
         ) : null}
+
+        <View style={styles.expandHintRow}>
+          <Text style={styles.expandHintText}>
+            {expanded ? 'Toque para recolher' : 'Toque para expandir'}
+          </Text>
+          <Ionicons
+            name={expanded ? 'chevron-up' : 'chevron-down'}
+            size={16}
+            color="#999"
+          />
+        </View>
       </TouchableOpacity>
 
       {expanded ? (
@@ -113,9 +137,9 @@ export function BarracaCard({ barraquinha, onPress, onDelete }: BarracaCardProps
             </TouchableOpacity>
           </View>
 
-          {itensExibicao.length > 0 ? (
+          {itensComEstoque.length > 0 ? (
             <View style={styles.gridContainer}>
-              {itensExibicao.map((item) => (
+              {itensComEstoque.map((item) => (
                 <ExpandedItem key={item.produtoId} item={item} />
               ))}
             </View>
@@ -132,22 +156,22 @@ const styles = StyleSheet.create({
   mainCard: {
     backgroundColor: '#FFF',
     marginHorizontal: 15,
-    borderRadius: 20,
-    padding: 15,
-    marginBottom: 20,
-    elevation: 4,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 14,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    borderWidth: 1.5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+    borderWidth: 1,
     borderColor: '#EAEAEA',
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   cardTitleContainer: {
     flexDirection: 'row',
@@ -156,30 +180,33 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#F8B125',
     marginRight: 8,
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#F8B125',
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#333',
     flexShrink: 1,
   },
   datePillCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
     borderWidth: 1,
-    borderColor: '#F8B125',
-    paddingHorizontal: 10,
+    borderColor: '#F0E6CC',
+    backgroundColor: '#FFF8E7',
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 15,
+    borderRadius: 12,
   },
   dateTextCard: {
     color: '#F8B125',
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   summaryText: {
     fontSize: 12,
@@ -188,14 +215,14 @@ const styles = StyleSheet.create({
   },
   tagsContainer: {
     flexDirection: 'column',
-    gap: 8,
-    marginBottom: 12,
+    gap: 6,
+    marginBottom: 10,
   },
   tag: {
     backgroundColor: '#FAFAFA',
     borderWidth: 1,
     borderColor: '#EAEAEA',
-    borderRadius: 15,
+    borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
@@ -203,10 +230,25 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#666',
   },
+  expandHintRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    marginTop: 8,
+  },
+  expandHintText: {
+    fontSize: 11,
+    color: '#999',
+  },
   actionsRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 16,
+    marginTop: 4,
     marginBottom: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
   },
   actionButton: {
     flexDirection: 'row',
@@ -216,6 +258,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     color: '#F8B125',
     fontWeight: '600',
+    fontSize: 13,
   },
   actionButtonDanger: {
     flexDirection: 'row',
@@ -225,76 +268,99 @@ const styles = StyleSheet.create({
   actionButtonDangerText: {
     color: '#D64545',
     fontWeight: '600',
+    fontSize: 13,
   },
   horizontalScroll: {
-    flexDirection: 'row',
+    marginHorizontal: -2,
+  },
+  horizontalScrollContent: {
+    paddingVertical: 2,
+    gap: 10,
   },
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: 10,
   },
   stockItemCardCollapsed: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderWidth: 1.5,
-    borderColor: '#F8B125',
-    borderRadius: 25,
+    width: 108,
+    backgroundColor: '#FAFAFA',
+    borderWidth: 1,
+    borderColor: '#EAEAEA',
+    borderRadius: 14,
     padding: 10,
+    alignItems: 'center',
     marginRight: 10,
-    minWidth: 160,
   },
   stockItemCardExpanded: {
     width: '48%',
-    backgroundColor: '#FFF',
-    borderWidth: 1.5,
-    borderColor: '#F8B125',
-    borderRadius: 20,
-    padding: 15,
+    backgroundColor: '#FAFAFA',
+    borderWidth: 1,
+    borderColor: '#EAEAEA',
+    borderRadius: 14,
+    padding: 12,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 4,
   },
   thumbnail: {
-    width: 35,
-    height: 35,
-    borderRadius: 8,
-    marginRight: 8,
-  },
-  expandedThumbnail: {
-    width: 48,
-    height: 48,
-    borderRadius: 10,
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: '#F0F0F0',
     marginBottom: 8,
   },
-  stockIcon: {
-    marginRight: 8,
-  },
-  stockTextContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+  expandedThumbnail: {
+    width: 72,
+    height: 72,
+    borderRadius: 14,
+    backgroundColor: '#F0F0F0',
+    marginBottom: 10,
   },
   stockItemName: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: '#000',
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#333',
     textAlign: 'center',
+    minHeight: 32,
+  },
+  stockItemNameExpanded: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#333',
+    textAlign: 'center',
+    minHeight: 34,
   },
   stockItemPrice: {
     fontSize: 11,
     color: '#F8B125',
     fontWeight: '600',
     textAlign: 'center',
+    marginTop: 2,
+  },
+  qtyBadge: {
+    marginTop: 6,
+    backgroundColor: '#FFF8E7',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: '#F0E6CC',
+  },
+  qtyBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#F8B125',
   },
   stockItemTotal: {
     fontSize: 11,
-    color: '#000',
-    fontWeight: 'bold',
+    color: '#666',
+    marginTop: 4,
+    textAlign: 'center',
   },
   stockItemTotalNumber: {
     color: '#F8B125',
-    fontSize: 14,
+    fontWeight: '700',
   },
   emptyItemsText: {
     color: '#888',

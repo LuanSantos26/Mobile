@@ -5,15 +5,16 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   TextInput,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
-import { ScreenHeader } from '../components/ScreenHeader';
-import { useAuth } from '../context/AuthContext';
+import { BackTitleHeader } from '../components/BackTitleHeader';
+import { HeaderCartBadge } from '../components/HeaderCartBadge';
+import { useAppGoBack } from '../hooks/useAppGoBack';
 import { usePurchaseCart } from '../context/PurchaseCartContext';
 import { RemoteImage } from '../components/RemoteImage';
 import { getImageUrl } from '../config/api';
@@ -21,15 +22,14 @@ import {
   labelTipoFornecedor,
   listarProdutosFornecedor,
 } from '../services/marketplaceService';
-import { formatarPreco, Produto } from '../services/productService';
-import { formatarDiaSemana } from '../utils/dateFormat';
+import { formatarPreco, Produto, labelEstoque, corEstoque, normalizarEstoque } from '../services/productService';
 
 const GOLD = '#F8B125';
 
 export function StoreVitrineScreen() {
   const navigation = useNavigation<any>();
+  const goBack = useAppGoBack('Cart');
   const route = useRoute<any>();
-  const { user } = useAuth();
   const { itemCount } = usePurchaseCart();
 
   const fornecedorId = route.params?.fornecedorId as number;
@@ -84,50 +84,71 @@ export function StoreVitrineScreen() {
       imagemUrl: produto.imagemUrl,
       unidade: produto.unidade,
       precoVenda: produto.precoVenda,
+      estoque: produto.estoque,
       fornecedorDescricao: descricao,
       fornecedorLogoUrl: logoUrl,
       fornecedorTipo: tipo,
     });
   };
 
-  const renderProduct = (produto: Produto, key: string) => (
+  const renderProduct = (produto: Produto, key: string) => {
+    const estoqueQtd = normalizarEstoque(produto.estoque);
+    const esgotado = estoqueQtd <= 0;
+
+    return (
     <TouchableOpacity
       key={key}
-      style={styles.productSmall}
+      style={[styles.productSmall, esgotado && styles.productSmallDisabled]}
       activeOpacity={0.85}
       onPress={() => abrirProduto(produto)}
     >
-      {produto.imagemUrl ? (
-        <RemoteImage
-          uri={getImageUrl(produto.imagemUrl)}
-          style={styles.imageBox}
-          fallbackLabel={produto.nome}
-          resizeMode="cover"
-        />
-      ) : (
-        <View style={styles.imageBox}>
+      <View style={styles.imageBox}>
+        {produto.imagemUrl ? (
+          <RemoteImage
+            uri={getImageUrl(produto.imagemUrl)}
+            style={styles.productImage}
+            fallbackLabel={produto.nome}
+            resizeMode="cover"
+          />
+        ) : (
           <Ionicons name="beer-outline" size={32} color="#999" />
+        )}
+        <View style={[styles.stockPill, { backgroundColor: corEstoque(estoqueQtd) }]}>
+          <Text style={styles.stockPillText} numberOfLines={1}>
+            {esgotado ? 'Esgotado' : `${estoqueQtd} un.`}
+          </Text>
         </View>
-      )}
+      </View>
       <Text style={styles.price}>{formatarPreco(produto.precoVenda)}</Text>
       <Text style={styles.name} numberOfLines={2}>{produto.nome}</Text>
+      <Text style={[styles.stockHint, { color: corEstoque(estoqueQtd) }]}>
+        {labelEstoque(estoqueQtd)}
+      </Text>
     </TouchableOpacity>
   );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
       <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
 
+      <BackTitleHeader
+        title={fornecedorNome}
+        onBack={goBack}
+        rightSlot={
+          itemCount > 0 ? (
+            <HeaderCartBadge
+              itemCount={itemCount}
+              onPress={() => navigation.navigate('Sacola')}
+            />
+          ) : undefined
+        }
+      />
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <ScreenHeader
-          showCartBadge={itemCount > 0}
-          cartItemCount={itemCount}
-          onCartPress={() => navigation.navigate('Sacola')}
-        />
-
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={24} color={GOLD} />
           <TextInput
@@ -153,14 +174,6 @@ export function StoreVitrineScreen() {
               style={styles.bannerImage}
             />
           )}
-          <TouchableOpacity
-            style={styles.backCircle}
-            activeOpacity={0.8}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="chevron-back" size={24} color="#FFF" />
-          </TouchableOpacity>
-
           <TouchableOpacity style={styles.heartBanner} activeOpacity={0.8}>
             <Ionicons name="heart-outline" size={26} color={GOLD} />
           </TouchableOpacity>
@@ -274,18 +287,6 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
 
-  backCircle: {
-    position: 'absolute',
-    top: 8,
-    left: 12,
-    width: 31,
-    height: 31,
-    borderRadius: 16,
-    backgroundColor: GOLD,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
   heartBanner: {
     position: 'absolute',
     top: 7,
@@ -378,6 +379,9 @@ const styles = StyleSheet.create({
     width: '30%',
     marginBottom: 12,
   },
+  productSmallDisabled: {
+    opacity: 0.72,
+  },
 
   imageBox: {
     width: '100%',
@@ -389,6 +393,26 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#EEEEEE',
+    position: 'relative',
+  },
+  productImage: {
+    width: '100%',
+    height: '100%',
+  },
+  stockPill: {
+    position: 'absolute',
+    bottom: 4,
+    left: 4,
+    right: 4,
+    borderRadius: 6,
+    paddingVertical: 2,
+    paddingHorizontal: 4,
+  },
+  stockPillText: {
+    color: '#FFF',
+    fontSize: 9,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   errorText: {
     textAlign: 'center',
@@ -407,6 +431,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#000',
     marginTop: 1,
+  },
+  stockHint: {
+    fontSize: 10,
+    marginTop: 2,
+    fontWeight: '600',
   },
 
   cartButton: {

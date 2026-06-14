@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
@@ -11,13 +10,15 @@ import {
   TextInput,
   Pressable,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
-import { ScreenHeader } from '../components/ScreenHeader';
+import { TabScreenLayout } from '../components/TabScreenLayout';
+import { PagePrimaryButton } from '../components/PagePrimaryButton';
 import { BottomTabBar } from '../components/BottomTabBar';
+import { CartoesCadastradosModal } from '../components/CartoesCadastradosModal';
+import { PixCadastradosModal } from '../components/PixCadastradosModal';
 import { useAuth } from '../context/AuthContext';
+import { TipoCartao } from '../services/cartaoPagamentoService';
 import {
   FormaPagamentoSalva,
   TipoPagamento,
@@ -35,9 +36,24 @@ const TIPOS_DISPONIVEIS: { id: TipoPagamento; label: string }[] = [
   { id: 'dinheiro', label: 'Dinheiro' },
 ];
 
+function isTipoCartao(tipo: TipoPagamento): tipo is TipoCartao {
+  return tipo === 'credito' || tipo === 'debito';
+}
+
+function isFormaComDetalhes(tipo: TipoPagamento): boolean {
+  return tipo === 'pix' || isTipoCartao(tipo);
+}
+
+function hintForma(tipo: TipoPagamento): string {
+  if (tipo === 'pix') return ' · Toque para ver chaves PIX';
+  if (isTipoCartao(tipo)) return ' · Toque para ver cartões';
+  return '';
+}
+
 export function FormasPagamentoScreen() {
   const { user } = useAuth();
   const empresaId = user?.empresa?.id;
+  const cnpjEmpresa = user?.empresa?.cnpj;
 
   const [formas, setFormas] = useState<FormaPagamentoSalva[]>([]);
   const [loading, setLoading] = useState(false);
@@ -47,6 +63,9 @@ export function FormasPagamentoScreen() {
   const [apelido, setApelido] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [modalErro, setModalErro] = useState('');
+  const [cartoesModalVisible, setCartoesModalVisible] = useState(false);
+  const [cartoesModalTipo, setCartoesModalTipo] = useState<TipoCartao>('credito');
+  const [pixModalVisible, setPixModalVisible] = useState(false);
 
   const carregar = useCallback(async () => {
     if (!empresaId) return;
@@ -73,6 +92,29 @@ export function FormasPagamentoScreen() {
     setApelido('');
     setModalErro('');
     setModalVisible(true);
+  };
+
+  const abrirCartoes = (tipo: TipoCartao) => {
+    setCartoesModalTipo(tipo);
+    setCartoesModalVisible(true);
+  };
+
+  const abrirPix = () => {
+    setPixModalVisible(true);
+  };
+
+  const handlePressForma = (forma: FormaPagamentoSalva) => {
+    if (forma.tipo === 'pix') {
+      abrirPix();
+      return;
+    }
+    if (isTipoCartao(forma.tipo)) {
+      abrirCartoes(forma.tipo);
+    }
+  };
+
+  const handleSelecionarTipo = (tipo: TipoPagamento) => {
+    setTipoSelecionado(tipo);
   };
 
   const handleSalvar = async () => {
@@ -129,21 +171,19 @@ export function FormasPagamentoScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-      <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
-
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <ScreenHeader />
-
-        <Text style={styles.pageTitle}>Formas de pagamento</Text>
-        <Text style={styles.pageSubtitle}>
-          Cadastre as formas que deseja usar no checkout da sacola.
-        </Text>
-
-        <TouchableOpacity style={styles.addButton} onPress={abrirModal}>
-          <Ionicons name="add-circle-outline" size={22} color="#FFF" />
-          <Text style={styles.addButtonText}>Adicionar forma</Text>
-        </TouchableOpacity>
+    <>
+      <TabScreenLayout
+        title="Formas de pagamento"
+        subtitle="Cadastre as formas que deseja usar no checkout da sacola."
+        tabBar={<BottomTabBar activeRoute="FormasPagamento" />}
+      >
+        <PagePrimaryButton
+          label="Adicionar forma"
+          icon="add-circle-outline"
+          onPress={abrirModal}
+          compact
+          light
+        />
 
         {loading ? (
           <ActivityIndicator color="#F8B125" style={{ marginTop: 24 }} />
@@ -164,7 +204,13 @@ export function FormasPagamentoScreen() {
           </View>
         ) : (
           formas.map((forma) => (
-            <View key={forma.id} style={styles.formaCard}>
+            <TouchableOpacity
+              key={forma.id}
+              style={styles.formaCard}
+              activeOpacity={isFormaComDetalhes(forma.tipo) ? 0.75 : 1}
+              onPress={() => handlePressForma(forma)}
+              disabled={!isFormaComDetalhes(forma.tipo)}
+            >
               <View style={styles.formaIconWrap}>
                 <Ionicons
                   name={iconeTipoPagamento(forma.tipo)}
@@ -177,17 +223,39 @@ export function FormasPagamentoScreen() {
                 <Text style={styles.formaTipo}>
                   {forma.label || labelTipoPagamento(forma.tipo)}
                   {forma.principal ? ' · Principal' : ''}
+                  {hintForma(forma.tipo)}
                 </Text>
               </View>
-              <TouchableOpacity onPress={() => confirmarRemocao(forma)}>
+              {isFormaComDetalhes(forma.tipo) ? (
+                <Ionicons name="chevron-forward" size={20} color="#999" style={styles.chevron} />
+              ) : null}
+              <TouchableOpacity
+                onPress={() => confirmarRemocao(forma)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
                 <Ionicons name="trash-outline" size={22} color="#D64545" />
               </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           ))
         )}
-      </ScrollView>
+      </TabScreenLayout>
 
-      <BottomTabBar activeRoute="FormasPagamento" />
+      {empresaId ? (
+        <>
+          <CartoesCadastradosModal
+            visible={cartoesModalVisible}
+            empresaId={empresaId}
+            tipo={cartoesModalTipo}
+            onClose={() => setCartoesModalVisible(false)}
+          />
+          <PixCadastradosModal
+            visible={pixModalVisible}
+            empresaId={empresaId}
+            cnpjEmpresa={cnpjEmpresa}
+            onClose={() => setPixModalVisible(false)}
+          />
+        </>
+      ) : null}
 
       <Modal visible={modalVisible} transparent animationType="slide" onRequestClose={() => setModalVisible(false)}>
         <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
@@ -202,7 +270,7 @@ export function FormasPagamentoScreen() {
                   <TouchableOpacity
                     key={tipo.id}
                     style={[styles.tipoChip, selected && styles.tipoChipSelected]}
-                    onPress={() => setTipoSelecionado(tipo.id)}
+                    onPress={() => handleSelecionarTipo(tipo.id)}
                   >
                     <Text style={[styles.tipoChipText, selected && styles.tipoChipTextSelected]}>
                       {tipo.label}
@@ -211,6 +279,28 @@ export function FormasPagamentoScreen() {
                 );
               })}
             </View>
+
+            {tipoSelecionado === 'pix' ? (
+              <TouchableOpacity
+                style={styles.verCartoesBtn}
+                onPress={abrirPix}
+              >
+                <Ionicons name="phone-portrait-outline" size={18} color="#F8B125" />
+                <Text style={styles.verCartoesText}>Ver chaves PIX cadastradas</Text>
+                <Ionicons name="chevron-forward" size={16} color="#F8B125" />
+              </TouchableOpacity>
+            ) : null}
+
+            {isTipoCartao(tipoSelecionado) ? (
+              <TouchableOpacity
+                style={styles.verCartoesBtn}
+                onPress={() => abrirCartoes(tipoSelecionado)}
+              >
+                <Ionicons name="card-outline" size={18} color="#F8B125" />
+                <Text style={styles.verCartoesText}>Ver cartões cadastrados</Text>
+                <Ionicons name="chevron-forward" size={16} color="#F8B125" />
+              </TouchableOpacity>
+            ) : null}
 
             <Text style={styles.modalLabel}>Apelido</Text>
             <TextInput
@@ -242,53 +332,11 @@ export function FormasPagamentoScreen() {
           </Pressable>
         </Pressable>
       </Modal>
-    </SafeAreaView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FAFAFA',
-  },
-  topGradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 200,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 100,
-  },
-  pageTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#333',
-    marginTop: 4,
-  },
-  pageSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 6,
-    marginBottom: 20,
-  },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#F8B125',
-    borderRadius: 10,
-    paddingVertical: 12,
-    marginBottom: 20,
-  },
-  addButtonText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#333',
-  },
   formaCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -323,6 +371,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#777',
     marginTop: 2,
+  },
+  chevron: {
+    marginRight: 8,
   },
   emptyState: {
     alignItems: 'center',
@@ -398,6 +449,24 @@ const styles = StyleSheet.create({
     color: '#F8B125',
   },
   tipoChipTextSelected: {
+    color: '#333',
+  },
+  verCartoesBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    backgroundColor: '#FFF8E7',
+    borderWidth: 1,
+    borderColor: '#F8B125',
+  },
+  verCartoesText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
     color: '#333',
   },
   modalInput: {

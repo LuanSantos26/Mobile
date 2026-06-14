@@ -2,19 +2,30 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
-import { Alert, Platform } from 'react-native';
 import { Produto } from '../services/productService';
+import { useAuth } from './AuthContext';
+import {
+  clearPurchaseCart,
+  loadPurchaseCart,
+  savePurchaseCart,
+  CartItem,
+  cartItemKey,
+} from '../services/purchaseCartStorage';
 
-export interface CartItem {
-  produtoId: number;
-  nome: string;
-  preco: number;
-  unidade: string;
-  quantidade: number;
-  imagemUrl?: string;
+export type { CartItem };
+
+export const TAXA_ENTREGA = 7;
+
+export interface FornecedorGrupo {
+  fornecedorId: number;
+  fornecedorNome: string;
+  itens: CartItem[];
+  subtotal: number;
 }
 
 interface FornecedorRef {
@@ -23,72 +34,120 @@ interface FornecedorRef {
 }
 
 interface PurchaseCartContextValue {
-  fornecedorId: number | null;
-  fornecedorNome: string | null;
   itens: CartItem[];
+  gruposFornecedor: FornecedorGrupo[];
   itemCount: number;
   total: number;
+  taxaEntregaTotal: number;
+  isHydrated: boolean;
   addItem: (
     produto: Produto,
     fornecedor: FornecedorRef,
     quantidade?: number,
   ) => Promise<boolean>;
-  updateQuantity: (produtoId: number, quantidade: number) => void;
-  removeItem: (produtoId: number) => void;
+  updateQuantity: (fornecedorId: number, produtoId: number, quantidade: number) => void;
+  removeItem: (fornecedorId: number, produtoId: number) => void;
   clear: () => void;
 }
 
 const PurchaseCartContext = createContext<PurchaseCartContextValue | null>(null);
 
-function confirmarTrocaFornecedor(fornecedorNome: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    if (Platform.OS === 'web') {
-      const ok = window.confirm(
-        `Seu carrinho tem itens de outro fornecedor. Deseja limpar e comprar de ${fornecedorNome}?`,
-      );
-      resolve(ok);
-      return;
-    }
+function buildGruposFornecedor(itens: CartItem[]): FornecedorGrupo[] {
+  const map = new Map<number, FornecedorGrupo>();
 
-    Alert.alert(
-      'Trocar fornecedor',
-      `Seu carrinho tem itens de outro fornecedor. Deseja limpar e comprar de ${fornecedorNome}?`,
-      [
-        { text: 'Cancelar', style: 'cancel', onPress: () => resolve(false) },
-        { text: 'Limpar e continuar', onPress: () => resolve(true) },
-      ],
-    );
-  });
+  for (const item of itens) {
+    const existing = map.get(item.fornecedorId);
+    if (existing) {
+      existing.itens.push(item);
+      existing.subtotal += item.preco * item.quantidade;
+    } else {
+      map.set(item.fornecedorId, {
+        fornecedorId: item.fornecedorId,
+        fornecedorNome: item.fornecedorNome,
+        itens: [item],
+        subtotal: item.preco * item.quantidade,
+      });
+    }
+  }
+
+  return Array.from(map.values());
 }
 
 export function PurchaseCartProvider({ children }: { children: React.ReactNode }) {
-  const [fornecedorId, setFornecedorId] = useState<number | null>(null);
-  const [fornecedorNome, setFornecedorNome] = useState<string | null>(null);
+  const { user } = useAuth();
+  const empresaId = user?.empresa?.id ?? null;
+
   const [itens, setItens] = useState<CartItem[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const hydratedEmpresaRef = useRef<number | null>(null);
 
   const clear = useCallback(() => {
-    setFornecedorId(null);
-    setFornecedorNome(null);
     setItens([]);
-  }, []);
+    if (empresaId) {
+      void clearPurchaseCart(empresaId);
+    }
+  }, [empresaId]);
+
+  useEffect(() => {
+    if (!empresaId) {
+      setItens([]);
+      setIsHydrated(false);
+      hydratedEmpresaRef.current = null;
+      return;
+    }
+
+    if (hydratedEmpresaRef.current === empresaId) return;
+
+    let cancelled = false;
+    setIsHydrated(false);
+
+    (async () => {
+      const stored = await loadPurchaseCart(empresaId);
+      if (cancelled) return;
+
+      setItens((current) => {
+        if (current.length > 0) return current;
+        return stored?.itens ?? [];
+      });
+
+      hydratedEmpresaRef.current = empresaId;
+      setIsHydrated(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [empresaId]);
+
+  useEffect(() => {
+    if (!empresaId || !isHydrated) return;
+    void savePurchaseCart(empresaId, { itens });
+  }, [empresaId, isHydrated, itens]);
 
   const addItem = useCallback(
     async (produto: Produto, fornecedor: FornecedorRef, quantidade = 1) => {
-      if (fornecedorId !== null && fornecedorId !== fornecedor.id && itens.length > 0) {
-        const confirmado = await confirmarTrocaFornecedor(fornecedor.nome);
-        if (!confirmado) return false;
-        clear();
-      }
-
-      setFornecedorId(fornecedor.id);
-      setFornecedorNome(fornecedor.nome);
+      let added = false;
 
       setItens((prev) => {
-        const existente = prev.find((item) => item.produtoId === produto.id);
+        const existente = prev.find(
+          (item) =>
+            item.fornecedorId === fornecedor.id && item.produtoId === produto.id,
+        );
+
+        const qtdFinal = (existente?.quantidade ?? 0) + quantidade;
+        const estoqueDisponivel =
+          produto.estoque != null ? Math.floor(produto.estoque) : undefined;
+
+        if (estoqueDisponivel != null && qtdFinal > estoqueDisponivel) {
+          return prev;
+        }
+
+        added = true;
+
         if (existente) {
           return prev.map((item) =>
-            item.produtoId === produto.id
-              ? { ...item, quantidade: item.quantidade + quantidade }
+            item.fornecedorId === fornecedor.id && item.produtoId === produto.id
+              ? { ...item, quantidade: qtdFinal }
               : item,
           );
         }
@@ -97,6 +156,8 @@ export function PurchaseCartProvider({ children }: { children: React.ReactNode }
           ...prev,
           {
             produtoId: produto.id,
+            fornecedorId: fornecedor.id,
+            fornecedorNome: fornecedor.nome,
             nome: produto.nome,
             preco: produto.precoVenda,
             unidade: produto.unidade,
@@ -106,34 +167,44 @@ export function PurchaseCartProvider({ children }: { children: React.ReactNode }
         ];
       });
 
-      return true;
+      return added;
     },
-    [clear, fornecedorId, itens.length],
+    [],
   );
 
-  const updateQuantity = useCallback((produtoId: number, quantidade: number) => {
-    if (quantidade <= 0) {
-      setItens((prev) => prev.filter((item) => item.produtoId !== produtoId));
-      return;
-    }
+  const updateQuantity = useCallback(
+    (fornecedorId: number, produtoId: number, quantidade: number) => {
+      if (quantidade <= 0) {
+        setItens((prev) =>
+          prev.filter(
+            (item) =>
+              !(item.fornecedorId === fornecedorId && item.produtoId === produtoId),
+          ),
+        );
+        return;
+      }
 
+      setItens((prev) =>
+        prev.map((item) =>
+          item.fornecedorId === fornecedorId && item.produtoId === produtoId
+            ? { ...item, quantidade }
+            : item,
+        ),
+      );
+    },
+    [],
+  );
+
+  const removeItem = useCallback((fornecedorId: number, produtoId: number) => {
     setItens((prev) =>
-      prev.map((item) =>
-        item.produtoId === produtoId ? { ...item, quantidade } : item,
+      prev.filter(
+        (item) =>
+          !(item.fornecedorId === fornecedorId && item.produtoId === produtoId),
       ),
     );
   }, []);
 
-  const removeItem = useCallback((produtoId: number) => {
-    setItens((prev) => {
-      const next = prev.filter((item) => item.produtoId !== produtoId);
-      if (next.length === 0) {
-        setFornecedorId(null);
-        setFornecedorNome(null);
-      }
-      return next;
-    });
-  }, []);
+  const gruposFornecedor = useMemo(() => buildGruposFornecedor(itens), [itens]);
 
   const itemCount = useMemo(
     () => itens.reduce((acc, item) => acc + item.quantidade, 0),
@@ -145,24 +216,31 @@ export function PurchaseCartProvider({ children }: { children: React.ReactNode }
     [itens],
   );
 
+  const taxaEntregaTotal = useMemo(
+    () => TAXA_ENTREGA * gruposFornecedor.length,
+    [gruposFornecedor.length],
+  );
+
   const value = useMemo(
     () => ({
-      fornecedorId,
-      fornecedorNome,
       itens,
+      gruposFornecedor,
       itemCount,
       total,
+      taxaEntregaTotal,
+      isHydrated,
       addItem,
       updateQuantity,
       removeItem,
       clear,
     }),
     [
-      fornecedorId,
-      fornecedorNome,
       itens,
+      gruposFornecedor,
       itemCount,
       total,
+      taxaEntregaTotal,
+      isHydrated,
       addItem,
       updateQuantity,
       removeItem,
@@ -182,3 +260,5 @@ export function usePurchaseCart() {
   }
   return context;
 }
+
+export { cartItemKey };

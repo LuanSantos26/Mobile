@@ -13,7 +13,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Background } from '../components/Background';
 import { CustomInput } from '../components/CustomInput';
 import { CustomButton } from '../components/CustomButton';
-import { WelcomeHeader } from '../components/welcomeHeader';
+import { WelcomeHeader, WelcomeBackButton } from '../components/welcomeHeader';
 import { cadastrarConta } from '../services/authService';
 import { LAYOUT } from '../theme/theme';
 import { RootStackParamList } from '../../App';
@@ -85,18 +85,20 @@ export function RegisterScreen() {
   };
 
   return (
-    <Background>
+    <Background edges={['left', 'right', 'bottom']}>
+      <WelcomeBackButton />
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
           ref={scrollRef}
-          showsVerticalScrollIndicator={false}          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
-            <WelcomeHeader />
+            <WelcomeHeader hideReturnButton />
           </View>
 
           <View style={styles.content}>

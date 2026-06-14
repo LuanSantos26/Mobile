@@ -1,0 +1,17 @@
+flowchart TD
+    start([Inicio do app]) --> auth{Sessao valida?}
+    auth -->|Nao| welcome[Welcome]
+    welcome --> login[Login]
+    welcome --> register[Register]
+    login --> home[Home]
+    register --> welcome
+    auth -->|Sim| home
+    home --> cart[Cart Marketplace]
+    cart --> vitrine[StoreVitrine]
+    vitrine --> detail[ProductDetail]
+    detail --> sacola[Sacola Checkout]
+    sacola --> pedido[PedidoAcompanhamento]
+    home --> produtos[AddItem Produtos]
+    home --> barracas[Barraquinhas]
+    home --> pagamentos[FormasPagamento]
+    home --> config[Configuracoes]

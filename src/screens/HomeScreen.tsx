@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -15,11 +15,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { CalendarDatePill } from '../components/CalendarDatePill';
-import { BottomTabBar } from '../components/BottomTabBar';
+import { BottomTabBar, useTabBarScrollPadding } from '../components/BottomTabBar';
 import { ProductStockCard } from '../components/ProductCard';
+import { FinancialDonutChart } from '../components/FinancialDonutChart';
 import { useAuth } from '../context/AuthContext';
 import { useProdutos } from '../context/ProductsContext';
 import { formatarPreco } from '../services/productService';
+import { buscarResumoFinanceiro, extrairTotaisFinanceiros, FinanceiroResumo } from '../services/financeiroService';
 
 const { width } = Dimensions.get('window');
 
@@ -27,21 +29,48 @@ export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { produtos, loading, refresh } = useProdutos();
+  const empresaId = user?.empresa?.id;
+
+  const [resumoFinanceiro, setResumoFinanceiro] = useState<FinanceiroResumo | null>(null);
+  const [loadingFinanceiro, setLoadingFinanceiro] = useState(false);
+
+  const carregarFinanceiro = useCallback(async () => {
+    if (!empresaId) return;
+    setLoadingFinanceiro(true);
+    try {
+      const data = await buscarResumoFinanceiro(empresaId);
+      setResumoFinanceiro(data);
+    } catch {
+      setResumoFinanceiro(null);
+    } finally {
+      setLoadingFinanceiro(false);
+    }
+  }, [empresaId]);
 
   useFocusEffect(
     useCallback(() => {
       refresh();
-    }, [refresh]),
+      carregarFinanceiro();
+    }, [refresh, carregarFinanceiro]),
   );
 
   const totalCatalogo = produtos.length;
   const valorCatalogo = produtos.reduce((acc, item) => acc + item.precoVenda, 0);
 
+  const { totalCompras, totalVendas, lucroTotal, margemPercentual } = useMemo(
+    () => extrairTotaisFinanceiros(resumoFinanceiro),
+    [resumoFinanceiro],
+  );
+  const scrollBottomPadding = useTabBarScrollPadding();
+
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollBottomPadding }]}
+        showsVerticalScrollIndicator={false}
+      >
         
         {/* CABEÇALHO */}
         <ScreenHeader
@@ -51,16 +80,20 @@ export default function HomeScreen() {
 
         {/* BARRA DE PESQUISA */}
         <View style={styles.searchContainer}>
-          <Ionicons name="search" size={24} color="#F8B125" />
-          <TextInput style={styles.searchInput} placeholder="" />
+          <Ionicons name="search" size={18} color="#F8B125" />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Pesquisar..."
+            placeholderTextColor="#999"
+          />
         </View>
 
-        {/* ÚLTIMO STOCK */}
+        {/* ÚLTIMO ESTOQUE */}
         <View style={styles.mainCard}>
           <View style={styles.cardHeader}>
             <View style={styles.cardTitleContainer}>
               <View style={[styles.dot, { backgroundColor: 'red' }]} />
-              <Text style={styles.cardTitle}>Ultimo Stock</Text>
+              <Text style={styles.cardTitle}>Último estoque</Text>
             </View>
             <CalendarDatePill compact />
           </View>
@@ -87,12 +120,12 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* STOCK ONLINE */}
+        {/* ESTOQUE ONLINE */}
         <View style={styles.mainCard}>
           <View style={styles.cardHeader}>
             <View style={styles.cardTitleContainer}>
               <View style={[styles.dot, { backgroundColor: '#32CD32' }]} />
-              <Text style={styles.cardTitle}>Stock Online</Text>
+              <Text style={styles.cardTitle}>Estoque Online</Text>
             </View>
             <CalendarDatePill compact />
           </View>
@@ -123,24 +156,28 @@ export default function HomeScreen() {
 
         {/* RESUMO FINANCEIRO */}
         <View style={styles.financialContainer}>
-          <View style={[styles.financialBox, { borderLeftColor: 'red' }]}>
-            <Text style={styles.financialLabel}>total gasto</Text>
-            <Text style={styles.financialValue}>R$ 600,00</Text>
+          <View style={[styles.financialBox, { borderLeftColor: '#D64545' }]}>
+            <Text style={styles.financialLabel}>Total gasto</Text>
+            <Text style={styles.financialValue}>
+              {loadingFinanceiro ? '...' : formatarPreco(totalCompras)}
+            </Text>
           </View>
           <View style={[styles.financialBox, { borderLeftColor: '#32CD32' }]}>
-            <Text style={styles.financialLabel}>total de lucro</Text>
-            <Text style={styles.financialValue}>R$ 900,00</Text>
+            <Text style={styles.financialLabel}>Total de lucro</Text>
+            <Text style={styles.financialValue}>
+              {loadingFinanceiro ? '...' : formatarPreco(lucroTotal)}
+            </Text>
           </View>
         </View>
 
-        {/* GRÁFICO */}
-        <View style={styles.chartContainer}>
-          <View style={[styles.circleBase, { borderColor: '#66FF66' }]} />
-          <View style={[styles.circleBase, styles.circleRed]} />
-          <View style={styles.chartTextContainer}>
-            <Text style={styles.chartTextGreen}>R$ 900,00 ^</Text>
-            <Text style={styles.chartTextRed}>R$ 600,00 v</Text>
-          </View>
+        <View style={styles.chartSection}>
+          <FinancialDonutChart
+            totalCompras={totalCompras}
+            totalVendas={totalVendas}
+            lucroTotal={lucroTotal}
+            margemPercentual={margemPercentual}
+            loading={loadingFinanceiro}
+          />
         </View>
 
       </ScrollView>
@@ -165,8 +202,7 @@ const styles = StyleSheet.create({
     right: 0, 
     height: 350,
   },
-  scrollContent: { 
-    paddingBottom: 120,
+  scrollContent: {
   },
   emptyProductsText: {
     color: '#666',
@@ -185,17 +221,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF', 
     marginHorizontal: 15, 
     marginTop: 20, 
-    marginBottom: 25, 
-    paddingHorizontal: 15, 
-    height: 50, 
-    borderRadius: 25, 
+    marginBottom: 20, 
+    paddingHorizontal: 12, 
+    height: 40, 
+    borderRadius: 20, 
     borderWidth: 1, 
-    borderColor: '#F8B125',
+    borderColor: '#F0E6CC',
   },
   searchInput: { 
     flex: 1, 
-    marginLeft: 10, 
-    fontSize: 16,
+    marginLeft: 8, 
+    fontSize: 14,
+    color: '#333',
+    paddingVertical: 0,
   },
 
   // ==========================================
@@ -331,42 +369,11 @@ const styles = StyleSheet.create({
   financialValue: { 
     fontSize: 16, 
     fontWeight: 'bold', 
-    color: '#000', 
+    color: '#333', 
     marginTop: 4,
   },
-  chartContainer: { 
-    width: 180, 
-    height: 180, 
-    alignSelf: 'center', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    marginTop: 30,
-  },
-  circleBase: { 
-    width: 180, 
-    height: 180, 
-    borderRadius: 90, 
-    borderWidth: 25, 
-    position: 'absolute',
-  },
-  circleRed: { 
-    borderColor: 'transparent', 
-    borderTopColor: '#FF6666', 
-    transform: [{ rotate: '45deg' }],
-  },
-  chartTextContainer: { 
-    alignItems: 'center',
-  },
-  chartTextGreen: { 
-    color: '#66FF66', 
-    fontWeight: 'bold', 
-    fontSize: 16,
-  },
-  chartTextRed: { 
-    color: '#FF6666', 
-    fontWeight: 'bold', 
-    fontSize: 16, 
-    marginTop: 5,
+  chartSection: {
+    paddingHorizontal: 15,
   },
 
   // ==========================================

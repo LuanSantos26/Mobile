@@ -1,0 +1,21 @@
+erDiagram
+    perfis ||--o{ usuarios : perfil_id
+    empresas ||--o{ usuarios : empresa_id
+    empresas ||--o{ produtos : empresa_id
+    empresas ||--o{ eventos : empresa_id
+    empresas ||--o{ enderecos_entrega : empresa_id
+    empresas ||--o{ formas_pagamento_salvas : empresa_id
+    empresas ||--o{ solicitacoes_compra : empresa_compradora_id
+    empresas ||--o{ solicitacoes_compra : empresa_fornecedora_id
+    eventos ||--o{ barracas : evento_id
+    usuarios ||--o{ barracas : responsavel_id
+    barracas ||--o{ estoque_barraca : barraca_id
+    produtos ||--o{ estoque_barraca : produto_id
+    barracas ||--o{ pedido : barraca_id
+    usuarios ||--o{ pedido : operador_id
+    pedido ||--o{ itens_pedido : pedido_id
+    produtos ||--o{ itens_pedido : produto_id
+    pedido ||--o{ pagamentos : pedido_id
+    usuarios ||--o{ solicitacoes_compra : usuario_solicitante_id
+    solicitacoes_compra ||--o{ itens_solicitacao_compra : solicitacao_id
+    produtos ||--o{ itens_solicitacao_compra : produto_id

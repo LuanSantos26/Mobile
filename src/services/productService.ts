@@ -23,6 +23,7 @@ export interface Produto {
   descricao?: string;
   imagemUrl?: string;
   ativo: number;
+  estoque?: number;
 }
 
 export interface ProdutoPayload {
@@ -140,4 +141,23 @@ export function formatarPreco(valor: number): string {
     style: 'currency',
     currency: 'BRL',
   });
+}
+
+export function normalizarEstoque(estoque?: number): number {
+  if (estoque == null || Number.isNaN(estoque)) return 0;
+  return Math.max(0, Math.floor(estoque));
+}
+
+export function labelEstoque(estoque?: number): string {
+  const qtd = normalizarEstoque(estoque);
+  if (qtd <= 0) return 'Esgotado';
+  if (qtd <= 20) return `Últimas ${qtd} unidades`;
+  return `${qtd} unidades em estoque`;
+}
+
+export function corEstoque(estoque?: number): string {
+  const qtd = normalizarEstoque(estoque);
+  if (qtd <= 0) return '#C62828';
+  if (qtd <= 20) return '#E65100';
+  return '#2E7D32';
 }

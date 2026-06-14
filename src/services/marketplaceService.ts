@@ -43,6 +43,8 @@ export interface SolicitacaoCompra {
   taxaEntrega?: number;
   criadoEm: string;
   itens: ItemSolicitacao[];
+  previsaoEntregaMinutos?: number;
+  previsaoEntregaLabel?: string;
 }
 
 export type MetodoPagamento = 'pix' | 'credito' | 'debito' | 'dinheiro';
@@ -86,6 +88,7 @@ function normalizeProduto(data: Produto): Produto {
   return {
     ...data,
     precoVenda: Number(data.precoVenda),
+    estoque: data.estoque != null ? Number(data.estoque) : undefined,
   };
 }
 
@@ -94,6 +97,8 @@ function normalizeSolicitacao(data: SolicitacaoCompra): SolicitacaoCompra {
     ...data,
     valorTotal: Number(data.valorTotal),
     taxaEntrega: data.taxaEntrega != null ? Number(data.taxaEntrega) : undefined,
+    previsaoEntregaMinutos:
+      data.previsaoEntregaMinutos != null ? Number(data.previsaoEntregaMinutos) : undefined,
     itens: (data.itens ?? []).map((item) => ({
       ...item,
       quantidade: Number(item.quantidade),
@@ -101,6 +106,30 @@ function normalizeSolicitacao(data: SolicitacaoCompra): SolicitacaoCompra {
       subtotal: Number(item.subtotal),
     })),
   };
+}
+
+export function obterPrevisaoEntrega(pedido: SolicitacaoCompra): string {
+  if (pedido.previsaoEntregaLabel) return pedido.previsaoEntregaLabel;
+
+  switch (pedido.status) {
+    case 'entregue':
+      return 'Pedido entregue';
+    case 'em_rota':
+      return 'Chegada em até 15 min';
+    default:
+      return 'Previsão de entrega: 40–55 min';
+  }
+}
+
+export function calcularProgressoPedido(pedido: SolicitacaoCompra): number {
+  const etapas = pedido.etapas ?? [];
+  if (etapas.length === 0) {
+    if (pedido.status === 'entregue') return 1;
+    if (pedido.status === 'em_rota') return 0.75;
+    return 0.35;
+  }
+  const concluidas = etapas.filter((e) => e.concluida).length;
+  return Math.min(1, concluidas / etapas.length);
 }
 
 export async function listarFornecedores(empresaCompradoraId?: number): Promise<Fornecedor[]> {

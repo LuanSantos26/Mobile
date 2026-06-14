@@ -14,7 +14,7 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { ScreenHeader } from '../components/ScreenHeader';
-import { BottomTabBar } from '../components/BottomTabBar';
+import { BottomTabBar, useTabBarScrollPadding } from '../components/BottomTabBar';
 import { ProductFormModal } from '../components/ProductFormModal';
 import { useAuth } from '../context/AuthContext';
 import { useProdutos } from '../context/ProductsContext';
@@ -29,6 +29,7 @@ export function ManageProductsScreen() {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [produtoEmEdicao, setProdutoEmEdicao] = useState<Produto | null>(null);
+  const listBottomPadding = useTabBarScrollPadding();
 
   useFocusEffect(
     useCallback(() => {
@@ -101,7 +102,7 @@ export function ManageProductsScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
 
       <ScreenHeader />
@@ -139,7 +140,7 @@ export function ManageProductsScreen() {
             keyExtractor={(item) => String(item.id)}
             renderItem={renderItem}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={[styles.listContent, { paddingBottom: listBottomPadding }]}
           />
         )}
       </View>
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFF',
   },
   pageSubtitle: {
     fontSize: 14,
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   loader: { marginTop: 40 },
-  listContent: { paddingBottom: 120 },
+  listContent: {},
   productCard: {
     flexDirection: 'row',
     backgroundColor: '#FFF',

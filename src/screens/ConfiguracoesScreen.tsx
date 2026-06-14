@@ -11,10 +11,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
-import { ScreenHeader } from '../components/ScreenHeader';
+import { BackTitleHeader } from '../components/BackTitleHeader';
+import { useAppGoBack } from '../hooks/useAppGoBack';
 import { atualizarEmpresa, atualizarUsuario } from '../services/authService';
 
 export function ConfiguracoesScreen() {
+  const goBack = useAppGoBack('Home');
   const { user, updateUser } = useAuth();
 
   const [nome, setNome] = useState('');
@@ -103,16 +105,17 @@ export function ConfiguracoesScreen() {
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
       <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
 
+      <BackTitleHeader
+        title="Configurações da conta"
+        onBack={goBack}
+      />
+
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <ScreenHeader />
-
-        <Text style={styles.pageTitle}>Configurações</Text>
-
         <Text style={styles.sectionTitle}>Dados pessoais</Text>
         <View style={styles.card}>
           <Text style={styles.label}>Nome</Text>
@@ -220,12 +223,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     paddingBottom: 32,
-  },
-  pageTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 16,
