@@ -70,29 +70,36 @@ function LogoAvatar({
 function CoverImage({
   capaUrl,
   nome,
-  style,
+  width,
+  height,
 }: {
   capaUrl?: string;
   nome: string;
-  style?: object;
+  width: number;
+  height: number;
 }) {
   const uri = getImageUrl(capaUrl);
+  const frameStyle = { width, height };
+
   if (uri) {
     return (
-      <RemoteImage
-        uri={uri}
-        style={[styles.coverFill, style]}
-        fallbackLabel={nome}
-        resizeMode="cover"
-      />
+      <View style={[styles.coverFrame, frameStyle]}>
+        <RemoteImage
+          uri={uri}
+          style={frameStyle}
+          fallbackLabel={nome}
+          resizeMode="cover"
+        />
+      </View>
     );
   }
+
   return (
     <LinearGradient
       colors={['#F8B125', '#FFD76A']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={[styles.coverFill, style]}
+      style={[styles.coverFrame, frameStyle]}
     />
   );
 }
@@ -108,11 +115,16 @@ const FeaturedBanner = ({ fornecedor, onPress }: FeaturedBannerProps) => (
     activeOpacity={0.88}
     onPress={onPress}
   >
-    <CoverImage capaUrl={fornecedor.capaUrl} nome={fornecedor.nome} />
+    <CoverImage
+      capaUrl={fornecedor.capaUrl}
+      nome={fornecedor.nome}
+      width={FEATURED_WIDTH}
+      height={FEATURED_HEIGHT}
+    />
     <LinearGradient
       colors={['rgba(0,0,0,0.05)', 'rgba(0,0,0,0.45)', 'rgba(0,0,0,0.78)']}
       locations={[0.35, 0.72, 1]}
-      style={StyleSheet.absoluteFillObject}
+      style={styles.featuredOverlay}
     />
     <View style={styles.featuredFooter}>
       <LogoAvatar
@@ -149,7 +161,12 @@ const PartnerCard = ({ fornecedor, onPress }: PartnerCardProps) => (
     onPress={onPress}
   >
     <View style={styles.partnerCoverWrap}>
-      <CoverImage capaUrl={fornecedor.capaUrl} nome={fornecedor.nome} />
+      <CoverImage
+        capaUrl={fornecedor.capaUrl}
+        nome={fornecedor.nome}
+        width={PARTNER_CARD_WIDTH}
+        height={PARTNER_COVER_HEIGHT}
+      />
       <LinearGradient
         colors={['transparent', 'rgba(0,0,0,0.35)']}
         style={styles.partnerCoverGradient}
@@ -196,7 +213,12 @@ interface StoreCardProps {
 const StoreCard = ({ fornecedor, onPress }: StoreCardProps) => (
   <TouchableOpacity style={styles.storeCard} activeOpacity={0.8} onPress={onPress}>
     <View style={styles.storeCoverWrap}>
-      <CoverImage capaUrl={fornecedor.capaUrl} nome={fornecedor.nome} />
+      <CoverImage
+        capaUrl={fornecedor.capaUrl}
+        nome={fornecedor.nome}
+        width={width - H_PADDING * 2}
+        height={96}
+      />
     </View>
     <View style={styles.storeContent}>
       <View style={styles.storeHeaderRow}>
@@ -343,6 +365,7 @@ export function CartScreen() {
               snapToInterval={FEATURED_WIDTH + CARD_GAP}
               snapToAlignment="start"
               showsHorizontalScrollIndicator={false}
+              style={styles.featuredScroll}
               contentContainerStyle={styles.featuredListPadding}
             >
               {fornecedoresFiltrados.map((fornecedor, index) => (
@@ -479,19 +502,23 @@ const styles = StyleSheet.create({
     padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#A5D6A7',
   },
   successBannerText: { color: '#2E7D32', flex: 1, marginRight: 8 },
-  coverFill: {
-    ...StyleSheet.absoluteFillObject,
-    width: '100%',
-    height: '100%',
+  coverFrame: {
+    overflow: 'hidden',
+    backgroundColor: '#E8E8E8',
   },
   featuredSection: {
     marginBottom: 22,
   },
+  featuredScroll: {
+    height: FEATURED_HEIGHT,
+  },
   featuredListPadding: {
     paddingHorizontal: H_PADDING,
+    alignItems: 'flex-start',
   },
   featuredItemWrap: {
     width: FEATURED_WIDTH,
+    height: FEATURED_HEIGHT,
     marginRight: CARD_GAP,
   },
   featuredItemWrapLast: {
@@ -508,6 +535,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.14,
     shadowRadius: 6,
+  },
+  featuredOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    pointerEvents: 'none',
   },
   featuredFooter: {
     position: 'absolute',
@@ -572,7 +603,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   partnerCoverWrap: {
-    width: '100%',
+    width: PARTNER_CARD_WIDTH,
     height: PARTNER_COVER_HEIGHT,
     backgroundColor: '#E8E8E8',
     overflow: 'hidden',
@@ -651,6 +682,7 @@ const styles = StyleSheet.create({
     height: 96,
     backgroundColor: '#E8E8E8',
     overflow: 'hidden',
+    alignItems: 'center',
   },
   storeContent: {
     padding: 14,
