@@ -109,6 +109,7 @@ Diagramas: Na pasta docs/diagramas/ estão disponíveis mapas mentais e modelos 
 
 Feito com ☕ e muito código.
 
+---
 
 ## 👨‍💻 Equipe
 
@@ -118,6 +119,7 @@ Feito com ☕ e muito código.
 * Leticia Viviane Pereira da Silva
 
 ---
+
 
 ## 📄 Licença
 
