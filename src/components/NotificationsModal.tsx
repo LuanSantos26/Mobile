@@ -85,6 +85,17 @@ export function NotificationsModal({
     onClose();
 
     if (notificacao.tipo === 'compra') {
+      const entregaConcluida =
+        notificacao.titulo === 'Entrega concluída' ||
+        /entregue com sucesso/i.test(notificacao.mensagem ?? '');
+
+      if (entregaConcluida && notificacao.solicitacaoId) {
+        navigation.navigate('PedidoAcompanhamento', {
+          pedidoId: notificacao.solicitacaoId,
+        });
+        return;
+      }
+
       navigation.navigate('Cart');
       return;
     }

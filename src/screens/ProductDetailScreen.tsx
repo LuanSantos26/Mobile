@@ -159,23 +159,23 @@ export function ProductDetailScreen() {
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
       <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
 
-      <BackTitleHeader
-        title="Detalhes do produto"
-        onBack={goBack}
-        rightSlot={
-          itemCount > 0 ? (
-            <HeaderCartBadge
-              itemCount={itemCount}
-              onPress={() => navigation.navigate('Sacola')}
-            />
-          ) : undefined
-        }
-      />
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
+        <BackTitleHeader
+          title="Detalhes do produto"
+          onBack={goBack}
+          rightSlot={
+            itemCount > 0 ? (
+              <HeaderCartBadge
+                itemCount={itemCount}
+                onPress={() => navigation.navigate('Sacola')}
+              />
+            ) : undefined
+          }
+        />
+
         <View style={styles.heroCard}>
           <View style={styles.imageWrap}>
             {imagemUrl ? (
