@@ -53,7 +53,8 @@ O código-fonte segue uma arquitetura baseada em features e separação de respo
  ┃ ┗ 📂 utils/             # Funções auxiliares (Máscaras, formatação de datas, utilitários Pix)
  ┣ 📜 App.tsx              # Componente raiz da aplicação
  ┣ 📜 app.json             # Configuração do Expo (nome, ícones, splash)
- ┗ 📜 package.json         # Dependências do projeto e scripts
+ ┗ 📜 package.json         # Dependências do projeto e scripts.
+
 ⚙️ Pré-requisitos
 Antes de começar, você precisará ter as seguintes ferramentas instaladas em sua máquina:
 
@@ -79,6 +80,7 @@ Bash
 npm install
 3. Configure as Variáveis de Ambiente / API
 Navegue até o arquivo de configuração da API (src/config/api.ts ou similar) e certifique-se de que o IP base aponte para o seu servidor backend local.
+
 Dica: Se estiver rodando em um dispositivo físico, use o IP da sua máquina na rede Wi-Fi (ex: http://192.168.0.xxx:8080) e não localhost.
 
 4. Inicie o servidor do Expo
@@ -107,20 +109,14 @@ Gerenciamento de Imagens: O app possui o utilitário imageFallback.ts e RemoteIm
 
 Diagramas: Na pasta docs/diagramas/ estão disponíveis mapas mentais e modelos de entidade-relacionamento lógicos e conceituais do ecossistema.
 
-Feito com ☕ e muito código.
+👨‍💻 Equipe
+Luan Feitosa Santos
 
----
+José Ítalo S. C. Dantas
 
-## 👨‍💻 Equipe
+Marcelo Vitor Viana da Silva
 
-* Luan Feitosa Santos
-* José Ítalo S. C. Dantas
-* Marcelo Vitor Viana da Silva
-* Leticia Viviane Pereira da Silva
+Leticia Viviane Pereira da Silva
 
----
-
-
-## 📄 Licença
-
+📄 Licença
 Este projeto é destinado a fins acadêmicos e de aprendizado, podendo ser expandido para utilização comercial mediante adequações futuras.
