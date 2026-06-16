@@ -108,3 +108,17 @@ Gerenciamento de Imagens: O app possui o utilitário imageFallback.ts e RemoteIm
 Diagramas: Na pasta docs/diagramas/ estão disponíveis mapas mentais e modelos de entidade-relacionamento lógicos e conceituais do ecossistema.
 
 Feito com ☕ e muito código.
+
+
+## 👨‍💻 Equipe
+
+* Luan Feitosa Santos
+* José Ítalo S. C. Dantas
+* Marcelo Vitor Viana da Silva
+* Leticia Viviane Pereira da Silva
+
+---
+
+## 📄 Licença
+
+Este projeto é destinado a fins acadêmicos e de aprendizado, podendo ser expandido para utilização comercial mediante adequações futuras.
