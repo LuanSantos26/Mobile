@@ -83,14 +83,6 @@ export function HamburgerButton() {
                     <Text style={styles.menuOptionText}>Barraquinhas</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity 
-                    style={styles.menuOption} 
-                    onPress={() => handleNavigate('FormasPagamento')}
-                  >
-                    <Feather name="credit-card" size={20} color="#F8B125" />
-                    <Text style={styles.menuOptionText}>Formas de pagamento</Text>
-                  </TouchableOpacity>
-
                   <TouchableOpacity
                     style={styles.menuOption}
                     onPress={() => handleNavigate('Enderecos')}

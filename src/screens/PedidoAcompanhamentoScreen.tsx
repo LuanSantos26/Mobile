@@ -27,6 +27,9 @@ import {
 import { formatarPreco } from '../services/productService';
 import { formatarDataCurta } from '../utils/dateFormat';
 
+const GOLD = '#F8B125';
+const SUCCESS = '#2E7D32';
+const SUCCESS_LIGHT = '#E8F5E9';
 const POLL_INTERVAL_MS = 5000;
 
 const ETAPAS_PADRAO: EtapaPedido[] = [
@@ -39,13 +42,13 @@ const ETAPAS_PADRAO: EtapaPedido[] = [
 function iconeEtapa(codigo: string): keyof typeof Ionicons.glyphMap {
   switch (codigo) {
     case 'pedido_efetuado':
-      return 'checkmark-circle';
+      return 'receipt-outline';
     case 'aguardando_liberacao':
-      return 'restaurant-outline';
+      return 'cube-outline';
     case 'em_rota':
       return 'bicycle-outline';
     case 'entregue':
-      return 'home-outline';
+      return 'checkmark-done-outline';
     default:
       return 'ellipse-outline';
   }
@@ -58,7 +61,7 @@ function hintEtapa(codigo: string): string {
     case 'em_rota':
       return 'O entregador está a caminho do seu endereço.';
     case 'entregue':
-      return 'Seu pedido foi entregue com sucesso.';
+      return 'Produtos creditados ao seu estoque.';
     default:
       return '';
   }
@@ -80,41 +83,79 @@ function TimelineStep({ etapa, isLast }: TimelineStepProps) {
           style={[
             styles.stepCircle,
             concluida && styles.stepCircleDone,
-            ativa && styles.stepCircleActive,
+            ativa && !concluida && styles.stepCircleActive,
           ]}
         >
           {concluida ? (
-            <Ionicons name="checkmark" size={18} color="#FFF" />
+            <Ionicons name="checkmark" size={16} color="#FFF" />
           ) : (
             <Ionicons
               name={iconeEtapa(etapa.codigo)}
-              size={18}
-              color={ativa ? '#F8B125' : '#BDBDBD'}
+              size={16}
+              color={ativa ? GOLD : '#BDBDBD'}
             />
           )}
         </View>
-        {!isLast && <View style={[styles.stepLine, concluida && styles.stepLineDone]} />}
+        {!isLast ? (
+          <View style={[styles.stepLine, concluida && styles.stepLineDone]} />
+        ) : null}
       </View>
-      <View style={styles.stepContent}>
+      <View style={[styles.stepContent, isLast && styles.stepContentLast]}>
         <Text
           style={[
             styles.stepLabel,
             concluida && styles.stepLabelDone,
-            ativa && styles.stepLabelActive,
+            ativa && !concluida && styles.stepLabelActive,
           ]}
         >
           {etapa.label}
         </Text>
-        {ativa ? <Text style={styles.stepHint}>{hintEtapa(etapa.codigo)}</Text> : null}
+        {ativa && !concluida ? (
+          <Text style={styles.stepHint}>{hintEtapa(etapa.codigo)}</Text>
+        ) : null}
       </View>
     </View>
   );
 }
 
-function ProgressBar({ progress }: { progress: number }) {
+function ProgressBar({ progress, concluido }: { progress: number; concluido?: boolean }) {
+  const pct = concluido ? 100 : Math.round(progress * 100);
   return (
-    <View style={styles.progressTrack}>
-      <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
+    <View style={styles.progressWrap}>
+      <View style={styles.progressTrack}>
+        <View
+          style={[
+            styles.progressFill,
+            concluido && styles.progressFillDone,
+            { width: `${pct}%` },
+          ]}
+        />
+      </View>
+      <Text style={[styles.progressLabel, concluido && styles.progressLabelDone]}>
+        {concluido ? '100% concluído' : `${pct}% do percurso`}
+      </Text>
+    </View>
+  );
+}
+
+function InfoRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: string;
+}) {
+  return (
+    <View style={styles.infoRow}>
+      <View style={styles.infoIconWrap}>
+        <Ionicons name={icon} size={18} color={GOLD} />
+      </View>
+      <View style={styles.infoTextWrap}>
+        <Text style={styles.infoLabel}>{label}</Text>
+        <Text style={styles.infoText}>{value}</Text>
+      </View>
     </View>
   );
 }
@@ -176,23 +217,39 @@ export function PedidoAcompanhamentoScreen() {
   }, [carregarPedido, pedidoAtivoId, user?.empresa?.id]);
 
   const etapas = pedido?.etapas?.length ? pedido.etapas : ETAPAS_PADRAO;
-  const statusLabel = pedido?.statusLabel ?? labelStatusPedido(pedido?.status ?? 'aguardando_liberacao');
   const previsaoLabel = pedido ? obterPrevisaoEntrega(pedido) : '';
   const progresso = pedido ? calcularProgressoPedido(pedido) : 0.25;
   const entregue = pedido?.status === 'entregue';
+  const emRota = pedido?.status === 'em_rota';
+
+  const headerTitle = entregue ? 'Compra realizada' : 'Acompanhar pedido';
 
   const tituloHero = useMemo(() => {
     if (!pedido) return 'Acompanhar pedido';
-    if (entregue) return 'Pedido entregue!';
-    if (pedido.status === 'em_rota') return 'Seu pedido está a caminho';
-    return 'Pedido em preparo';
+    if (entregue) return 'Entrega concluída';
+    if (emRota) return 'Pedido a caminho';
+    return 'Preparando seu pedido';
+  }, [pedido, entregue, emRota]);
+
+  const subtituloHero = useMemo(() => {
+    if (!pedido) return '';
+    if (entregue) {
+      return `Seus produtos de ${pedido.fornecedorNome} já estão no seu estoque.`;
+    }
+    return labelStatusPedido(pedido.status);
   }, [pedido, entregue]);
+
+  const heroIcon = useMemo(() => {
+    if (entregue) return { name: 'check-decagram' as const, color: SUCCESS, bg: SUCCESS_LIGHT };
+    if (emRota) return { name: 'motorbike' as const, color: GOLD, bg: '#FFF8E7' };
+    return { name: 'time-outline' as const, color: GOLD, bg: '#FFF8E7' };
+  }, [entregue, emRota]);
 
   if (loading && !pedido) {
     return (
       <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color="#F8B125" />
+          <ActivityIndicator size="large" color={GOLD} />
           <Text style={styles.loadingText}>Carregando acompanhamento...</Text>
         </View>
       </SafeAreaView>
@@ -217,15 +274,15 @@ export function PedidoAcompanhamentoScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-      <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
-
-      <BackTitleHeader title="Acompanhar pedido" onBack={goBack} />
+      <LinearGradient colors={[GOLD, '#FAFAFA']} style={styles.topGradient} />
 
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <BackTitleHeader title={headerTitle} onBack={goBack} />
+
         {pedidosIds.length > 1 ? (
           <ScrollView
             horizontal
@@ -249,80 +306,105 @@ export function PedidoAcompanhamentoScreen() {
           </ScrollView>
         ) : null}
 
-        <View style={styles.heroCard}>
-          <View style={styles.heroIconWrap}>
+        <View style={[styles.heroCard, entregue && styles.heroCardSuccess]}>
+          {entregue ? (
+            <LinearGradient
+              colors={['#E8F5E9', '#FFFFFF']}
+              style={styles.heroAccentStrip}
+            />
+          ) : (
+            <LinearGradient
+              colors={['#FFF8E7', '#FFFFFF']}
+              style={styles.heroAccentStrip}
+            />
+          )}
+
+          <View style={[styles.heroIconWrap, { backgroundColor: heroIcon.bg }]}>
             <MaterialCommunityIcons
-              name={entregue ? 'check-decagram' : pedido.status === 'em_rota' ? 'motorbike' : 'clock-outline'}
-              size={36}
-              color={entregue ? '#2E7D32' : '#F8B125'}
+              name={heroIcon.name}
+              size={40}
+              color={heroIcon.color}
             />
           </View>
-          <Text style={styles.heroTitle}>{tituloHero}</Text>
-          <Text style={styles.heroStatus}>{statusLabel}</Text>
 
-          {!entregue ? (
+          <Text style={styles.heroTitle}>{tituloHero}</Text>
+          <Text style={styles.heroSubtitle}>{subtituloHero}</Text>
+
+          {!entregue && previsaoLabel ? (
             <View style={styles.etaBox}>
-              <Ionicons name="time-outline" size={18} color="#E89510" />
+              <Ionicons name="time-outline" size={17} color="#C77800" />
               <Text style={styles.etaText}>{previsaoLabel}</Text>
             </View>
           ) : null}
 
-          <ProgressBar progress={progresso} />
+          <ProgressBar progress={progresso} concluido={entregue} />
 
-          <View style={styles.heroMetaRow}>
-            <Text style={styles.heroMeta}>Pedido #{pedido.id}</Text>
-            <Text style={styles.heroMeta}>{pedido.fornecedorNome}</Text>
+          <View style={styles.heroChipsRow}>
+            <View style={styles.heroChip}>
+              <Ionicons name="receipt-outline" size={13} color="#666" />
+              <Text style={styles.heroChipText}>#{pedido.id}</Text>
+            </View>
+            <View style={[styles.heroChip, styles.heroChipWide]}>
+              <Ionicons name="storefront-outline" size={13} color="#666" />
+              <Text style={styles.heroChipText} numberOfLines={1}>
+                {pedido.fornecedorNome}
+              </Text>
+            </View>
           </View>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Andamento</Text>
-          {etapas.map((etapa, index) => (
-            <TimelineStep key={etapa.codigo} etapa={etapa} isLast={index === etapas.length - 1} />
-          ))}
+          <View style={styles.cardHeader}>
+            <Ionicons name="git-commit-outline" size={18} color={GOLD} />
+            <Text style={styles.cardTitle}>Andamento</Text>
+          </View>
+          <View style={styles.timelineWrap}>
+            {etapas.map((etapa, index) => (
+              <TimelineStep key={etapa.codigo} etapa={etapa} isLast={index === etapas.length - 1} />
+            ))}
+          </View>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Entrega</Text>
+          <View style={styles.cardHeader}>
+            <Ionicons name="location-outline" size={18} color={GOLD} />
+            <Text style={styles.cardTitle}>Detalhes da entrega</Text>
+          </View>
           {pedido.enderecoResumo ? (
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconWrap}>
-                <Ionicons name="location-outline" size={18} color="#F8B125" />
-              </View>
-              <View style={styles.infoTextWrap}>
-                <Text style={styles.infoLabel}>Endereço</Text>
-                <Text style={styles.infoText}>{pedido.enderecoResumo}</Text>
-              </View>
-            </View>
+            <InfoRow icon="navigate-outline" label="Endereço" value={pedido.enderecoResumo} />
           ) : null}
-          <View style={styles.infoRow}>
-            <View style={styles.infoIconWrap}>
-              <Ionicons name="card-outline" size={18} color="#F8B125" />
-            </View>
-            <View style={styles.infoTextWrap}>
-              <Text style={styles.infoLabel}>Pagamento</Text>
-              <Text style={styles.infoText}>{labelMetodoPagamento(pedido.metodoPagamento)}</Text>
-            </View>
-          </View>
-          <View style={styles.infoRow}>
-            <View style={styles.infoIconWrap}>
-              <Ionicons name="calendar-outline" size={18} color="#F8B125" />
-            </View>
-            <View style={styles.infoTextWrap}>
-              <Text style={styles.infoLabel}>Realizado em</Text>
-              <Text style={styles.infoText}>{formatarDataCurta(pedido.criadoEm)}</Text>
-            </View>
-          </View>
+          <InfoRow
+            icon="card-outline"
+            label="Pagamento"
+            value={labelMetodoPagamento(pedido.metodoPagamento)}
+          />
+          <InfoRow
+            icon="calendar-outline"
+            label="Realizado em"
+            value={formatarDataCurta(pedido.criadoEm)}
+          />
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Itens ({pedido.itens.length})</Text>
-          {pedido.itens.map((item) => (
-            <View key={item.produtoId} style={styles.itemRow}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="bag-outline" size={18} color={GOLD} />
+            <Text style={styles.cardTitle}>Itens ({pedido.itens.length})</Text>
+          </View>
+          {pedido.itens.map((item, index) => (
+            <View
+              key={item.produtoId}
+              style={[
+                styles.itemRow,
+                index === pedido.itens.length - 1 && styles.itemRowLast,
+              ]}
+            >
+              <View style={styles.itemBadge}>
+                <Text style={styles.itemBadgeText}>{item.quantidade}</Text>
+              </View>
               <View style={styles.itemInfo}>
                 <Text style={styles.itemNome} numberOfLines={2}>{item.nome}</Text>
                 <Text style={styles.itemDetalhe}>
-                  {item.quantidade} {item.unidade} × {formatarPreco(item.precoUnitario)}
+                  {item.unidade} · {formatarPreco(item.precoUnitario)} un.
                 </Text>
               </View>
               <Text style={styles.itemSubtotal}>{formatarPreco(item.subtotal)}</Text>
@@ -336,15 +418,29 @@ export function PedidoAcompanhamentoScreen() {
               </View>
             ) : null}
             <View style={styles.totalLine}>
-              <Text style={styles.totalLabelBold}>Total</Text>
+              <Text style={styles.totalLabelBold}>Total pago</Text>
               <Text style={styles.totalValueBold}>{formatarPreco(pedido.valorTotal)}</Text>
             </View>
           </View>
         </View>
 
-        <TouchableOpacity style={styles.homeButton} onPress={() => navigation.navigate('Cart')}>
-          <Text style={styles.homeButtonText}>Continuar comprando</Text>
-        </TouchableOpacity>
+        <View style={styles.actionsRow}>
+          {entregue ? (
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={() => navigation.navigate('Home')}
+            >
+              <Ionicons name="home-outline" size={18} color={GOLD} />
+              <Text style={styles.secondaryButtonText}>Ir para início</Text>
+            </TouchableOpacity>
+          ) : null}
+          <TouchableOpacity
+            style={[styles.primaryButton, !entregue && styles.primaryButtonFull]}
+            onPress={() => navigation.navigate('Cart')}
+          >
+            <Text style={styles.primaryButtonText}>Continuar comprando</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -353,19 +449,19 @@ export function PedidoAcompanhamentoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#F4F4F5',
   },
   topGradient: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 280,
+    height: 260,
   },
   scroll: { flex: 1 },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingBottom: 32,
+    paddingBottom: 36,
   },
   loadingWrap: {
     flex: 1,
@@ -388,8 +484,8 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingHorizontal: 20,
     paddingVertical: 10,
-    backgroundColor: '#F8B125',
-    borderRadius: 10,
+    backgroundColor: GOLD,
+    borderRadius: 12,
   },
   retryButtonText: {
     fontWeight: '700',
@@ -397,19 +493,19 @@ const styles = StyleSheet.create({
   },
   pedidosTabs: {
     gap: 8,
-    paddingBottom: 12,
+    paddingBottom: 14,
   },
   pedidoTab: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.7)',
+    backgroundColor: 'rgba(255,255,255,0.85)',
     borderWidth: 1,
-    borderColor: 'rgba(248,177,37,0.3)',
+    borderColor: 'rgba(248,177,37,0.25)',
   },
   pedidoTabActive: {
     backgroundColor: '#FFF',
-    borderColor: '#F8B125',
+    borderColor: GOLD,
   },
   pedidoTabText: {
     fontSize: 13,
@@ -417,42 +513,58 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   pedidoTabTextActive: {
-    color: '#F8B125',
+    color: GOLD,
   },
   heroCard: {
     backgroundColor: '#FFF',
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 14,
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 20,
+    marginBottom: 16,
     alignItems: 'center',
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(248,177,37,0.2)',
+    borderColor: 'rgba(248,177,37,0.15)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
     elevation: 3,
   },
+  heroCardSuccess: {
+    borderColor: 'rgba(46,125,50,0.2)',
+  },
+  heroAccentStrip: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 72,
+  },
   heroIconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#FFF8E7',
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginTop: 16,
+    marginBottom: 14,
   },
   heroTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '800',
     color: '#1A1A1A',
     textAlign: 'center',
+    letterSpacing: -0.3,
   },
-  heroStatus: {
-    marginTop: 6,
+  heroSubtitle: {
+    marginTop: 8,
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 8,
   },
   etaBox: {
     flexDirection: 'row',
@@ -462,71 +574,108 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 12,
-    marginTop: 14,
+    marginTop: 16,
     borderWidth: 1,
-    borderColor: 'rgba(248,177,37,0.25)',
+    borderColor: 'rgba(248,177,37,0.2)',
+    alignSelf: 'stretch',
   },
   etaText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#E89510',
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#C77800',
     flex: 1,
+  },
+  progressWrap: {
+    width: '100%',
+    marginTop: 18,
   },
   progressTrack: {
     width: '100%',
-    height: 6,
-    backgroundColor: '#F0F0F0',
+    height: 5,
+    backgroundColor: '#EEEEEE',
     borderRadius: 3,
-    marginTop: 16,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#F8B125',
+    backgroundColor: GOLD,
     borderRadius: 3,
   },
-  heroMetaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 12,
+  progressFillDone: {
+    backgroundColor: SUCCESS,
   },
-  heroMeta: {
+  progressLabel: {
+    marginTop: 6,
+    fontSize: 11,
+    color: '#999',
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  progressLabelDone: {
+    color: SUCCESS,
+  },
+  heroChipsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 16,
+    width: '100%',
+  },
+  heroChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 10,
+  },
+  heroChipWide: {
+    flex: 1,
+  },
+  heroChipText: {
     fontSize: 12,
-    color: '#888',
+    color: '#555',
     fontWeight: '600',
   },
   card: {
     backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 18,
+    padding: 18,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(248,177,37,0.12)',
+    borderColor: '#EFEFEF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
     elevation: 2,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: '#1A1A1A',
-    marginBottom: 14,
+  },
+  timelineWrap: {
+    paddingLeft: 2,
   },
   stepRow: {
     flexDirection: 'row',
-    minHeight: 64,
+    minHeight: 56,
   },
   stepIndicatorCol: {
-    width: 36,
+    width: 32,
     alignItems: 'center',
   },
   stepCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: '#F5F5F5',
     borderWidth: 2,
     borderColor: '#E0E0E0',
@@ -534,30 +683,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stepCircleDone: {
-    backgroundColor: '#2E7D32',
-    borderColor: '#2E7D32',
+    backgroundColor: SUCCESS,
+    borderColor: SUCCESS,
   },
   stepCircleActive: {
     backgroundColor: '#FFF8E1',
-    borderColor: '#F8B125',
+    borderColor: GOLD,
   },
   stepLine: {
     flex: 1,
     width: 2,
-    backgroundColor: '#E0E0E0',
-    marginVertical: 4,
+    backgroundColor: '#E8E8E8',
+    marginVertical: 3,
+    borderRadius: 1,
   },
   stepLineDone: {
-    backgroundColor: '#2E7D32',
+    backgroundColor: SUCCESS,
   },
   stepContent: {
     flex: 1,
     paddingLeft: 12,
-    paddingBottom: 20,
+    paddingBottom: 18,
+  },
+  stepContentLast: {
+    paddingBottom: 0,
   },
   stepLabel: {
-    fontSize: 15,
-    color: '#9E9E9E',
+    fontSize: 14,
+    color: '#B0B0B0',
     fontWeight: '500',
   },
   stepLabelDone: {
@@ -565,14 +718,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   stepLabelActive: {
-    color: '#F8B125',
+    color: GOLD,
     fontWeight: '700',
   },
   stepHint: {
-    marginTop: 4,
-    fontSize: 13,
-    color: '#757575',
-    lineHeight: 18,
+    marginTop: 3,
+    fontSize: 12,
+    color: '#888',
+    lineHeight: 17,
   },
   infoRow: {
     flexDirection: 'row',
@@ -581,9 +734,9 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   infoIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
     backgroundColor: '#FFF8E7',
     alignItems: 'center',
     justifyContent: 'center',
@@ -591,23 +744,40 @@ const styles = StyleSheet.create({
   infoTextWrap: { flex: 1 },
   infoLabel: {
     fontSize: 11,
-    color: '#888',
+    color: '#999',
     fontWeight: '600',
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
   },
   infoText: {
-    marginTop: 2,
+    marginTop: 3,
     fontSize: 14,
     color: '#333',
     lineHeight: 20,
   },
   itemRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: 10,
+    alignItems: 'center',
+    paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#EEE',
+    borderBottomColor: '#F0F0F0',
+  },
+  itemRowLast: {
+    borderBottomWidth: 0,
+  },
+  itemBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: '#FFF8E7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  itemBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: GOLD,
   },
   itemInfo: {
     flex: 1,
@@ -620,8 +790,8 @@ const styles = StyleSheet.create({
   },
   itemDetalhe: {
     marginTop: 2,
-    fontSize: 13,
-    color: '#777',
+    fontSize: 12,
+    color: '#888',
   },
   itemSubtotal: {
     fontSize: 14,
@@ -629,10 +799,10 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   totalRow: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#EEE',
+    marginTop: 4,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
   },
   totalLine: {
     flexDirection: 'row',
@@ -641,11 +811,11 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#777',
   },
   totalValue: {
     fontSize: 14,
-    color: '#666',
+    color: '#777',
   },
   totalLabelBold: {
     fontSize: 16,
@@ -654,19 +824,45 @@ const styles = StyleSheet.create({
   },
   totalValueBold: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#F8B125',
+    fontWeight: '800',
+    color: GOLD,
   },
-  homeButton: {
-    backgroundColor: '#F8B125',
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 6,
+  },
+  primaryButton: {
+    flex: 1,
+    backgroundColor: GOLD,
     borderRadius: 14,
-    paddingVertical: 14,
+    paddingVertical: 15,
     alignItems: 'center',
-    marginTop: 4,
+    justifyContent: 'center',
   },
-  homeButtonText: {
-    fontSize: 16,
+  primaryButtonFull: {
+    flex: 1,
+  },
+  primaryButtonText: {
+    fontSize: 15,
     fontWeight: '700',
     color: '#FFF',
+  },
+  secondaryButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#FFF',
+    borderRadius: 14,
+    paddingVertical: 15,
+    borderWidth: 1.5,
+    borderColor: GOLD,
+  },
+  secondaryButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: GOLD,
   },
 });

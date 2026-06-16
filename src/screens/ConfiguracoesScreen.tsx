@@ -14,6 +14,7 @@ import { useAuth } from '../context/AuthContext';
 import { BackTitleHeader } from '../components/BackTitleHeader';
 import { useAppGoBack } from '../hooks/useAppGoBack';
 import { atualizarEmpresa, atualizarUsuario } from '../services/authService';
+import { formatarCnpjInput, formatarTelefoneInput, normalizarDocumento } from '../utils/pixUtils';
 
 export function ConfiguracoesScreen() {
   const goBack = useAppGoBack('Home');
@@ -21,7 +22,9 @@ export function ConfiguracoesScreen() {
 
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
-  const [telefone, setTelefone] = useState('');
+  const [nomeEmpresa, setNomeEmpresa] = useState('');
+  const [cnpjEmpresa, setCnpjEmpresa] = useState('');
+  const [telefoneEmpresa, setTelefoneEmpresa] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,7 +35,9 @@ export function ConfiguracoesScreen() {
     if (!user) return;
     setNome(user.nome ?? '');
     setEmail(user.email ?? '');
-    setTelefone(user.empresa?.telefone ?? '');
+    setNomeEmpresa(user.empresa?.nome ?? '');
+    setCnpjEmpresa(user.empresa?.cnpj ?? '');
+    setTelefoneEmpresa(user.empresa?.telefone ?? '');
   }, [user]);
 
   const handleSalvar = async () => {
@@ -46,6 +51,8 @@ export function ConfiguracoesScreen() {
 
     const nomeTrim = nome.trim();
     const emailTrim = email.trim().toLowerCase();
+    const nomeEmpresaTrim = nomeEmpresa.trim();
+    const cnpjDigits = normalizarDocumento(cnpjEmpresa);
 
     if (!nomeTrim) {
       setError('Informe seu nome.');
@@ -53,6 +60,14 @@ export function ConfiguracoesScreen() {
     }
     if (!emailTrim) {
       setError('Informe seu e-mail.');
+      return;
+    }
+    if (!nomeEmpresaTrim) {
+      setError('Informe o nome da empresa.');
+      return;
+    }
+    if (cnpjDigits.length !== 14) {
+      setError('Informe um CNPJ válido com 14 dígitos.');
       return;
     }
 
@@ -78,15 +93,17 @@ export function ConfiguracoesScreen() {
       const usuarioAtualizado = await atualizarUsuario(user.id, payloadUsuario);
 
       const empresaAtualizada = await atualizarEmpresa(user.empresa.id, {
-        nome: user.empresa.nome,
-        cnpj: user.empresa.cnpj,
-        telefone: telefone.trim() || undefined,
+        nome: nomeEmpresaTrim,
+        cnpj: formatarCnpjInput(cnpjDigits),
+        telefone: telefoneEmpresa.trim() || undefined,
       });
 
       await updateUser({
         ...usuarioAtualizado,
         empresa: {
           ...usuarioAtualizado.empresa,
+          nome: empresaAtualizada.nome,
+          cnpj: empresaAtualizada.cnpj,
           telefone: empresaAtualizada.telefone,
         },
       });
@@ -105,17 +122,17 @@ export function ConfiguracoesScreen() {
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
       <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
 
-      <BackTitleHeader
-        title="Configurações da conta"
-        onBack={goBack}
-      />
-
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <BackTitleHeader
+          title="Configurações da conta"
+          onBack={goBack}
+        />
+
         <Text style={styles.sectionTitle}>Dados pessoais</Text>
         <View style={styles.card}>
           <Text style={styles.label}>Nome</Text>
@@ -160,29 +177,35 @@ export function ConfiguracoesScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Empresa</Text>
+        <Text style={styles.sectionTitle}>Dados da empresa</Text>
         <View style={styles.card}>
           <Text style={styles.label}>Nome da empresa</Text>
           <TextInput
-            style={[styles.input, styles.inputReadonly]}
-            value={user?.empresa?.nome ?? ''}
-            editable={false}
+            style={styles.input}
+            value={nomeEmpresa}
+            onChangeText={setNomeEmpresa}
+            placeholder="Razão social ou nome fantasia"
+            autoCapitalize="words"
           />
 
           <Text style={styles.label}>CNPJ</Text>
           <TextInput
-            style={[styles.input, styles.inputReadonly]}
-            value={user?.empresa?.cnpj ?? ''}
-            editable={false}
+            style={styles.input}
+            value={cnpjEmpresa}
+            onChangeText={(text) => setCnpjEmpresa(formatarCnpjInput(text))}
+            placeholder="00.000.000/0000-00"
+            keyboardType="number-pad"
+            maxLength={18}
           />
 
           <Text style={styles.label}>Telefone</Text>
           <TextInput
             style={styles.input}
-            value={telefone}
-            onChangeText={setTelefone}
+            value={telefoneEmpresa}
+            onChangeText={(text) => setTelefoneEmpresa(formatarTelefoneInput(text))}
             placeholder="(00) 00000-0000"
             keyboardType="phone-pad"
+            maxLength={15}
           />
         </View>
 
@@ -263,10 +286,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#333',
     backgroundColor: '#FFF',
-  },
-  inputReadonly: {
-    backgroundColor: '#F5F5F5',
-    color: '#777',
   },
   errorText: {
     color: '#D64545',

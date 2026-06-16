@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   FlatList,
+  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
@@ -101,45 +102,57 @@ export function ManageProductsScreen() {
     </View>
   );
 
+  const renderListHeader = () => (
+    <>
+      <ScreenHeader />
+      <Text style={styles.pageTitle}>Gerenciar produtos</Text>
+      <Text style={styles.pageSubtitle}>
+        Cadastre, edite ou remova os produtos exibidos no app.
+      </Text>
+
+      <TouchableOpacity style={styles.addButton} onPress={abrirNovo}>
+        <Ionicons name="add-circle-outline" size={22} color="#FFF" />
+        <Text style={styles.addButtonText}>Adicionar produto</Text>
+      </TouchableOpacity>
+    </>
+  );
+
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.container} edges={['left', 'right']}>
         <ScreenTopGradient />
 
-        <ScreenHeader />
-
         <View style={styles.content}>
-        <Text style={styles.pageTitle}>Gerenciar produtos</Text>
-        <Text style={styles.pageSubtitle}>
-          Cadastre, edite ou remova os produtos exibidos no app.
-        </Text>
-
-        <TouchableOpacity style={styles.addButton} onPress={abrirNovo}>
-          <Ionicons name="add-circle-outline" size={22} color="#FFF" />
-          <Text style={styles.addButtonText}>Adicionar produto</Text>
-        </TouchableOpacity>
-
-        {loading ? (
-          <ActivityIndicator color="#F8B125" style={styles.loader} />
-        ) : error ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity onPress={refresh}>
-              <Text style={styles.retryText}>Tentar novamente</Text>
-            </TouchableOpacity>
-          </View>
-        ) : produtos.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>Nenhum produto cadastrado.</Text>
-            <TouchableOpacity onPress={abrirNovo}>
-              <Text style={styles.retryText}>Cadastrar primeiro produto</Text>
-            </TouchableOpacity>
-          </View>
+        {loading || error || produtos.length === 0 ? (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[styles.listContent, { paddingBottom: listBottomPadding }]}
+          >
+            {renderListHeader()}
+            {loading ? (
+              <ActivityIndicator color="#F8B125" style={styles.loader} />
+            ) : error ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.errorText}>{error}</Text>
+                <TouchableOpacity onPress={refresh}>
+                  <Text style={styles.retryText}>Tentar novamente</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyText}>Nenhum produto cadastrado.</Text>
+                <TouchableOpacity onPress={abrirNovo}>
+                  <Text style={styles.retryText}>Cadastrar primeiro produto</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </ScrollView>
         ) : (
           <FlatList
             data={produtos}
             keyExtractor={(item) => String(item.id)}
             renderItem={renderItem}
+            ListHeaderComponent={renderListHeader}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={[styles.listContent, { paddingBottom: listBottomPadding }]}
           />
