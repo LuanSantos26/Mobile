@@ -17,7 +17,7 @@ export const SPACING = {
 };
 
 export const LAYOUT = {
-  formWidth: '82%',
+  formWidth: '82%' as const,
 };
 
 export const FONTS = {

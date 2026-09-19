@@ -38,7 +38,7 @@ function normalizeStoredCart(raw: LegacyStoredPurchaseCart): StoredPurchaseCart 
       const fornecedorId = item.fornecedorId ?? legacyFornecedorId;
       if (fornecedorId == null || !item.produtoId || !item.nome) return null;
 
-      return {
+      const normalizedItem: CartItem = {
         produtoId: item.produtoId,
         fornecedorId,
         fornecedorNome: item.fornecedorNome ?? legacyFornecedorNome ?? 'Fornecedor',
@@ -47,9 +47,11 @@ function normalizeStoredCart(raw: LegacyStoredPurchaseCart): StoredPurchaseCart 
         unidade: item.unidade ?? 'UN',
         quantidade: Number(item.quantidade ?? 1),
         imagemUrl: item.imagemUrl,
-      } satisfies CartItem;
+      };
+
+      return normalizedItem;
     })
-    .filter((item): item is CartItem => item !== null);
+    .filter((item): item is CartItem => item !== null && item !== undefined);
 
   return { itens };
 }
