@@ -2,7 +2,6 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ProductsProvider } from '../context/ProductsContext';
 import { BarraquinhasProvider } from '../context/BarraquinhasContext';
-import { AnimationScreen } from '../screens/Animation/AnimationScreen';
 import HomeScreen from '../screens/Home/HomeScreen';
 import { BarraquinhasScreen } from '../screens/Barraquinhas/BarraquinhasScreen';
 import { CartScreen } from '../screens/Cart/CartScreen';
@@ -20,7 +19,7 @@ import { EmpresaVendasScreen } from '../screens/EmpresaVendas/EmpresaVendasScree
 import { CamioneirosScreen } from '../screens/Logistica/CamioneirosScreen';
 import { CadastroCamioneirosScreen } from '../screens/Logistica/CadastroCamioneirosScreen';
 import { LogisticaScreen } from '../screens/Logistica/LogisticaScreen';
-import EscolhaUsuarioScreen from '../components/Header/Cli_For';
+import EscolhaUsuarioScreen from '../screens/Cli_For/Cli_For';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

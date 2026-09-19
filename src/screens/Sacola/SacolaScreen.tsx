@@ -28,7 +28,7 @@ import { TabScreenLayout } from '../../components/Header/TabScreenLayout';
 
 import { PagePrimaryButton } from '../../components/Button/PagePrimaryButton';
 
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 
 import { SacolaItemRow } from '../../components/Card/SacolaItemRow';
 
@@ -509,22 +509,50 @@ export function SacolaScreen() {
 
         {sacolaVazia ? (
 
-          <View style={styles.emptyState}>
+          <View style={styles.emptyCard}>
 
-            <MaterialCommunityIcons name="shopping-outline" size={72} color="#F8B125" />
+            <View style={styles.emptyHeader}>
 
-            <Text style={styles.emptyTitle}>Sua sacola está vazia</Text>
+              <Text style={styles.emptyKicker}>Sacola</Text>
 
-            <Text style={styles.emptyText}>
+              <Text style={styles.emptyTitle}>Sua sacola está vazia</Text>
 
-              Explore as distribuidoras e adicione bebidas para fazer seu pedido.
+              <Text style={styles.emptyText}>
 
-            </Text>
+                Explore as distribuidoras e adicione bebidas para fazer seu pedido.
 
-            <TouchableOpacity style={styles.explorarButton} onPress={() => navigation.navigate('Cart')}>
+              </Text>
 
-              <Text style={styles.explorarButtonText}>Explorar lojas</Text>
+            </View>
 
+            <TouchableOpacity
+              style={styles.emptyAction}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('Cart')}
+            >
+              <View style={styles.emptyActionIcon}>
+                <Ionicons name="storefront-outline" size={22} color="#F8B125" />
+              </View>
+              <View style={styles.emptyActionCopy}>
+                <Text style={styles.emptyActionTitle}>Explorar lojas</Text>
+                <Text style={styles.emptyActionHint}>Ver distribuidoras em destaque</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#D4B56A" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.emptyAction, styles.emptyActionLast]}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('Home')}
+            >
+              <View style={styles.emptyActionIcon}>
+                <Ionicons name="home-outline" size={22} color="#F8B125" />
+              </View>
+              <View style={styles.emptyActionCopy}>
+                <Text style={styles.emptyActionTitle}>Ir para o início</Text>
+                <Text style={styles.emptyActionHint}>Acompanhar estoque e operação</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#D4B56A" />
             </TouchableOpacity>
 
           </View>
@@ -533,9 +561,17 @@ export function SacolaScreen() {
 
           <>
 
+        <View style={styles.sectionCard}>
+
         <View style={styles.sectionHeaderRow}>
 
-          <Text style={styles.sectionTitleHero}>Itens do pedido</Text>
+          <View style={styles.sectionHeaderCopy}>
+
+            <Text style={styles.sectionTitleHero}>Itens do pedido</Text>
+
+            <Text style={styles.sectionSubtitle}>Revise as bebidas antes de finalizar</Text>
+
+          </View>
 
           {editMode && itemCount > 0 ? (
 
@@ -603,9 +639,19 @@ export function SacolaScreen() {
 
         ))}
 
+        </View>
 
 
-        <Text style={styles.sectionTitle}>Endereço de entrega</Text>
+
+        <View style={styles.sectionCard}>
+
+        <View style={styles.sectionHeaderBlock}>
+
+          <Text style={styles.sectionTitle}>Endereço de entrega</Text>
+
+          <Text style={styles.sectionSubtitle}>Onde o pedido deve chegar</Text>
+
+        </View>
 
         <TouchableOpacity
 
@@ -639,7 +685,7 @@ export function SacolaScreen() {
 
               </View>
 
-              <Ionicons name="chevron-forward" size={20} color="#999" />
+              <Ionicons name="chevron-forward" size={16} color="#D4B56A" />
 
             </>
 
@@ -665,7 +711,7 @@ export function SacolaScreen() {
 
               </View>
 
-              <Ionicons name="chevron-forward" size={20} color="#999" />
+              <Ionicons name="chevron-forward" size={16} color="#D4B56A" />
 
             </>
 
@@ -683,9 +729,19 @@ export function SacolaScreen() {
 
         ) : null}
 
+        </View>
 
 
-        <Text style={styles.sectionTitle}>Forma de pagamento</Text>
+
+        <View style={styles.sectionCard}>
+
+        <View style={styles.sectionHeaderBlock}>
+
+          <Text style={styles.sectionTitle}>Forma de pagamento</Text>
+
+          <Text style={styles.sectionSubtitle}>Escolha como deseja pagar</Text>
+
+        </View>
 
         {loadingFormas ? (
           <ActivityIndicator color="#F8B125" style={{ marginVertical: 12 }} />
@@ -733,7 +789,19 @@ export function SacolaScreen() {
 
         ) : null}
 
+        </View>
 
+
+
+        <View style={styles.sectionCard}>
+
+          <View style={styles.sectionHeaderBlock}>
+
+            <Text style={styles.sectionTitle}>Resumo</Text>
+
+            <Text style={styles.sectionSubtitle}>Valores do pedido</Text>
+
+          </View>
 
         <View style={styles.summaryCard}>
 
@@ -760,6 +828,8 @@ export function SacolaScreen() {
             <Text style={styles.summaryTotalValue}>{formatarPreco(totalComTaxa)}</Text>
 
           </View>
+
+        </View>
 
         </View>
 
@@ -886,90 +956,61 @@ export function SacolaScreen() {
 
 const styles = StyleSheet.create({
 
-  sectionHeaderRow: {
-
-    flexDirection: 'row',
-
-    alignItems: 'center',
-
-    justifyContent: 'space-between',
-
-    marginTop: 4,
-
+  sectionCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+  },
+  sectionHeaderCopy: {
+    flex: 1,
+    marginRight: 12,
+  },
+  sectionHeaderBlock: {
     marginBottom: 14,
-
   },
-
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
   sectionTitleHero: {
-
-    fontSize: 17,
-
-    fontWeight: '800',
-
-    color: '#1A1A1A',
-
-    letterSpacing: 0.3,
-
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#F8B125',
   },
-
   sectionTitle: {
-
-    fontSize: 16,
-
-    fontWeight: '700',
-
-    color: '#333',
-
-    marginBottom: 10,
-
-    marginTop: 8,
-
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#F8B125',
   },
-
+  sectionSubtitle: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#888',
+  },
   removeAllText: {
-
     fontSize: 13,
-
     fontWeight: '600',
-
-    color: '#FFD6D6',
-
-    textShadowColor: 'rgba(0,0,0,0.2)',
-
-    textShadowOffset: { width: 0, height: 1 },
-
-    textShadowRadius: 2,
-
+    color: '#D64545',
+    marginTop: 4,
   },
 
   grupoCard: {
-
-    backgroundColor: '#FFF',
-
+    backgroundColor: '#FFFDF7',
     borderRadius: 16,
-
     paddingHorizontal: 14,
-
     paddingTop: 14,
-
     paddingBottom: 6,
-
-    marginBottom: 14,
-
+    marginBottom: 10,
     borderWidth: 1,
-
-    borderColor: 'rgba(248,177,37,0.18)',
-
-    shadowColor: '#000',
-
-    shadowOffset: { width: 0, height: 2 },
-
-    shadowOpacity: 0.06,
-
-    shadowRadius: 8,
-
-    elevation: 2,
-
+    borderColor: '#F3E3B1',
   },
 
   grupoHeader: {
@@ -1027,51 +1068,24 @@ const styles = StyleSheet.create({
   },
 
   addressCard: {
-
     flexDirection: 'row',
-
     alignItems: 'center',
-
-    backgroundColor: '#FFF',
-
+    backgroundColor: '#FFFDF7',
     borderRadius: 16,
-
     padding: 14,
-
-    marginBottom: 8,
-
+    marginBottom: 0,
     borderWidth: 1,
-
-    borderColor: 'rgba(248,177,37,0.18)',
-
+    borderColor: '#F3E3B1',
     gap: 10,
-
-    shadowColor: '#000',
-
-    shadowOffset: { width: 0, height: 1 },
-
-    shadowOpacity: 0.04,
-
-    shadowRadius: 4,
-
-    elevation: 1,
-
   },
 
   addressIconWrap: {
-
     width: 40,
-
     height: 40,
-
     borderRadius: 20,
-
-    backgroundColor: '#FFF8E7',
-
+    backgroundColor: '#FFF6DE',
     justifyContent: 'center',
-
     alignItems: 'center',
-
   },
 
   addressInfo: { flex: 1 },
@@ -1127,15 +1141,10 @@ const styles = StyleSheet.create({
   paymentEmptyHint: { fontSize: 12, color: '#666', marginTop: 2 },
 
   paymentRow: {
-
     flexDirection: 'row',
-
     flexWrap: 'wrap',
-
     gap: 6,
-
-    marginBottom: 16,
-
+    marginBottom: 8,
   },
 
   paymentChip: {
@@ -1179,29 +1188,12 @@ const styles = StyleSheet.create({
   },
 
   summaryCard: {
-
-    backgroundColor: '#FFF',
-
+    backgroundColor: '#FFFDF7',
     borderRadius: 16,
-
-    padding: 16,
-
+    padding: 14,
     borderWidth: 1,
-
-    borderColor: 'rgba(248,177,37,0.18)',
-
-    marginBottom: 12,
-
-    shadowColor: '#000',
-
-    shadowOffset: { width: 0, height: 2 },
-
-    shadowOpacity: 0.05,
-
-    shadowRadius: 6,
-
-    elevation: 2,
-
+    borderColor: '#F3E3B1',
+    marginBottom: 0,
   },
 
   summaryRow: {
@@ -1262,35 +1254,72 @@ const styles = StyleSheet.create({
 
   submitButtonText: { color: '#FFF', fontSize: 15, fontWeight: 'bold' },
 
-  emptyState: {
-
+  emptyCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    padding: 16,
+    marginTop: 8,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+  },
+  emptyHeader: {
+    marginBottom: 14,
+  },
+  emptyKicker: {
+    fontSize: 12,
+    color: '#888',
+    marginBottom: 4,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#F8B125',
+    marginBottom: 6,
+  },
+  emptyText: {
+    color: '#888',
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  emptyAction: {
+    flexDirection: 'row',
     alignItems: 'center',
-
-    paddingHorizontal: 32,
-
-    paddingTop: 48,
-
-    paddingBottom: 48,
-
+    backgroundColor: '#FFFDF7',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#F3E3B1',
   },
-
-  emptyTitle: { fontSize: 20, fontWeight: 'bold', color: '#333', marginTop: 16, marginBottom: 8 },
-
-  emptyText: { color: '#666', textAlign: 'center', marginBottom: 20, lineHeight: 20 },
-
-  explorarButton: {
-
-    backgroundColor: '#F8B125',
-
-    paddingHorizontal: 24,
-
-    paddingVertical: 12,
-
-    borderRadius: 12,
-
+  emptyActionLast: {
+    marginBottom: 0,
   },
-
-  explorarButtonText: { color: '#FFF', fontWeight: 'bold' },
+  emptyActionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFF6DE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  emptyActionCopy: {
+    flex: 1,
+  },
+  emptyActionTitle: {
+    color: '#333',
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  emptyActionHint: {
+    marginTop: 2,
+    color: '#999',
+    fontSize: 11,
+  },
 
   modalOverlay: {
 
