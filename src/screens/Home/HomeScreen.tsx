@@ -91,11 +91,11 @@ export default function HomeScreen() {
   );
 
   const quickActions = [
-    { title: 'Vendas', icon: 'cash-outline', screen: 'EmpresaVendas' },
-    { title: 'Caminhoneiros', icon: 'truck-outline', screen: 'Camioneiros' },
-    { title: 'Cadastro', icon: 'person-add-outline', screen: 'CadastroCamioneiros' },
-    { title: 'Cliente ou fornecedor', icon: 'people-outline', screen: 'Cli_For' },
-    { title: 'Logística', icon: 'cube-outline', screen: 'Logistica' },
+    { title: 'Vendas', icon: 'cash-outline' as const, screen: 'EmpresaVendas' },
+    { title: 'Caminhoneiros', icon: 'bus-outline' as const, screen: 'Camioneiros' },
+    { title: 'Cadastro', icon: 'person-add-outline' as const, screen: 'CadastroCamioneiros' },
+    { title: 'Perfis', icon: 'people-outline' as const, screen: 'Cli_For', subtitle: 'Cliente ou fornecedor' },
+    { title: 'Logística', icon: 'cube-outline' as const, screen: 'Logistica', wide: true },
   ];
 
   const scrollBottomPadding = useTabBarScrollPadding();
@@ -229,17 +229,28 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.quickActionsSection}>
-          <Text style={styles.quickActionsTitle}>Operação da empresa</Text>
+          <View style={styles.quickActionsHeader}>
+            <Text style={styles.quickActionsTitle}>Operação da empresa</Text>
+            <Text style={styles.quickActionsSubtitle}>Atalhos para o dia a dia</Text>
+          </View>
           <View style={styles.quickActionsGrid}>
             {quickActions.map((item) => (
               <TouchableOpacity
                 key={item.screen}
-                style={styles.quickActionCard}
+                style={[styles.quickActionCard, item.wide && styles.quickActionCardWide]}
                 activeOpacity={0.85}
                 onPress={() => navigation.navigate(item.screen)}
               >
-                <Ionicons name={item.icon as any} size={26} color="#F8B125" />
-                <Text style={styles.quickActionText}>{item.title}</Text>
+                <View style={styles.quickActionIconWrap}>
+                  <Ionicons name={item.icon} size={22} color="#F8B125" />
+                </View>
+                <View style={styles.quickActionCopy}>
+                  <Text style={styles.quickActionText}>{item.title}</Text>
+                  {item.subtitle ? (
+                    <Text style={styles.quickActionHint}>{item.subtitle}</Text>
+                  ) : null}
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="#D4B56A" />
               </TouchableOpacity>
             ))}
           </View>
@@ -453,15 +464,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   quickActionsSection: {
+    backgroundColor: '#FFF',
     marginHorizontal: 15,
-    marginTop: 18,
+    marginTop: 8,
     marginBottom: 18,
+    borderRadius: 20,
+    padding: 16,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+  },
+  quickActionsHeader: {
+    marginBottom: 14,
   },
   quickActionsTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#222',
-    marginBottom: 12,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#F8B125',
+  },
+  quickActionsSubtitle: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#888',
   },
   quickActionsGrid: {
     flexDirection: 'row',
@@ -470,26 +496,40 @@ const styles = StyleSheet.create({
   },
   quickActionCard: {
     width: '48%',
-    backgroundColor: '#FFF',
-    borderRadius: 18,
-    paddingVertical: 16,
-    paddingHorizontal: 12,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    backgroundColor: '#FFFDF7',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: '#F3E3B1',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 5,
+  },
+  quickActionCardWide: {
+    width: '100%',
+  },
+  quickActionIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFF6DE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  quickActionCopy: {
+    flex: 1,
   },
   quickActionText: {
-    marginTop: 8,
     color: '#333',
     fontWeight: '700',
     fontSize: 13,
-    textAlign: 'center',
+  },
+  quickActionHint: {
+    marginTop: 2,
+    color: '#999',
+    fontSize: 11,
   },
 
   // ==========================================

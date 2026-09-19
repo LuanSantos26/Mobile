@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { BottomTabBar } from './BottomTabBar';
+import { BottomTabBar } from '../../components/Header/BottomTabBar';
 
 type Navigation = {
   navigate: (screen: string) => void;

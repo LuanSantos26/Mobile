@@ -4,7 +4,7 @@ import { AnimationScreen } from '../screens/Animation/AnimationScreen';
 import { WelcomeScreen } from '../screens/WelcomeScreen/WelcomeScreen';
 import { RegisterScreen } from '../screens/Register/RegisterScreen';
 import LoginScreen from '../screens/Login/Login';
-import EscolhaUsuarioScreen from '../components/Header/Cli_For';
+import EscolhaUsuarioScreen from '../screens/Cli_For/Cli_For';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

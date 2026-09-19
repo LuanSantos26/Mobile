@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { ScreenHeader } from '../../components/Header/ScreenHeader';
@@ -33,11 +33,13 @@ import { formatarDataCurta } from '../../utils/dateFormat';
 const { width } = Dimensions.get('window');
 
 const H_PADDING = 15;
+const SECTION_INSET = 16;
 const CARD_GAP = 12;
-const FEATURED_WIDTH = width - H_PADDING * 2;
-const FEATURED_HEIGHT = Math.round(FEATURED_WIDTH * 0.42);
-const PARTNER_CARD_WIDTH = Math.round((width - H_PADDING * 2 - CARD_GAP * 2) / 2.15);
+const FEATURED_WIDTH = width - H_PADDING * 2 - SECTION_INSET * 2;
+const FEATURED_HEIGHT = Math.round(FEATURED_WIDTH * 0.48);
+const PARTNER_CARD_WIDTH = Math.round((width - H_PADDING * 2 - SECTION_INSET * 2 - CARD_GAP) / 1.85);
 const PARTNER_COVER_HEIGHT = Math.round(PARTNER_CARD_WIDTH * 0.58);
+const STORE_COVER_WIDTH = width - H_PADDING * 2 - SECTION_INSET * 2;
 
 function LogoAvatar({
   nome,
@@ -193,15 +195,21 @@ interface HorizontalCardProps {
   fornecedor: Fornecedor;
   subtitle: string;
   onPress: () => void;
+  isLast?: boolean;
 }
 
-const HorizontalCard = ({ fornecedor, subtitle, onPress }: HorizontalCardProps) => (
-  <TouchableOpacity style={styles.horizontalCard} activeOpacity={0.8} onPress={onPress}>
-    <LogoAvatar nome={fornecedor.nome} logoUrl={fornecedor.logoUrl} style={styles.avatarImage} />
-    <View style={styles.cardTextContainer}>
-      <Text style={styles.cardTitle} numberOfLines={2}>{fornecedor.nome}</Text>
-      <Text style={styles.cardSubtitle} numberOfLines={2}>{subtitle}</Text>
+const HorizontalCard = ({ fornecedor, subtitle, onPress, isLast }: HorizontalCardProps) => (
+  <TouchableOpacity
+    style={[styles.requestCard, isLast && styles.requestCardLast]}
+    activeOpacity={0.85}
+    onPress={onPress}
+  >
+    <LogoAvatar nome={fornecedor.nome} logoUrl={fornecedor.logoUrl} size={40} style={styles.requestLogo} />
+    <View style={styles.requestCopy}>
+      <Text style={styles.requestTitle} numberOfLines={1}>{fornecedor.nome}</Text>
+      <Text style={styles.requestHint} numberOfLines={2}>{subtitle}</Text>
     </View>
+    <Ionicons name="chevron-forward" size={16} color="#D4B56A" />
   </TouchableOpacity>
 );
 
@@ -216,7 +224,7 @@ const StoreCard = ({ fornecedor, onPress }: StoreCardProps) => (
       <CoverImage
         capaUrl={fornecedor.capaUrl}
         nome={fornecedor.nome}
-        width={width - H_PADDING * 2}
+        width={STORE_COVER_WIDTH}
         height={96}
       />
     </View>
@@ -224,14 +232,14 @@ const StoreCard = ({ fornecedor, onPress }: StoreCardProps) => (
       <View style={styles.storeHeaderRow}>
         <LogoAvatar nome={fornecedor.nome} logoUrl={fornecedor.logoUrl} size={46} style={styles.storeLogo} />
         <View style={styles.storeTextContainer}>
-          <Text style={styles.cardTitle} numberOfLines={1}>{fornecedor.nome}</Text>
+          <Text style={styles.storeName} numberOfLines={1}>{fornecedor.nome}</Text>
           <View style={styles.ratingContainer}>
             <Ionicons name="storefront-outline" size={14} color="#F8B125" />
             <Text style={styles.ratingText}>{labelTipoFornecedor(fornecedor.tipo)}</Text>
             <Text style={styles.reviewsText}>({fornecedor.totalProdutos} produtos)</Text>
           </View>
         </View>
-        <Ionicons name="chevron-forward" size={22} color="#F8B125" />
+        <Ionicons name="chevron-forward" size={16} color="#D4B56A" />
       </View>
       <Text style={styles.deliveryText} numberOfLines={2}>
         {fornecedor.descricao || 'Bebidas para revenda em atacado.'}
@@ -356,8 +364,11 @@ export function CartScreen() {
         ) : null}
 
         {fornecedoresFiltrados.length > 0 ? (
-          <View style={styles.featuredSection}>
-            <Text style={styles.sectionTitle}>Em destaque</Text>
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Em destaque</Text>
+              <Text style={styles.sectionSubtitle}>Distribuidoras para começar agora</Text>
+            </View>
             <ScrollView
               horizontal
               pagingEnabled={false}
@@ -389,16 +400,21 @@ export function CartScreen() {
         {loading ? (
           <ActivityIndicator color="#F8B125" style={{ marginVertical: 24 }} />
         ) : error ? (
-          <View style={styles.emptyBox}>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity onPress={carregarDados}>
-              <Text style={styles.retryText}>Tentar novamente</Text>
-            </TouchableOpacity>
+          <View style={styles.sectionCard}>
+            <View style={styles.emptyBox}>
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity onPress={carregarDados}>
+                <Text style={styles.retryText}>Tentar novamente</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           <>
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Distribuidoras parceiras</Text>
+            <View style={styles.sectionCard}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Distribuidoras parceiras</Text>
+                <Text style={styles.sectionSubtitle}>Explore o catálogo de cada loja</Text>
+              </View>
               {fornecedoresFiltrados.length === 0 ? (
                 <Text style={styles.emptyText}>
                   {busca.trim()
@@ -422,36 +438,41 @@ export function CartScreen() {
               )}
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Últimas solicitações</Text>
+            <View style={styles.sectionCard}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Últimas solicitações</Text>
+                <Text style={styles.sectionSubtitle}>Acompanhe seus pedidos recentes</Text>
+              </View>
               {solicitacoes.length === 0 ? (
                 <Text style={styles.emptyText}>Você ainda não enviou solicitações de compra.</Text>
               ) : (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalListPadding}>
-                  {solicitacoes.slice(0, 10).map((solicitacao) => {
-                    const fornecedorInfo = fornecedoresPorId.get(solicitacao.fornecedorId);
-                    const fornecedorCard: Fornecedor = fornecedorInfo ?? {
-                      id: solicitacao.fornecedorId,
-                      nome: solicitacao.fornecedorNome,
-                      tipo: 'DISTRIBUIDOR',
-                      totalProdutos: 0,
-                    };
-                    return (
+                solicitacoes.slice(0, 5).map((solicitacao, index, lista) => {
+                  const fornecedorInfo = fornecedoresPorId.get(solicitacao.fornecedorId);
+                  const fornecedorCard: Fornecedor = fornecedorInfo ?? {
+                    id: solicitacao.fornecedorId,
+                    nome: solicitacao.fornecedorNome,
+                    tipo: 'DISTRIBUIDOR',
+                    totalProdutos: 0,
+                  };
+                  return (
                     <HorizontalCard
                       key={solicitacao.id}
                       fornecedor={fornecedorCard}
                       subtitle={`${formatarDataCurta(solicitacao.criadoEm)} · ${formatarPreco(solicitacao.valorTotal)} · ${solicitacao.statusLabel ?? labelStatusPedido(solicitacao.status)}`}
                       onPress={() => navigation.navigate('PedidoAcompanhamento', { pedidoId: solicitacao.id })}
+                      isLast={index === lista.length - 1}
                     />
-                    );
-                  })}
-                </ScrollView>
+                  );
+                })
               )}
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Lojas</Text>
-              <View style={styles.verticalListPadding}>
+            {fornecedoresFiltrados.length > 0 ? (
+              <View style={styles.sectionCard}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Lojas</Text>
+                  <Text style={styles.sectionSubtitle}>Todas as distribuidoras disponíveis</Text>
+                </View>
                 {fornecedoresFiltrados.map((fornecedor) => (
                   <StoreCard
                     key={fornecedor.id}
@@ -460,7 +481,7 @@ export function CartScreen() {
                   />
                 ))}
               </View>
-            </View>
+            ) : null}
           </>
         )}
       </ScrollView>
@@ -482,7 +503,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFF',
     marginHorizontal: 15,
-    marginBottom: 10,
+    marginTop: 8,
+    marginBottom: 16,
     paddingHorizontal: 12,
     height: 40,
     borderRadius: 20,
@@ -507,13 +529,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8E8E8',
   },
   featuredSection: {
-    marginBottom: 22,
+    marginBottom: 0,
   },
   featuredScroll: {
     height: FEATURED_HEIGHT,
   },
   featuredListPadding: {
-    paddingHorizontal: H_PADDING,
+    paddingRight: 4,
     alignItems: 'flex-start',
   },
   featuredItemWrap: {
@@ -585,7 +607,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   partnerListPadding: {
-    paddingHorizontal: H_PADDING,
+    paddingRight: 4,
     paddingBottom: 4,
   },
   partnerCard: {
@@ -593,14 +615,9 @@ const styles = StyleSheet.create({
     marginRight: CARD_GAP,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#FFF',
+    backgroundColor: '#FFFDF7',
     borderWidth: 1,
-    borderColor: '#F0E6CC',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    borderColor: '#F3E3B1',
   },
   partnerCoverWrap: {
     width: PARTNER_CARD_WIDTH,
@@ -636,45 +653,75 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#777',
   },
+  sectionCard: {
+    backgroundColor: '#FFF',
+    marginHorizontal: H_PADDING,
+    marginBottom: 16,
+    borderRadius: 20,
+    padding: SECTION_INSET,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+  },
+  sectionHeader: {
+    marginBottom: 14,
+  },
   section: { marginBottom: 20 },
-  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#333', marginLeft: 15, marginBottom: 10 },
-  emptyText: { marginHorizontal: 15, color: '#666' },
-  emptyBox: { alignItems: 'center', padding: 20 },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#F8B125',
+  },
+  sectionSubtitle: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#888',
+  },
+  emptyText: { color: '#666', fontSize: 13 },
+  emptyBox: { alignItems: 'center', paddingVertical: 8 },
   errorText: { color: '#D64545', textAlign: 'center', marginBottom: 8 },
   retryText: { color: '#F8B125', fontWeight: '600' },
-  horizontalListPadding: { paddingHorizontal: 15 },
-  verticalListPadding: { paddingHorizontal: 15 },
-  horizontalCard: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF',
-    borderWidth: 1.5, borderColor: '#F8B125', borderRadius: 25, padding: 10,
-    marginRight: 15, width: 220, height: 75,
-  },
-  avatarImage: {
-    marginRight: 10,
-  },
-  avatarFallback: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#F8B125',
-    marginRight: 10,
-    justifyContent: 'center',
+  requestCard: {
+    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#FFFDF7',
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#F3E3B1',
   },
-  avatarInitial: {
-    color: '#FFF',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  cardTextContainer: { flex: 1, justifyContent: 'center' },
-  cardTitle: { fontSize: 13, fontWeight: 'bold', color: '#000' },
-  cardSubtitle: { fontSize: 11, color: '#666', marginTop: 2 },
-  storeCard: {
+  requestLogo: {
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#F3E3B1',
     backgroundColor: '#FFF',
-    borderWidth: 1.5,
-    borderColor: '#F8B125',
-    borderRadius: 18,
-    marginBottom: 15,
+  },
+  requestCopy: {
+    flex: 1,
+  },
+  requestTitle: {
+    color: '#333',
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  requestHint: {
+    marginTop: 2,
+    color: '#999',
+    fontSize: 11,
+  },
+  requestCardLast: {
+    marginBottom: 0,
+  },
+  storeCard: {
+    backgroundColor: '#FFFDF7',
+    borderWidth: 1,
+    borderColor: '#F3E3B1',
+    borderRadius: 16,
+    marginBottom: 12,
     overflow: 'hidden',
   },
   storeCoverWrap: {
@@ -697,6 +744,7 @@ const styles = StyleSheet.create({
     borderColor: '#F0E6CC',
   },
   storeTextContainer: { flex: 1, justifyContent: 'center', marginRight: 4 },
+  storeName: { fontSize: 14, fontWeight: '700', color: '#333' },
   ratingContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 2, marginBottom: 2 },
   ratingText: { fontSize: 12, fontWeight: 'bold', color: '#000', marginLeft: 4, marginRight: 4 },
   reviewsText: { fontSize: 11, color: '#666' },
