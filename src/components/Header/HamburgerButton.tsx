@@ -77,10 +77,10 @@ export function HamburgerButton() {
 
                   <TouchableOpacity 
                     style={styles.menuOption} 
-                    onPress={() => handleNavigate('Barraquinhas')}
+                    onPress={() => handleNavigate('Quiosque')}
                   >
                     <Feather name="box" size={20} color="#F8B125" />
-                    <Text style={styles.menuOptionText}>Barraquinhas</Text>
+                    <Text style={styles.menuOptionText}>Quiosques</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity

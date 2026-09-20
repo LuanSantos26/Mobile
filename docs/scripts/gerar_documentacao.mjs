@@ -219,7 +219,7 @@ const PHYSICAL_TABLES = [
   {
     name: "barracas",
     cols: [
-      ["id", "BIGINT", "PK, IDENTITY", "Identificador da barraquinha"],
+      ["id", "BIGINT", "PK, IDENTITY", "Identificador do quiosque"],
       ["evento_id", "BIGINT", "FK → eventos", "Evento vinculado"],
       ["nome", "VARCHAR(100)", "NOT NULL", "Nome do ponto de venda"],
       ["responsavel_id", "BIGINT", "FK → usuarios", "Usuário responsável"],
@@ -230,18 +230,18 @@ const PHYSICAL_TABLES = [
     name: "estoque_barraca",
     cols: [
       ["id", "BIGINT", "PK, IDENTITY", "Identificador do registro"],
-      ["barraca_id", "BIGINT", "FK → barracas", "Barraquinha"],
+      ["barraca_id", "BIGINT", "FK → barracas", "Quiosque"],
       ["produto_id", "BIGINT", "FK → produtos", "Produto"],
       ["quantidade", "NUMERIC(10,3)", "NOT NULL", "Quantidade em estoque"],
       ["atualizado_em", "TIMESTAMP", "AUTO", "Última atualização"],
-      ["—", "—", "UNIQUE(barraca_id, produto_id)", "Um produto por barraquinha"],
+      ["—", "—", "UNIQUE(barraca_id, produto_id)", "Um produto por quiosque"],
     ],
   },
   {
     name: "pedido",
     cols: [
       ["id", "BIGINT", "PK, IDENTITY", "Identificador do pedido PDV"],
-      ["barraca_id", "BIGINT", "FK → barracas", "Barraquinha de origem"],
+      ["barraca_id", "BIGINT", "FK → barracas", "Quiosque de origem"],
       ["operador_id", "BIGINT", "FK → usuarios", "Operador do pedido"],
       ["valor_total", "NUMERIC(10,2)", "DEFAULT 0", "Valor total do pedido"],
       ["status", "VARCHAR(20)", "DEFAULT 'aberto'", "Status do pedido"],
@@ -389,10 +389,10 @@ function buildMainContent() {
     // 1 INTRODUÇÃO
     heading1("1 Introdução"),
     para(
-      "O comércio de bebidas e atacado enfrenta desafios recorrentes na gestão de estoque em múltiplos pontos de venda e na reposição de mercadorias junto a distribuidoras. Processos manuais, planilhas dispersas e a falta de integração entre controle interno e compras externas dificultam a operação de bares, revendas e empreendedores que operam barraquinhas em eventos."
+      "O comércio de bebidas e atacado enfrenta desafios recorrentes na gestão de estoque em múltiplos pontos de venda e na reposição de mercadorias junto a distribuidoras. Processos manuais, planilhas dispersas e a falta de integração entre controle interno e compras externas dificultam a operação de bares, revendas e empreendedores que operam quiosques em eventos."
     ),
     para(
-      "O QuickStock foi desenvolvido como resposta a esse cenário: uma solução composta por aplicativo mobile (React Native / Expo) e API REST (Spring Boot), integrados a um banco de dados PostgreSQL. O sistema permite que empresas compradoras gerenciem catálogo de produtos, barraquinhas com estoque por filial, comprem de distribuidoras via marketplace integrado, acompanhem pedidos e configurem endereços e formas de pagamento."
+      "O QuickStock foi desenvolvido como resposta a esse cenário: uma solução composta por aplicativo mobile (React Native / Expo) e API REST (Spring Boot), integrados a um banco de dados PostgreSQL. O sistema permite que empresas compradoras gerenciem catálogo de produtos, quiosques com estoque por filial, comprem de distribuidoras via marketplace integrado, acompanhem pedidos e configurem endereços e formas de pagamento."
     ),
     heading2("1.1 Objetivo geral"),
     para(
@@ -400,7 +400,7 @@ function buildMainContent() {
     ),
     heading2("1.2 Objetivos específicos"),
     bullet("Implementar cadastro unificado de empresa e usuário com autenticação JWT."),
-    bullet("Disponibilizar CRUD de produtos, barraquinhas e estoque por ponto de venda."),
+    bullet("Disponibilizar CRUD de produtos, quiosques e estoque por ponto de venda."),
     bullet("Construir marketplace B2B com vitrine, sacola, checkout e rastreamento de pedidos."),
     bullet("Modelar e persistir dados em PostgreSQL com integridade referencial."),
     bullet("Documentar arquitetura, frontend, backend e modelagem de dados conforme normas ABNT."),
@@ -416,7 +416,7 @@ function buildMainContent() {
     // 2 METODOLOGIA
     heading1("2 Metodologia e arquitetura"),
     para(
-      "O desenvolvimento seguiu abordagem incremental, com entregas por domínio funcional: autenticação, gestão interna (produtos e barraquinhas), marketplace B2B, checkout, acompanhamento de pedidos e configurações. A comunicação entre camadas utiliza HTTP/JSON na porta 8080."
+      "O desenvolvimento seguiu abordagem incremental, com entregas por domínio funcional: autenticação, gestão interna (produtos e quiosques), marketplace B2B, checkout, acompanhamento de pedidos e configurações. A comunicação entre camadas utiliza HTTP/JSON na porta 8080."
     ),
     heading2("2.1 Stack tecnológica"),
     makeTable(
@@ -454,7 +454,7 @@ function buildMainContent() {
       [
         ["src/screens/", "Telas da aplicação"],
         ["src/components/", "Componentes reutilizáveis (ScreenHeader, BottomTabBar, modais)"],
-        ["src/context/", "Estado global (Auth, Products, Barraquinhas, PurchaseCart)"],
+        ["src/context/", "Estado global (Auth, Products, Quiosque, PurchaseCart)"],
         ["src/services/", "Integração REST com a API"],
         ["src/config/api.ts", "URL base e helper de imagens"],
         ["src/theme/theme.ts", "Cores, fontes e espaçamentos"],
@@ -467,7 +467,7 @@ function buildMainContent() {
       [
         ["AuthContext", "Sessão JWT, login, logout, restore e updateUser"],
         ["ProductsContext", "Catálogo de produtos da empresa logada"],
-        ["BarraquinhasContext", "Barraquinhas/filiais da empresa"],
+        ["QuiosqueContext", "Quiosque/filiais da empresa"],
         ["PurchaseCartContext", "Sacola B2B (um fornecedor por vez)"],
       ]
     ),
@@ -484,7 +484,7 @@ function buildMainContent() {
         ["Sacola", "Checkout", "Endereço, pagamento e finalização"],
         ["PedidoAcompanhamento", "Tracking", "Timeline com polling a cada 5 s"],
         ["AddItem", "Produtos", "CRUD do catálogo (botão + central)"],
-        ["Barraquinhas", "Filiais", "CRUD de pontos de venda e estoque"],
+        ["Quiosque", "Filiais", "CRUD de pontos de venda e estoque"],
         ["FormasPagamento", "Pagamentos", "CRUD de formas salvas"],
         ["Configuracoes", "Perfil", "Edição de usuário e empresa"],
         ["Cards", "Financeiro", "Estatísticas via API (aba mock em Carteira)"],
@@ -493,7 +493,7 @@ function buildMainContent() {
     para("", { after: 200, noIndent: true }),
     heading3("3.1.4 Componentes e navegação"),
     para(
-      "O ScreenHeader padroniza o cabeçalho autenticado (menu hambúrguer, calendário, notificações e sacola). A saudação e o calendário aparecem apenas na Home. O BottomTabBar customizado oferece sete ações e botão central (+) para cadastro de produtos. O menu lateral (HamburgerButton) abre modal com Barraquinhas, Formas de pagamento, Configurações e Sair."
+      "O ScreenHeader padroniza o cabeçalho autenticado (menu hambúrguer, calendário, notificações e sacola). A saudação e o calendário aparecem apenas na Home. O BottomTabBar customizado oferece sete ações e botão central (+) para cadastro de produtos. O menu lateral (HamburgerButton) abre modal com Quiosque, Formas de pagamento, Configurações e Sair."
     ),
     imageParagraph("fluxo-navegacao.png", 480, 360),
     caption("Figura 2 – Fluxo principal de navegação do aplicativo"),
@@ -509,7 +509,7 @@ function buildMainContent() {
     ),
     heading3("3.2.1 Camadas"),
     bullet("Controller: expõe endpoints REST sob /api/*"),
-    bullet("Service: regras de negócio (marketplace, compras, barraquinhas, JWT)"),
+    bullet("Service: regras de negócio (marketplace, compras, quiosques, JWT)"),
     bullet("Repository: acesso via Spring Data JPA"),
     bullet("Entity / DTO: persistência e transferência de dados"),
     heading3("3.2.2 Endpoints principais"),
@@ -518,7 +518,7 @@ function buildMainContent() {
       [
         ["Autenticação", "/api/cadastro, /api/usuarios/login, /api/usuarios/me", "POST, GET"],
         ["Produtos", "/api/produtos, /api/produtos/upload", "GET, POST, PUT, DELETE"],
-        ["Barraquinhas", "/api/barracas, /api/barracas/{id}/estoque", "GET, POST, PUT, DELETE"],
+        ["Quiosque", "/api/barracas, /api/barracas/{id}/estoque", "GET, POST, PUT, DELETE"],
         ["Marketplace", "/api/marketplace/fornecedores", "GET"],
         ["Pedidos B2B", "/api/solicitacoes-compra", "GET, POST"],
         ["Endereços", "/api/enderecos", "GET, POST"],
@@ -535,7 +535,7 @@ function buildMainContent() {
     heading3("3.2.4 Regras de negócio relevantes"),
     bullet("Solicitação de compra: valida fornecedor (DISTRIBUIDOR ou PLATAFORMA), impede auto-compra, exige endereço e forma de pagamento válidos."),
     bullet("Status inicial do pedido B2B: aguardando_liberacao; após 20 segundos (demo), transição automática para em_rota."),
-    bullet("Barraquinha: cria evento padrão Operação principal se inexistente; estoque sincronizado por produto da empresa."),
+    bullet("Quiosque: cria evento padrão Operação principal se inexistente; estoque sincronizado por produto da empresa."),
     bullet("Seeds: data.sql e ApplicationRunners populam distribuidoras, produtos, endereços e formas de pagamento demo."),
 
     // 3.3 BANCO DE DADOS
@@ -545,7 +545,7 @@ function buildMainContent() {
     ),
     heading3("3.3.1 Modelo conceitual"),
     para(
-      "O modelo conceitual representa entidades e relacionamentos em linguagem de negócio, independente de tipos físicos. Três domínios se destacam: (1) Cadastro — Perfil, Empresa, Usuário; (2) Operação presencial (PDV) — Evento, Barraquinha, Estoque, Pedido, Item e Pagamento; (3) Marketplace B2B — Produto, Solicitação de Compra, Item de Solicitação, Endereço de Entrega e Forma de Pagamento Salva."
+      "O modelo conceitual representa entidades e relacionamentos em linguagem de negócio, independente de tipos físicos. Três domínios se destacam: (1) Cadastro — Perfil, Empresa, Usuário; (2) Operação presencial (PDV) — Evento, Quiosque, Estoque, Pedido, Item e Pagamento; (3) Marketplace B2B — Produto, Solicitação de Compra, Item de Solicitação, Endereço de Entrega e Forma de Pagamento Salva."
     ),
     imageParagraph("er-conceitual.png", 520, 400),
     caption("Figura 3 – Modelo conceitual entidade-relacionamento"),
@@ -559,7 +559,7 @@ function buildMainContent() {
       ["Domínio", "Tabelas"],
       [
         ["Cadastro", "perfis, empresas, usuarios"],
-        ["PDV / Barraquinhas", "eventos, barracas, estoque_barraca, pedido, itens_pedido, pagamentos"],
+        ["PDV / Quiosque", "eventos, barracas, estoque_barraca, pedido, itens_pedido, pagamentos"],
         ["Marketplace B2B", "produtos, solicitacoes_compra, itens_solicitacao_compra"],
         ["Checkout", "enderecos_entrega, formas_pagamento_salvas"],
       ]
@@ -581,7 +581,7 @@ function buildMainContent() {
     // 4 CONCLUSÃO
     heading1("4 Conclusão"),
     para(
-      "O QuickStock entrega uma solução funcional de gestão de estoque e marketplace B2B, integrando aplicativo mobile Expo, API Spring Boot e banco PostgreSQL. Foram implementados cadastro unificado, CRUD de produtos e barraquinhas, fluxo completo de compra (vitrine → sacola → pedido → acompanhamento), configurações de perfil, formas de pagamento e notificações."
+      "O QuickStock entrega uma solução funcional de gestão de estoque e marketplace B2B, integrando aplicativo mobile Expo, API Spring Boot e banco PostgreSQL. Foram implementados cadastro unificado, CRUD de produtos e quiosques, fluxo completo de compra (vitrine → sacola → pedido → acompanhamento), configurações de perfil, formas de pagamento e notificações."
     ),
     para(
       "Como limitações conhecidas, destacam-se: autenticação JWT parcial (sem filtro global), dados mock na Home e aba Carteira do app, notificações geradas em tempo real sem tabela dedicada e resumo financeiro parcialmente sintético no backend. Trabalhos futuros incluem Spring Security completo, testes automatizados, push notifications e eliminação de dados mock."

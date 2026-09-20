@@ -9,7 +9,7 @@ export interface EstoqueItem {
   imagemUrl?: string;
 }
 
-export interface Barraquinha {
+export interface Quiosque {
   id: number;
   nome: string;
   eventoId: number;
@@ -26,7 +26,7 @@ export interface EstoqueItemPayload {
   quantidade: number;
 }
 
-export interface BarraquinhaPayload {
+export interface QuiosquePayload {
   nome: string;
   empresaId: number;
   responsavelId: number;
@@ -52,7 +52,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
   return data as T;
 }
 
-function normalizeBarraquinha(data: Barraquinha): Barraquinha {
+function normalizeQuiosque(data: Quiosque): Quiosque {
   return {
     ...data,
     totalProdutos: Number(data.totalProdutos ?? 0),
@@ -65,46 +65,46 @@ function normalizeBarraquinha(data: Barraquinha): Barraquinha {
   };
 }
 
-export async function listarBarraquinhas(empresaId: number): Promise<Barraquinha[]> {
+export async function listarQuiosques(empresaId: number): Promise<Quiosque[]> {
   const response = await fetch(`${API_BASE_URL}/api/barracas?empresaId=${empresaId}`);
-  const lista = await parseResponse<Barraquinha[]>(response);
-  return lista.map(normalizeBarraquinha);
+  const lista = await parseResponse<Quiosque[]>(response);
+  return lista.map(normalizeQuiosque);
 }
 
-export async function criarBarraquinha(payload: BarraquinhaPayload): Promise<Barraquinha> {
+export async function criarQuiosque(payload: QuiosquePayload): Promise<Quiosque> {
   const response = await fetch(`${API_BASE_URL}/api/barracas`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  return normalizeBarraquinha(await parseResponse<Barraquinha>(response));
+  return normalizeQuiosque(await parseResponse<Quiosque>(response));
 }
 
-export async function atualizarBarraquinha(
+export async function atualizarQuiosque(
   id: number,
-  payload: BarraquinhaPayload,
-): Promise<Barraquinha> {
+  payload: QuiosquePayload,
+): Promise<Quiosque> {
   const response = await fetch(`${API_BASE_URL}/api/barracas/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  return normalizeBarraquinha(await parseResponse<Barraquinha>(response));
+  return normalizeQuiosque(await parseResponse<Quiosque>(response));
 }
 
 export async function atualizarEstoque(
   id: number,
   itens: EstoqueItemPayload[],
-): Promise<Barraquinha> {
+): Promise<Quiosque> {
   const response = await fetch(`${API_BASE_URL}/api/barracas/${id}/estoque`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ itens }),
   });
-  return normalizeBarraquinha(await parseResponse<Barraquinha>(response));
+  return normalizeQuiosque(await parseResponse<Quiosque>(response));
 }
 
-export async function removerBarraquinha(id: number, empresaId: number): Promise<void> {
+export async function removerQuiosque(id: number, empresaId: number): Promise<void> {
   const response = await fetch(
     `${API_BASE_URL}/api/barracas/${id}?empresaId=${empresaId}`,
     { method: 'DELETE' },
@@ -113,7 +113,7 @@ export async function removerBarraquinha(id: number, empresaId: number): Promise
   if (!response.ok && response.status !== 204) {
     const data = await response.json().catch(() => ({}));
     throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível remover a barraquinha.'),
+      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível remover o quiosque.'),
     );
   }
 }

@@ -4,6 +4,7 @@ import { AnimationScreen } from '../screens/Animation/AnimationScreen';
 import { WelcomeScreen } from '../screens/WelcomeScreen/WelcomeScreen';
 import { RegisterScreen } from '../screens/Register/RegisterScreen';
 import LoginScreen from '../screens/Login/Login';
+import { ForgotPasswordScreen } from '../screens/ForgotPassword/ForgotPasswordScreen';
 import EscolhaUsuarioScreen from '../screens/Cli_For/Cli_For';
 import type { RootStackParamList } from './types';
 
@@ -16,5 +17,6 @@ export function AuthNavigator() {
     <Stack.Screen name="Register" component={RegisterScreen} />
     <Stack.Screen name="Cli_For" component={EscolhaUsuarioScreen} />
     <Stack.Screen name="Login" component={LoginScreen} />
+    <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
   </Stack.Navigator>;
 }

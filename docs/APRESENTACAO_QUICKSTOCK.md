@@ -28,14 +28,14 @@ Documento de estudo detalhado sobre o que foi implementado no projeto **QuickSto
 
 O **QuickStock** é uma solução mobile + backend para **gestão de estoque e compras B2B** no setor de bebidas/atacado. O app atende empresas que:
 
-- **Gerenciam** seu próprio catálogo de produtos e estoque em barraquinhas (pontos de venda / filiais).
+- **Gerenciam** seu próprio catálogo de produtos e estoque em quiosques (pontos de venda / filiais).
 - **Compram** de distribuidoras parceiras via um marketplace integrado (fluxo estilo app de delivery).
 
 ### Problema que o projeto resolve
 
 | Dor do usuário | Solução no QuickStock |
 |----------------|----------------------|
-| Controlar produtos e quantidades em vários pontos de venda | CRUD de produtos + barraquinhas com estoque por filial |
+| Controlar produtos e quantidades em vários pontos de venda | CRUD de produtos + quiosques com estoque por filial |
 | Repor estoque comprando de distribuidoras | Marketplace com vitrine, sacola e checkout |
 | Acompanhar pedidos de compra | Timeline de status com atualização automática |
 | Cadastrar endereço e forma de pagamento | Endereços de entrega + formas de pagamento salvas |
@@ -43,7 +43,7 @@ O **QuickStock** é uma solução mobile + backend para **gestão de estoque e c
 
 ### Público-alvo (persona)
 
-**Empresa compradora** (tipo `COMPRADOR`): bar, restaurante, revenda ou empreendedor que opera barraquinhas e precisa comprar bebidas de distribuidoras cadastradas na plataforma.
+**Empresa compradora** (tipo `COMPRADOR`): bar, restaurante, revenda ou empreendedor que opera quiosques e precisa comprar bebidas de distribuidoras cadastradas na plataforma.
 
 ---
 
@@ -108,7 +108,7 @@ O **QuickStock** é uma solução mobile + backend para **gestão de estoque e c
 │    ScreenHeader, BottomTabBar, HamburgerButton, Modais...       │
 ├─────────────────────────────────────────────────────────────────┤
 │  Contextos (estado global)                                      │
-│    AuthContext │ ProductsContext │ BarraquinhasContext │ Cart   │
+│    AuthContext │ ProductsContext │ QuiosqueContext │ Cart   │
 ├─────────────────────────────────────────────────────────────────┤
 │  Services (camada HTTP)                                         │
 │    authService, marketplaceService, productService, etc.        │
@@ -136,7 +136,7 @@ O **QuickStock** é uma solução mobile + backend para **gestão de estoque e c
 
 O QuickStock une **duas frentes** que convivem na mesma aplicação:
 
-1. **Gestão interna** — produtos, barraquinhas, estoque local.
+1. **Gestão interna** — produtos, quiosques, estoque local.
 2. **Marketplace B2B** — descobrir fornecedores, montar sacola, finalizar compra, rastrear pedido.
 
 Isso é um diferencial na apresentação: não é só um e-commerce; é gestão + compra integradas.
@@ -209,15 +209,15 @@ Empresa (compradora) ──► SolicitacaoCompra ◄── Empresa (fornecedora)
 | DELETE | `/api/produtos/{id}` | Desativar produto (soft delete) |
 | POST | `/api/produtos/upload` | Upload de imagem (multipart) |
 
-#### Barraquinhas
+#### Quiosque
 
 | Método | Endpoint | Função |
 |--------|----------|--------|
-| GET | `/api/barracas?empresaId={id}` | Listar barraquinhas |
-| POST | `/api/barracas` | Criar barraquinha |
-| PUT | `/api/barracas/{id}` | Editar barraquinha |
+| GET | `/api/barracas?empresaId={id}` | Listar quiosques |
+| POST | `/api/barracas` | Criar quiosque |
+| PUT | `/api/barracas/{id}` | Editar quiosque |
 | PUT | `/api/barracas/{id}/estoque` | Atualizar quantidades por produto |
-| DELETE | `/api/barracas/{id}?empresaId={id}` | Remover barraquinha |
+| DELETE | `/api/barracas/{id}?empresaId={id}` | Remover quiosque |
 
 #### Marketplace e pedidos B2B
 
@@ -321,7 +321,7 @@ Mobile/
 │   ├── context/
 │   │   ├── AuthContext.tsx
 │   │   ├── ProductsContext.tsx
-│   │   ├── BarraquinhasContext.tsx
+│   │   ├── QuiosqueContext.tsx
 │   │   └── PurchaseCartContext.tsx
 │   ├── services/           ← chamadas HTTP (9 services)
 │   ├── screens/            ← telas do app
@@ -341,7 +341,7 @@ SafeAreaProvider
             ├── GuestNavigator (não logado)
             └── AuthenticatedNavigator
                 └── ProductsProvider
-                    └── BarraquinhasProvider
+                    └── QuiosqueProvider
                         └── PurchaseCartProvider
                             └── Stack (telas)
 ```
@@ -367,7 +367,7 @@ SafeAreaProvider
 | `Sacola` | SacolaScreen | Checkout (endereço, pagamento, total) |
 | `PedidoAcompanhamento` | PedidoAcompanhamentoScreen | Timeline do pedido |
 | `AddItem` | ManageProductsScreen | CRUD de produtos (via botão +) |
-| `Barraquinhas` | BarraquinhasScreen | CRUD de barraquinhas + estoque |
+| `Quiosque` | QuiosqueScreen | CRUD de quiosques + estoque |
 | `FormasPagamento` | FormasPagamentoScreen | CRUD formas de pagamento |
 | `Configuracoes` | ConfiguracoesScreen | Editar perfil e empresa |
 | `Cards` | CardsScreen | Carteira (mock) + Estatísticas (API) |
@@ -379,7 +379,7 @@ SafeAreaProvider
 |---------|------------------|
 | **AuthContext** | Sessão JWT, login/logout, restore ao abrir app, `updateUser` |
 | **ProductsContext** | Lista de produtos da empresa logada |
-| **BarraquinhasContext** | Barraquinhas/filiais da empresa |
+| **QuiosqueContext** | Quiosque/filiais da empresa |
 | **PurchaseCartContext** | Sacola B2B: itens, fornecedor atual, quantidades |
 
 **Regra da sacola:** só pode haver produtos de **um fornecedor por vez**. Trocar de fornecedor exige confirmar que a sacola será limpa.
@@ -407,7 +407,7 @@ Layout unificado em todas as telas autenticadas:
 | Ícone | Destino | Função |
 |-------|---------|--------|
 | Home | `Home` | Dashboard |
-| Barraca | `Barraquinhas` | Gestão de filiais |
+| Barraca | `Quiosque` | Gestão de filiais |
 | **+ (FAB)** | `AddItem` | Cadastrar produtos |
 | Carrinho | `Cart` | Marketplace |
 | Sacola | `Sacola` | Checkout (com badge de quantidade) |
@@ -417,7 +417,7 @@ Layout unificado em todas as telas autenticadas:
 #### `HamburgerButton` — menu lateral (Modal)
 
 Itens do menu:
-- Barraquinhas
+- Quiosque
 - Formas de pagamento
 - Configurações
 - Sair (logout)
@@ -432,7 +432,7 @@ Implementado como **Modal** (70% da largura), não usa `@react-navigation/drawer
 | `NotificationsModal` | Lista notificações; tap navega para Cart ou StoreVitrine |
 | `EnderecoFormModal` | Cadastro de endereço com busca ViaCEP |
 | `ProductFormModal` | Criar/editar produto + upload de foto |
-| `BarracaFormModal` | Criar/editar barraquinha + alocar estoque |
+| `BarracaFormModal` | Criar/editar quiosque + alocar estoque |
 | `RemoteImage` | Imagem remota com fallback (iniciais coloridas) |
 | `CustomInput` / `CustomButton` | Inputs e botões padronizados |
 
@@ -442,7 +442,7 @@ Implementado como **Modal** (70% da largura), não usa `@react-navigation/drawer
 |---------|---------|
 | `authService.ts` | Login, cadastro, perfil |
 | `productService.ts` | CRUD produtos + upload |
-| `barracaService.ts` | CRUD barraquinhas + estoque |
+| `barracaService.ts` | CRUD quiosques + estoque |
 | `marketplaceService.ts` | Fornecedores, vitrine, pedidos |
 | `formaPagamentoService.ts` | Formas de pagamento salvas |
 | `enderecoService.ts` | Endereços de entrega |
@@ -526,12 +526,12 @@ BottomTabBar → botão central (+)
         └── excluir produto
 ```
 
-### 6.4 Gestão de barraquinhas
+### 6.4 Gestão de quiosques
 
 ```
-Menu ☰ → Barraquinhas
-  └── BarraquinhasScreen
-        ├── listar barraquinhas (cards expansíveis)
+Menu ☰ → Quiosque
+  └── QuiosqueScreen
+        ├── listar quiosques (cards expansíveis)
         ├── criar/editar via BarracaFormModal
         ├── alocar quantidade de cada produto do catálogo
         └── remover com confirmação
@@ -581,7 +581,7 @@ Seja transparente na apresentação sobre o que está 100% integrado e o que é 
 ### Totalmente integrado com API
 
 - Login, cadastro, sessão JWT
-- CRUD produtos, barraquinhas, estoque
+- CRUD produtos, quiosques, estoque
 - Marketplace, vitrine, sacola, checkout
 - Acompanhamento de pedido (polling + timer 20s)
 - Endereços, formas de pagamento
@@ -605,7 +605,7 @@ Seja transparente na apresentação sobre o que está 100% integrado e o que é 
 
 ### Por que React Context em vez de Redux?
 
-O estado do app é moderado (auth, produtos, barraquinhas, sacola). Context API é suficiente para o MVP e reduz complexidade.
+O estado do app é moderado (auth, produtos, quiosques, sacola). Context API é suficiente para o MVP e reduz complexidade.
 
 ### Por que tab bar custom em vez de `@react-navigation/bottom-tabs`?
 
@@ -661,7 +661,7 @@ Antes havia fluxo separado (AccountType → RegisterCompany → RegisterUser). F
 8. **Aguardar ~20s** — mostrar status mudando para "Em rota"
 9. **Menu ☰** — Formas de pagamento ou Configurações (rápido)
 10. **Botão +** — cadastrar/editar um produto
-11. **Barraquinhas** — mostrar estoque por filial
+11. **Quiosque** — mostrar estoque por filial
 12. **Cards → Estatísticas** — gráficos da API
 
 ### Frases-chave para a apresentação
@@ -770,8 +770,8 @@ Resumo cronológico das principais entregas implementadas:
 ### Fase 2 — Gestão interna
 
 - CRUD de produtos com upload de imagem
-- CRUD de barraquinhas com estoque por produto
-- ProductsContext e BarraquinhasContext
+- CRUD de quiosques com estoque por produto
+- ProductsContext e QuiosqueContext
 - HomeScreen com catálogo da empresa
 
 ### Fase 3 — Marketplace B2B
@@ -801,7 +801,7 @@ Resumo cronológico das principais entregas implementadas:
 - `ScreenHeader` padronizado em todas as telas
 - Saudação + calendário só na Home
 - `BottomTabBar` com 7 ações + FAB central (+)
-- Menu hambúrguer: Barraquinhas, Formas pagamento, Configurações, Sair
+- Menu hambúrguer: Quiosque, Formas pagamento, Configurações, Sair
 - Ícone carteira → Formas de pagamento (não mais AddItem)
 - Botão (+) central → cadastro de produtos
 
@@ -817,7 +817,7 @@ Resumo cronológico das principais entregas implementadas:
 
 | Termo | Significado |
 |-------|-------------|
-| **Barraquinha** | Ponto de venda / filial da empresa |
+| **Quiosque** | Ponto de venda / filial da empresa |
 | **Sacola** | Carrinho de compra B2B (checkout) |
 | **Cart** | Tela de marketplace (lista fornecedores) |
 | **Fornecedor** | Empresa DISTRIBUIDOR ou PLATAFORMA |

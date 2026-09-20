@@ -83,26 +83,24 @@ function CoverImage({
   const uri = getImageUrl(capaUrl);
   const frameStyle = { width, height };
 
-  if (uri) {
-    return (
-      <View style={[styles.coverFrame, frameStyle]}>
+  return (
+    <View style={[styles.coverFrame, frameStyle]}>
+      {uri ? (
         <RemoteImage
           uri={uri}
-          style={frameStyle}
+          style={styles.coverImage}
           fallbackLabel={nome}
           resizeMode="cover"
         />
-      </View>
-    );
-  }
-
-  return (
-    <LinearGradient
-      colors={['#F8B125', '#FFD76A']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={[styles.coverFrame, frameStyle]}
-    />
+      ) : (
+        <LinearGradient
+          colors={['#F8B125', '#FFD76A']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.coverImage}
+        />
+      )}
+    </View>
   );
 }
 
@@ -527,12 +525,20 @@ const styles = StyleSheet.create({
   coverFrame: {
     overflow: 'hidden',
     backgroundColor: '#E8E8E8',
+    position: 'relative',
+  },
+  coverImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
   },
   featuredSection: {
     marginBottom: 0,
   },
   featuredScroll: {
     height: FEATURED_HEIGHT,
+    overflow: 'hidden',
   },
   featuredListPadding: {
     paddingRight: 4,
@@ -552,6 +558,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     overflow: 'hidden',
     backgroundColor: '#E8E8E8',
+    position: 'relative',
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
@@ -609,6 +616,7 @@ const styles = StyleSheet.create({
   partnerListPadding: {
     paddingRight: 4,
     paddingBottom: 4,
+    alignItems: 'flex-start',
   },
   partnerCard: {
     width: PARTNER_CARD_WIDTH,
@@ -618,12 +626,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFDF7',
     borderWidth: 1,
     borderColor: '#F3E3B1',
+    flexShrink: 0,
+    alignSelf: 'flex-start',
   },
   partnerCoverWrap: {
     width: PARTNER_CARD_WIDTH,
     height: PARTNER_COVER_HEIGHT,
     backgroundColor: '#E8E8E8',
     overflow: 'hidden',
+    position: 'relative',
   },
   partnerCoverGradient: {
     ...StyleSheet.absoluteFillObject,
@@ -729,7 +740,7 @@ const styles = StyleSheet.create({
     height: 96,
     backgroundColor: '#E8E8E8',
     overflow: 'hidden',
-    alignItems: 'center',
+    position: 'relative',
   },
   storeContent: {
     padding: 14,

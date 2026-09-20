@@ -4,7 +4,7 @@
 [![Expo](https://img.shields.io/badge/Expo-1B1F23?style=for-the-badge&logo=expo&logoColor=white)](https://expo.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-O **QuickStock Mobile** é a interface front-end móvel do ecossistema QuickStock. Desenvolvido com **React Native** e **Expo**, o aplicativo foi projetado para gerenciar estoques descentralizados, vendas em eventos, controle de barraquinhas e fluxo de pagamentos de forma ágil e intuitiva. 
+O **QuickStock Mobile** é a interface front-end móvel do ecossistema QuickStock. Desenvolvido com **React Native** e **Expo**, o aplicativo foi projetado para gerenciar estoques descentralizados, vendas em eventos, controle de quiosques e fluxo de pagamentos de forma ágil e intuitiva. 
 
 Este aplicativo consome a [API REST do QuickStock Backend](https://github.com/luansantos26/quickstock-backend).
 
@@ -28,7 +28,7 @@ O aplicativo atende tanto à gestão operacional quanto ao usuário final, possu
 * **Framework Principal:** React Native
 * **Ecossistema/Build:** Expo
 * **Linguagem:** TypeScript
-* **Gerenciamento de Estado:** React Context API (Auth, Cart, Products, Barraquinhas)
+* **Gerenciamento de Estado:** React Context API (Auth, Cart, Products, Quiosque)
 * **Navegação:** React Navigation (Padrão de navegação por Tabs e Stacks)
 * **Comunicação com API:** Axios / Fetch API (`src/config/api.ts`)
 
@@ -108,6 +108,8 @@ Padrão de Cores: O tema principal está centralizado em src/theme/theme.ts. Alt
 Gerenciamento de Imagens: O app possui o utilitário imageFallback.ts e RemoteImage.tsx para lidar graciosamente com falhas no carregamento de imagens de produtos via API.
 
 Diagramas: Na pasta docs/diagramas/ estão disponíveis mapas mentais e modelos de entidade-relacionamento lógicos e conceituais do ecossistema.
+
+Cronograma da equipe (8 semanas / 5 papéis): [CRONOGRAMA_EQUIPE.md](./CRONOGRAMA_EQUIPE.md)
 
 👨‍💻 Equipe
 Luan Feitosa Santos

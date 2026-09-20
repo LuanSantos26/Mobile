@@ -3,19 +3,15 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { ScreenHeader } from '../../components/Header/ScreenHeader';
-import { BottomTabBar, useTabBarScrollPadding } from '../../components/Header/BottomTabBar';
+import { TabScreenLayout } from '../../components/Header/TabScreenLayout';
+import { BottomTabBar } from '../../components/Header/BottomTabBar';
 import { ProductFormModal } from '../../components/Card/ProductFormModal';
 import { RemoteImage } from '../../components/Header/RemoteImage';
-import { ScreenTopGradient } from '../../components/Header/ScreenTopGradient';
 import { IconActionButton } from '../../components/Button/IconActionButton';
 import { useAuth } from '../../context/AuthContext';
 import { useConfirmDialog } from '../../context/ConfirmDialogContext';
@@ -31,7 +27,6 @@ export function ManageProductsScreen() {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [produtoEmEdicao, setProdutoEmEdicao] = useState<Produto | null>(null);
-  const listBottomPadding = useTabBarScrollPadding();
 
   useFocusEffect(
     useCallback(() => {
@@ -62,105 +57,107 @@ export function ManageProductsScreen() {
     });
   };
 
-  const renderItem = ({ item }: { item: Produto }) => (
-    <View style={styles.productCard}>
-      <TouchableOpacity
-        style={styles.productMain}
-        activeOpacity={0.85}
-        onPress={() => abrirEdicao(item)}
-      >
-        <RemoteImage
-          uri={getImageUrl(item.imagemUrl)}
-          style={styles.thumbnail}
-          fallbackLabel={item.nome}
-          resizeMode="cover"
-        />
-
-        <View style={styles.productInfo}>
-          <Text style={styles.productName}>{item.nome}</Text>
-          <Text style={styles.productCode}>
-            {item.codigo ? `ID ${item.codigo}` : `#${item.id}`}
-          </Text>
-          <Text style={styles.productPrice}>{formatarPreco(item.precoVenda)}</Text>
-          <Text style={styles.productStock}>
-            Estoque: {formatarQuantidadeEstoque(item)}
-          </Text>
-          <Text style={styles.productUnit}>{item.unidade}</Text>
-          {item.descricao ? (
-            <Text style={styles.productDescription} numberOfLines={2}>
-              {item.descricao}
-            </Text>
-          ) : null}
-        </View>
-      </TouchableOpacity>
-
-      <IconActionButton
-        name="trash-outline"
-        accessibilityLabel="Remover produto"
-        onPress={() => confirmarRemocao(item)}
-      />
-    </View>
-  );
-
-  const renderListHeader = () => (
-    <>
-      <ScreenHeader />
-      <Text style={styles.pageTitle}>Gerenciar produtos</Text>
-      <Text style={styles.pageSubtitle}>
-        Cadastre, edite ou remova os produtos exibidos no app.
-      </Text>
-
-      <TouchableOpacity style={styles.addButton} onPress={abrirNovo}>
-        <Ionicons name="add-circle-outline" size={22} color="#FFF" />
-        <Text style={styles.addButtonText}>Adicionar produto</Text>
-      </TouchableOpacity>
-    </>
-  );
-
   return (
-    <View style={styles.root}>
-      <SafeAreaView style={styles.container} edges={['left', 'right']}>
-        <ScreenTopGradient />
+    <>
+      <TabScreenLayout
+        title="Gerenciar produtos"
+        subtitle="Cadastre, edite ou remova os produtos exibidos no app."
+        wrapContent={false}
+        tabBar={<BottomTabBar activeRoute="AddItem" />}
+      >
+        <TouchableOpacity style={styles.addButton} onPress={abrirNovo} activeOpacity={0.85}>
+          <Ionicons name="add-circle-outline" size={18} color="#FFF" />
+          <Text style={styles.addButtonText}>Adicionar produto</Text>
+        </TouchableOpacity>
 
-        <View style={styles.content}>
-        {loading || error || produtos.length === 0 ? (
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={[styles.listContent, { paddingBottom: listBottomPadding }]}
-          >
-            {renderListHeader()}
-            {loading ? (
-              <ActivityIndicator color="#F8B125" style={styles.loader} />
-            ) : error ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.errorText}>{error}</Text>
-                <TouchableOpacity onPress={refresh}>
-                  <Text style={styles.retryText}>Tentar novamente</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyText}>Nenhum produto cadastrado.</Text>
-                <TouchableOpacity onPress={abrirNovo}>
-                  <Text style={styles.retryText}>Cadastrar primeiro produto</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </ScrollView>
+        {loading ? (
+          <ActivityIndicator color="#F8B125" style={styles.loader} />
+        ) : error ? (
+          <View style={styles.sectionCard}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity onPress={refresh}>
+              <Text style={styles.retryText}>Tentar novamente</Text>
+            </TouchableOpacity>
+          </View>
+        ) : produtos.length === 0 ? (
+          <View style={styles.sectionCard}>
+            <View style={styles.emptyIconWrap}>
+              <Ionicons name="cube-outline" size={22} color="#F8B125" />
+            </View>
+            <Text style={styles.emptyTitle}>Nenhum produto cadastrado</Text>
+            <Text style={styles.emptyText}>
+              Adicione o primeiro item para exibir no estoque e no catálogo.
+            </Text>
+            <TouchableOpacity onPress={abrirNovo}>
+              <Text style={styles.retryText}>Cadastrar primeiro produto</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
-          <FlatList
-            data={produtos}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={renderItem}
-            ListHeaderComponent={renderListHeader}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={[styles.listContent, { paddingBottom: listBottomPadding }]}
-          />
-        )}
-      </View>
-      </SafeAreaView>
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Catálogo</Text>
+              <Text style={styles.sectionSubtitle}>
+                {produtos.length} produto(s) cadastrado(s)
+              </Text>
+            </View>
+            {produtos.map((item, index) => (
+              <View
+                key={item.id}
+                style={[styles.productCard, index === produtos.length - 1 && styles.productCardLast]}
+              >
+                <TouchableOpacity
+                  style={styles.productMain}
+                  activeOpacity={0.85}
+                  onPress={() => abrirEdicao(item)}
+                >
+                  <View style={styles.thumbnailWrap}>
+                    <RemoteImage
+                      uri={getImageUrl(item.imagemUrl)}
+                      style={styles.thumbnail}
+                      fallbackLabel={item.nome}
+                      resizeMode="cover"
+                    />
+                  </View>
 
-      <BottomTabBar activeRoute="AddItem" />
+                  <View style={styles.productInfo}>
+                    <Text style={styles.productName} numberOfLines={2}>
+                      {item.nome}
+                    </Text>
+                    <Text style={styles.productCode}>
+                      {item.codigo ? `ID ${item.codigo}` : `#${item.id}`}
+                    </Text>
+                    <Text style={styles.productPrice}>{formatarPreco(item.precoVenda)}</Text>
+                    <View style={styles.metaRow}>
+                      <View style={styles.stockPill}>
+                        <Text style={styles.stockPillText}>
+                          {formatarQuantidadeEstoque(item)}
+                        </Text>
+                      </View>
+                      {item.unidade ? (
+                        <Text style={styles.productUnit}>{item.unidade}</Text>
+                      ) : null}
+                    </View>
+                    {item.descricao ? (
+                      <Text style={styles.productDescription} numberOfLines={2}>
+                        {item.descricao}
+                      </Text>
+                    ) : null}
+                  </View>
+                </TouchableOpacity>
+
+                <View style={styles.productActions}>
+                  <IconActionButton
+                    name="trash-outline"
+                    accessibilityLabel="Remover produto"
+                    onPress={() => confirmarRemocao(item)}
+                  />
+                  <Ionicons name="chevron-forward" size={16} color="#D4B56A" />
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+      </TabScreenLayout>
 
       {empresaId ? (
         <ProductFormModal
@@ -171,74 +168,93 @@ export function ManageProductsScreen() {
           onSaved={refresh}
         />
       ) : null}
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#FAFAFA' },
-  container: { flex: 1, backgroundColor: '#FAFAFA' },
-  content: {
-    flex: 1,
-    paddingHorizontal: 15,
-    paddingTop: 8,
-  },
-  pageTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#FFF',
-  },
-  pageSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-    marginBottom: 16,
-  },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F8B125',
-    borderRadius: 14,
-    paddingVertical: 12,
+    borderRadius: 10,
+    paddingVertical: 10,
+    marginHorizontal: 15,
     marginBottom: 16,
-    gap: 8,
+    gap: 6,
   },
   addButtonText: {
     color: '#FFF',
-    fontWeight: 'bold',
-    fontSize: 15,
+    fontWeight: '700',
+    fontSize: 14,
   },
-  loader: { marginTop: 40 },
-  listContent: {},
+  loader: {
+    marginTop: 24,
+  },
+  sectionCard: {
+    backgroundColor: '#FFF',
+    marginHorizontal: 15,
+    marginBottom: 16,
+    borderRadius: 20,
+    padding: 16,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+  },
+  sectionHeader: {
+    marginBottom: 14,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#F8B125',
+  },
+  sectionSubtitle: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#888',
+  },
   productCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFF',
+    alignItems: 'center',
+    backgroundColor: '#FFFDF7',
     borderRadius: 16,
     padding: 12,
-    marginBottom: 12,
+    marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#F0E6CC',
-    alignItems: 'center',
+    borderColor: '#F3E3B1',
+  },
+  productCardLast: {
+    marginBottom: 0,
   },
   productMain: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  thumbnail: {
+  thumbnailWrap: {
     width: 64,
     height: 64,
     borderRadius: 12,
-    backgroundColor: '#F0F0F0',
+    overflow: 'hidden',
+    backgroundColor: '#F5F5F5',
+    position: 'relative',
+  },
+  thumbnail: {
+    width: '100%',
+    height: '100%',
   },
   productInfo: {
     flex: 1,
     marginLeft: 12,
+    marginRight: 8,
   },
   productName: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '700',
     color: '#333',
   },
   productCode: {
@@ -250,33 +266,65 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 14,
     color: '#F8B125',
-    fontWeight: '600',
-    marginTop: 2,
+    fontWeight: '700',
+    marginTop: 4,
   },
-  productStock: {
-    fontSize: 12,
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+    gap: 8,
+  },
+  stockPill: {
+    backgroundColor: '#FFF6DE',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: '#F3E3B1',
+  },
+  stockPillText: {
+    fontSize: 11,
+    fontWeight: '700',
     color: '#2E7D32',
-    fontWeight: '600',
-    marginTop: 2,
   },
   productUnit: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#888',
+    fontWeight: '600',
   },
   productDescription: {
     fontSize: 12,
-    color: '#666',
-    marginTop: 4,
+    color: '#888',
+    marginTop: 6,
   },
-  emptyState: {
+  productActions: {
     alignItems: 'center',
-    marginTop: 40,
-    paddingHorizontal: 20,
+    justifyContent: 'center',
+  },
+  emptyIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFF6DE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#333',
+    textAlign: 'center',
   },
   emptyText: {
-    color: '#666',
+    color: '#888',
     textAlign: 'center',
-    marginBottom: 8,
+    marginTop: 6,
+    marginBottom: 12,
+    fontSize: 12,
+    lineHeight: 18,
   },
   errorText: {
     color: '#D64545',
@@ -286,40 +334,6 @@ const styles = StyleSheet.create({
   retryText: {
     color: '#F8B125',
     fontWeight: '600',
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 70,
-    backgroundColor: '#F8B125',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-  },
-  tabItem: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  floatingButtonContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  floatingButton: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    backgroundColor: '#FFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
-    bottom: -15,
-    borderWidth: 2,
-    borderColor: '#F8B125',
-    elevation: 6,
+    textAlign: 'center',
   },
 });

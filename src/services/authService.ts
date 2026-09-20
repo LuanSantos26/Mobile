@@ -114,6 +114,30 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
   return normalizeLoginResponse(data as Record<string, unknown>);
 }
 
+export interface RecuperarSenhaPayload {
+  email: string;
+  novaSenha: string;
+}
+
+export async function recuperarSenha(payload: RecuperarSenhaPayload): Promise<void> {
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}/api/usuarios/recuperar-senha`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: payload.email.trim().toLowerCase(),
+        novaSenha: payload.novaSenha,
+      }),
+    });
+  } catch {
+    throw new Error('Não foi possível conectar ao servidor. Verifique se o backend está rodando.');
+  }
+
+  await parseResponse<Record<string, unknown>>(response);
+}
+
 export async function obterUsuarioAtual(token: string): Promise<UsuarioLogado> {
   const response = await fetch(`${API_BASE_URL}/api/usuarios/me`, {
     headers: {
