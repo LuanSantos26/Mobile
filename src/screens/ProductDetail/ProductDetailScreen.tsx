@@ -241,7 +241,7 @@ export function ProductDetailScreen() {
             </Text>
           </View>
           {!isCatalogo ? (
-            <Ionicons name="chevron-forward" size={20} color="#666" />
+          <Ionicons name="chevron-forward" size={16} color="#D4B56A" />
           ) : null}
         </TouchableOpacity>
 
@@ -368,14 +368,22 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#EEE',
+    borderColor: '#F3E3B1',
     marginBottom: 14,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
   },
   imageWrap: {
     height: 220,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#F5F5F5',
+    overflow: 'hidden',
+    position: 'relative',
   },
   heroImage: {
+    ...StyleSheet.absoluteFillObject,
     width: '100%',
     height: '100%',
   },
@@ -390,7 +398,7 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#111',
+    color: '#333',
     lineHeight: 26,
   },
   productCode: {
@@ -441,12 +449,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 12,
+    borderRadius: 20,
+    padding: 14,
     borderWidth: 1,
-    borderColor: '#EEE',
+    borderColor: '#F3E3B1',
     marginBottom: 14,
     gap: 10,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
   },
   storeLogo: {
     width: 48,
@@ -464,7 +477,7 @@ const styles = StyleSheet.create({
   storeName: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#111',
+    color: '#F8B125',
     marginTop: 2,
   },
   storeDesc: {
@@ -474,16 +487,21 @@ const styles = StyleSheet.create({
   },
   section: {
     backgroundColor: '#FFF',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#EEE',
+    borderColor: '#F3E3B1',
     marginBottom: 14,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
   },
   sectionTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#111',
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#F8B125',
     marginBottom: 8,
   },
   description: {
@@ -498,21 +516,21 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   observationTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#111',
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#F8B125',
   },
   observationInput: {
     minHeight: 72,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#DDD',
+    borderColor: '#F3E3B1',
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
-    color: '#111',
+    color: '#333',
     textAlignVertical: 'top',
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#FFFDF7',
   },
   feedbackText: {
     textAlign: 'center',

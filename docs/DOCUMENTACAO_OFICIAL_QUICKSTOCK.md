@@ -24,7 +24,7 @@ Desenvolver e documentar um sistema mobile integrado a backend para gestão de e
 ### 1.2 Objetivos específicos
 
 - Cadastro unificado com JWT
-- CRUD de produtos, barraquinhas e estoque
+- CRUD de produtos, quiosques e estoque
 - Marketplace B2B com checkout e rastreamento
 - Modelagem conceitual, lógica e física do banco
 - Documentação conforme ABNT NBR 14724
@@ -59,9 +59,9 @@ Repositórios:
 ### 3.1 Frontend mobile
 
 - **Navegação:** React Navigation Native Stack; gate auth em `App.tsx`
-- **Contexts:** AuthContext, ProductsContext, BarraquinhasContext, PurchaseCartContext
+- **Contexts:** AuthContext, ProductsContext, QuiosqueContext, PurchaseCartContext
 - **Services:** auth, product, barraca, marketplace, endereco, formaPagamento, financeiro, notificacao
-- **Telas:** Welcome, Login, Register, Home, Cart, StoreVitrine, ProductDetail, Sacola, PedidoAcompanhamento, AddItem, Barraquinhas, FormasPagamento, Configuracoes, Cards
+- **Telas:** Welcome, Login, Register, Home, Cart, StoreVitrine, ProductDetail, Sacola, PedidoAcompanhamento, AddItem, Quiosque, FormasPagamento, Configuracoes, Cards
 - **Componentes:** ScreenHeader, BottomTabBar, HamburgerButton, modais de formulário
 
 ### 3.2 Backend API
@@ -75,7 +75,7 @@ Repositórios:
 
 #### 3.3.1 Modelo conceitual
 
-Entidades de negócio: Perfil, Empresa, Usuário, Produto, Evento, Barraquinha, Estoque, Pedido PDV, Pagamento, Solicitação de Compra, Endereço, Forma de Pagamento.
+Entidades de negócio: Perfil, Empresa, Usuário, Produto, Evento, Quiosque, Estoque, Pedido PDV, Pagamento, Solicitação de Compra, Endereço, Forma de Pagamento.
 
 Diagrama: `diagramas/er-conceitual.png`
 

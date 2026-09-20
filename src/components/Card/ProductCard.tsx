@@ -29,9 +29,29 @@ export function ProductHorizontalCard({ produto, subtitle, onPress }: { produto:
 }
 
 const styles = StyleSheet.create({
-  card: { width: 148, backgroundColor: '#FFF', borderRadius: 16, padding: 10, borderWidth: 1, borderColor: '#F0E6CC' },
-  imageBox: { width: '100%', height: 108, borderRadius: 12, overflow: 'hidden', backgroundColor: '#F5F5F5', marginBottom: 8 },
-  image: { width: '100%', height: '100%' },
+  card: {
+    width: 148,
+    marginRight: 12,
+    backgroundColor: '#FFFDF7',
+    borderRadius: 16,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#F3E3B1',
+  },
+  imageBox: {
+    width: '100%',
+    height: 108,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#F5F5F5',
+    marginBottom: 8,
+    position: 'relative',
+  },
+  image: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  },
   stockPill: { position: 'absolute', bottom: 6, left: 6, right: 6, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 3 },
   stockText: { color: '#FFF', fontSize: 10, fontWeight: '700', textAlign: 'center' },
   price: { fontSize: 15, fontWeight: '800', color: '#F8B125' },

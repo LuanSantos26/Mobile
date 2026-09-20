@@ -173,8 +173,8 @@ export function FinancialDonutChart({
 const styles = StyleSheet.create({
   wrap: {
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 8,
+    marginTop: 12,
+    marginBottom: 0,
   },
   loadingWrap: {
     alignItems: 'center',
@@ -182,8 +182,8 @@ const styles = StyleSheet.create({
   },
   emptyWrap: {
     alignItems: 'center',
-    paddingVertical: 32,
-    paddingHorizontal: 24,
+    paddingVertical: 20,
+    paddingHorizontal: 8,
   },
   emptyText: {
     fontSize: 15,
@@ -254,16 +254,11 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     width: '100%',
     marginTop: 16,
-    backgroundColor: '#FFF',
+    backgroundColor: '#FFFDF7',
     borderRadius: 16,
-    padding: 16,
+    padding: 14,
     borderWidth: 1,
-    borderColor: '#EAEAEA',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    borderColor: '#F3E3B1',
   },
   detailTitle: {
     fontSize: 15,

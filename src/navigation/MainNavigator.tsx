@@ -1,9 +1,9 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ProductsProvider } from '../context/ProductsContext';
-import { BarraquinhasProvider } from '../context/BarraquinhasContext';
+import { QuiosqueProvider } from '../context/QuiosqueContext';
 import HomeScreen from '../screens/Home/HomeScreen';
-import { BarraquinhasScreen } from '../screens/Barraquinhas/BarraquinhasScreen';
+import { QuiosqueScreen } from '../screens/Quiosque/QuiosqueScreen';
 import { CartScreen } from '../screens/Cart/CartScreen';
 import { CheckoutScreen } from '../screens/Checkout/CheckoutScreen';
 import { SacolaScreen } from '../screens/Sacola/SacolaScreen';
@@ -25,9 +25,9 @@ import type { RootStackParamList } from './types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function MainNavigator() {
-  return <ProductsProvider><BarraquinhasProvider><Stack.Navigator screenOptions={{ headerShown: false }}>
+  return <ProductsProvider><QuiosqueProvider><Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="Home" component={HomeScreen} />
-    <Stack.Screen name="Barraquinhas" component={BarraquinhasScreen} />
+    <Stack.Screen name="Quiosque" component={QuiosqueScreen} />
     <Stack.Screen name="Configuracoes" component={ConfiguracoesScreen} />
     <Stack.Screen name="FormasPagamento" component={FormasPagamentoScreen} />
     <Stack.Screen name="Enderecos" component={EnderecosScreen} />
@@ -44,5 +44,5 @@ export function MainNavigator() {
     <Stack.Screen name="CadastroCamioneiros" component={CadastroCamioneirosScreen} />
     <Stack.Screen name="Cli_For" component={EscolhaUsuarioScreen} />
     <Stack.Screen name="Logistica" component={LogisticaScreen} />
-  </Stack.Navigator></BarraquinhasProvider></ProductsProvider>;
+  </Stack.Navigator></QuiosqueProvider></ProductsProvider>;
 }

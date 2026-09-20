@@ -15,13 +15,13 @@ import { BarracaCard } from '../../components/Card/BarracaCard';
 import { BarracaFormModal } from '../../components/Card/BarracaFormModal';
 import { useAuth } from '../../context/AuthContext';
 import { useConfirmDialog } from '../../context/ConfirmDialogContext';
-import { useBarraquinhas } from '../../context/BarraquinhasContext';
+import { useQuiosques } from '../../context/QuiosqueContext';
 import { useProdutos } from '../../context/ProductsContext';
-import { Barraquinha, removerBarraquinha } from '../../services/barracaService';
+import { Quiosque, removerQuiosque } from '../../services/barracaService';
 
-export function BarraquinhasScreen() {
+export function QuiosqueScreen() {
   const { user } = useAuth();
-  const { barraquinhas, loading, error, refresh } = useBarraquinhas();
+  const { quiosques, loading, error, refresh } = useQuiosques();
   const { refresh: refreshProdutos } = useProdutos();
   const { confirm } = useConfirmDialog();
   const empresaId = user?.empresa?.id;
@@ -29,7 +29,7 @@ export function BarraquinhasScreen() {
 
   const [busca, setBusca] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
-  const [barraquinhaEmEdicao, setBarraquinhaEmEdicao] = useState<Barraquinha | null>(null);
+  const [quiosqueEmEdicao, setQuiosqueEmEdicao] = useState<Quiosque | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -40,30 +40,30 @@ export function BarraquinhasScreen() {
 
   const listaFiltrada = useMemo(() => {
     const termo = busca.trim().toLowerCase();
-    if (!termo) return barraquinhas;
-    return barraquinhas.filter((item) => item.nome.toLowerCase().includes(termo));
-  }, [barraquinhas, busca]);
+    if (!termo) return quiosques;
+    return quiosques.filter((item) => item.nome.toLowerCase().includes(termo));
+  }, [quiosques, busca]);
 
   const abrirNova = () => {
-    setBarraquinhaEmEdicao(null);
+    setQuiosqueEmEdicao(null);
     setModalVisible(true);
   };
 
-  const abrirEdicao = (barraquinha: Barraquinha) => {
-    setBarraquinhaEmEdicao(barraquinha);
+  const abrirEdicao = (quiosque: Quiosque) => {
+    setQuiosqueEmEdicao(quiosque);
     setModalVisible(true);
   };
 
-  const confirmarRemocao = (barraquinha: Barraquinha) => {
+  const confirmarRemocao = (quiosque: Quiosque) => {
     if (!empresaId) return;
 
     confirm({
-      title: 'Remover barraquinha',
-      message: `Deseja remover "${barraquinha.nome}"?`,
+      title: 'Remover quiosque',
+      message: `Deseja remover "${quiosque.nome}"?`,
       confirmText: 'Remover',
       destructive: true,
       onConfirm: async () => {
-        await removerBarraquinha(barraquinha.id, empresaId);
+        await removerQuiosque(quiosque.id, empresaId);
         await refresh();
       },
     });
@@ -72,11 +72,11 @@ export function BarraquinhasScreen() {
   return (
     <>
       <TabScreenLayout
-        title="Quiosque"
+        title="Quiosques"
         subtitle="Filiais e quiosques da empresa com estoque disponível."
         wrapContent={false}
         scrollContentStyle={styles.scrollContent}
-        tabBar={<BottomTabBar activeRoute="Quiosques" />}
+        tabBar={<BottomTabBar activeRoute="Quiosque" />}
       >
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={18} color="#F8B125" />
@@ -107,22 +107,22 @@ export function BarraquinhasScreen() {
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>
               {busca.trim()
-                ? 'Nenhuma barraquinha encontrada para a busca.'
-                : 'Nenhuma barraquinha cadastrada.'}
+                ? 'Nenhum quiosque encontrado para a busca.'
+                : 'Nenhum quiosque cadastrado.'}
             </Text>
             {!busca.trim() ? (
               <TouchableOpacity onPress={abrirNova}>
-                <Text style={styles.retryText}>Cadastrar primeira barraquinha</Text>
+                <Text style={styles.retryText}>Cadastrar primeiro quiosque</Text>
               </TouchableOpacity>
             ) : null}
           </View>
         ) : (
-          listaFiltrada.map((barraquinha) => (
+          listaFiltrada.map((quiosque) => (
             <BarracaCard
-              key={barraquinha.id}
-              barraquinha={barraquinha}
-              onPress={() => abrirEdicao(barraquinha)}
-              onDelete={() => confirmarRemocao(barraquinha)}
+              key={quiosque.id}
+              quiosque={quiosque}
+              onPress={() => abrirEdicao(quiosque)}
+              onDelete={() => confirmarRemocao(quiosque)}
             />
           ))
         )}
@@ -133,7 +133,7 @@ export function BarraquinhasScreen() {
           visible={modalVisible}
           empresaId={empresaId}
           responsavelId={responsavelId}
-          barraquinha={barraquinhaEmEdicao}
+          quiosque={quiosqueEmEdicao}
           onClose={() => setModalVisible(false)}
           onSaved={refresh}
         />

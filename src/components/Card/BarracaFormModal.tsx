@@ -16,17 +16,17 @@ import { getImageUrl } from '../../config/api';
 import { RemoteImage } from '../Header/RemoteImage';
 import { useProdutos } from '../../context/ProductsContext';
 import {
-  Barraquinha,
-  BarraquinhaPayload,
-  atualizarBarraquinha,
-  criarBarraquinha,
+  Quiosque,
+  QuiosquePayload,
+  atualizarQuiosque,
+  criarQuiosque,
 } from '../../services/barracaService';
 
 interface BarracaFormModalProps {
   visible: boolean;
   empresaId: number;
   responsavelId: number;
-  barraquinha?: Barraquinha | null;
+  quiosque?: Quiosque | null;
   onClose: () => void;
   onSaved: () => void;
 }
@@ -35,11 +35,11 @@ export function BarracaFormModal({
   visible,
   empresaId,
   responsavelId,
-  barraquinha,
+  quiosque,
   onClose,
   onSaved,
 }: BarracaFormModalProps) {
-  const isEditing = !!barraquinha;
+  const isEditing = !!quiosque;
   const { produtos } = useProdutos();
 
   const [nome, setNome] = useState('');
@@ -50,20 +50,20 @@ export function BarracaFormModal({
   useEffect(() => {
     if (!visible) return;
 
-    setNome(barraquinha?.nome ?? '');
+    setNome(quiosque?.nome ?? '');
     const initial: Record<number, string> = {};
-    barraquinha?.itens.forEach((item) => {
+    quiosque?.itens.forEach((item) => {
       initial[item.produtoId] = String(item.quantidade);
     });
     setQuantidades(initial);
     setError('');
-  }, [visible, barraquinha]);
+  }, [visible, quiosque]);
 
   const handleSave = async () => {
     setError('');
 
     if (!nome.trim()) {
-      setError('Informe o nome da barraquinha.');
+      setError('Informe o nome do quiosque.');
       return;
     }
 
@@ -75,7 +75,7 @@ export function BarracaFormModal({
       }))
       .filter((item) => !Number.isNaN(item.quantidade) && item.quantidade >= 0);
 
-    const payload: BarraquinhaPayload = {
+    const payload: QuiosquePayload = {
       nome: nome.trim(),
       empresaId: Number(empresaId),
       responsavelId: Number(responsavelId),
@@ -84,16 +84,16 @@ export function BarracaFormModal({
 
     setLoading(true);
     try {
-      if (isEditing && barraquinha) {
-        await atualizarBarraquinha(barraquinha.id, payload);
+      if (isEditing && quiosque) {
+        await atualizarQuiosque(quiosque.id, payload);
       } else {
-        await criarBarraquinha(payload);
+        await criarQuiosque(payload);
       }
       onSaved();
       onClose();
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Erro ao salvar barraquinha.';
+        err instanceof Error ? err.message : 'Erro ao salvar quiosque.';
       setError(message);
     } finally {
       setLoading(false);
@@ -109,7 +109,7 @@ export function BarracaFormModal({
         <View style={styles.container}>
           <View style={styles.header}>
             <Text style={styles.title}>
-              {isEditing ? 'Editar Barraquinha' : 'Nova Barraquinha'}
+              {isEditing ? 'Editar Quiosque' : 'Novo Quiosque'}
             </Text>
             <TouchableOpacity onPress={onClose}>
               <Feather name="x" size={24} color="#333" />
@@ -117,7 +117,7 @@ export function BarracaFormModal({
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false}>
-            <Text style={styles.label}>Nome da Barraquinha</Text>
+            <Text style={styles.label}>Nome do Quiosque</Text>
             <TextInput
               style={styles.input}
               value={nome}
@@ -168,7 +168,7 @@ export function BarracaFormModal({
               <ActivityIndicator color="#FFF" />
             ) : (
               <Text style={styles.saveButtonText}>
-                {isEditing ? 'Salvar alterações' : 'Cadastrar Barraquinha'}
+                {isEditing ? 'Salvar alterações' : 'Cadastrar Quiosque'}
               </Text>
             )}
           </TouchableOpacity>

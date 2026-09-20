@@ -6,7 +6,6 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Dimensions,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,8 +25,6 @@ import {
   Produto,
 } from '../../services/productService';
 import { buscarResumoFinanceiro, extrairTotaisFinanceiros, FinanceiroResumo } from '../../services/financeiroService';
-
-const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
@@ -131,13 +128,16 @@ export default function HomeScreen() {
         {/* ÚLTIMO ESTOQUE */}
         <View style={styles.mainCard}>
           <View style={styles.cardHeader}>
-            <View style={styles.cardTitleContainer}>
-              <View style={[styles.dot, { backgroundColor: 'red' }]} />
-              <Text style={styles.cardTitle}>Último estoque</Text>
+            <View style={styles.cardTitleBlock}>
+              <View style={styles.cardTitleContainer}>
+                <View style={[styles.dot, { backgroundColor: '#D64545' }]} />
+                <Text style={styles.cardTitle}>Último estoque</Text>
+              </View>
+              <Text style={styles.cardSubtitle}>Produtos cadastrados na empresa</Text>
             </View>
             <CalendarDatePill compact />
           </View>
-            <View style={styles.tagsContainer}>
+          <View style={styles.tagsContainer}>
             <View style={styles.tag}>
               <Text style={styles.tagText}>{totalCatalogo} produto(s)</Text>
             </View>
@@ -170,9 +170,12 @@ export default function HomeScreen() {
         {/* ESTOQUE ONLINE */}
         <View style={styles.mainCard}>
           <View style={styles.cardHeader}>
-            <View style={styles.cardTitleContainer}>
-              <View style={[styles.dot, { backgroundColor: '#32CD32' }]} />
-              <Text style={styles.cardTitle}>Estoque Online</Text>
+            <View style={styles.cardTitleBlock}>
+              <View style={styles.cardTitleContainer}>
+                <View style={[styles.dot, { backgroundColor: '#32CD32' }]} />
+                <Text style={styles.cardTitle}>Estoque online</Text>
+              </View>
+              <Text style={styles.cardSubtitle}>Visão rápida do catálogo ativo</Text>
             </View>
             <CalendarDatePill compact />
           </View>
@@ -181,7 +184,7 @@ export default function HomeScreen() {
               <Text style={styles.tagText}>Valor ref. {formatarPreco(valorCatalogo)}</Text>
             </View>
             <View style={styles.tag}>
-              <Text style={styles.tagText}>
+              <Text style={styles.tagText} numberOfLines={1}>
                 {user?.empresa?.nome ?? 'Sua empresa'}
               </Text>
             </View>
@@ -203,22 +206,25 @@ export default function HomeScreen() {
         </View>
 
         {/* RESUMO FINANCEIRO */}
-        <View style={styles.financialContainer}>
-          <View style={[styles.financialBox, { borderLeftColor: '#D64545' }]}>
-            <Text style={styles.financialLabel}>Total gasto</Text>
-            <Text style={styles.financialValue}>
-              {loadingFinanceiro ? '...' : formatarPreco(totalCompras)}
-            </Text>
+        <View style={styles.mainCard}>
+          <View style={styles.financeHeader}>
+            <Text style={styles.cardTitle}>Resumo financeiro</Text>
+            <Text style={styles.cardSubtitle}>Compras, vendas e lucro da conta</Text>
           </View>
-          <View style={[styles.financialBox, { borderLeftColor: '#32CD32' }]}>
-            <Text style={styles.financialLabel}>Total de lucro</Text>
-            <Text style={styles.financialValue}>
-              {loadingFinanceiro ? '...' : formatarPreco(lucroTotal)}
-            </Text>
+          <View style={styles.financialContainer}>
+            <View style={[styles.financialBox, styles.financialBoxSpend]}>
+              <Text style={styles.financialLabel}>Total gasto</Text>
+              <Text style={[styles.financialValue, { color: '#D64545' }]}>
+                {loadingFinanceiro ? '...' : formatarPreco(totalCompras)}
+              </Text>
+            </View>
+            <View style={[styles.financialBox, styles.financialBoxProfit]}>
+              <Text style={styles.financialLabel}>Total de lucro</Text>
+              <Text style={[styles.financialValue, { color: lucroTotal < 0 ? '#D64545' : '#2E7D32' }]}>
+                {loadingFinanceiro ? '...' : formatarPreco(lucroTotal)}
+              </Text>
+            </View>
           </View>
-        </View>
-
-        <View style={styles.chartSection}>
           <FinancialDonutChart
             totalCompras={totalCompras}
             totalVendas={totalVendas}
@@ -304,8 +310,8 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     backgroundColor: '#FFF', 
     marginHorizontal: 15, 
-    marginTop: 20, 
-    marginBottom: 20, 
+    marginTop: 8, 
+    marginBottom: 16, 
     paddingHorizontal: 12, 
     height: 40, 
     borderRadius: 20, 
@@ -327,8 +333,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF', 
     marginHorizontal: 15, 
     borderRadius: 20, 
-    padding: 15, 
-    marginBottom: 20, 
+    padding: 16, 
+    marginBottom: 16, 
     elevation: 8, 
     shadowColor: '#000', 
     shadowOffset: { width: 0, height: 4 }, 
@@ -338,17 +344,21 @@ const styles = StyleSheet.create({
   cardHeader: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: 10,
+    alignItems: 'flex-start', 
+    marginBottom: 12,
+  },
+  cardTitleBlock: {
+    flex: 1,
+    marginRight: 8,
   },
   cardTitleContainer: { 
     flexDirection: 'row', 
     alignItems: 'center',
   },
   dot: { 
-    width: 10, 
-    height: 10, 
-    borderRadius: 5, 
+    width: 8, 
+    height: 8, 
+    borderRadius: 4, 
     marginRight: 8,
   },
   cardTitle: { 
@@ -356,35 +366,32 @@ const styles = StyleSheet.create({
     fontWeight: 'bold', 
     color: '#F8B125',
   },
-  datePillCard: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    borderWidth: 1, 
-    borderColor: '#F8B125', 
-    paddingHorizontal: 10, 
-    paddingVertical: 4, 
-    borderRadius: 15,
+  cardSubtitle: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#888',
   },
-  dateTextCard: { 
-    color: '#F8B125', 
-    fontSize: 10, 
-    fontWeight: 'bold',
+  financeHeader: {
+    marginBottom: 14,
   },
   tagsContainer: { 
     flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    marginBottom: 10,
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
   },
   tag: { 
+    backgroundColor: '#FFFDF7',
     borderWidth: 1, 
-    borderColor: '#F8B125', 
-    borderRadius: 15, 
+    borderColor: '#F3E3B1', 
+    borderRadius: 16, 
     paddingHorizontal: 10, 
-    paddingVertical: 3,
+    paddingVertical: 5,
   },
   tagText: { 
-    fontSize: 10, 
-    color: '#333',
+    fontSize: 11, 
+    color: '#666',
+    fontWeight: '600',
   },
 
   // ==========================================
@@ -434,34 +441,37 @@ const styles = StyleSheet.create({
   // ==========================================
   financialContainer: { 
     flexDirection: 'row', 
-    justifyContent: 'center', 
-    marginHorizontal: 15, 
-    marginTop: 10,
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 4,
   },
   financialBox: { 
-    backgroundColor: '#FFF', 
+    flex: 1,
+    backgroundColor: '#FFFDF7', 
     borderWidth: 1, 
-    borderColor: '#F8B125', 
-    borderLeftWidth: 6, 
-    borderRadius: 10, 
-    paddingVertical: 10, 
-    paddingHorizontal: 20, 
-    alignItems: 'center', 
-    marginHorizontal: 10, 
-    minWidth: 120,
+    borderColor: '#F3E3B1', 
+    borderRadius: 16, 
+    paddingVertical: 12, 
+    paddingHorizontal: 12, 
+    alignItems: 'flex-start',
+  },
+  financialBoxSpend: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#D64545',
+  },
+  financialBoxProfit: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#32CD32',
   },
   financialLabel: { 
     fontSize: 12, 
-    color: '#666',
+    color: '#888',
   },
   financialValue: { 
     fontSize: 16, 
     fontWeight: 'bold', 
     color: '#333', 
     marginTop: 4,
-  },
-  chartSection: {
-    paddingHorizontal: 15,
   },
   quickActionsSection: {
     backgroundColor: '#FFF',

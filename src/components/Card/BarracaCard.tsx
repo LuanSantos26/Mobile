@@ -10,13 +10,13 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { getImageUrl } from '../../config/api';
 import { RemoteImage } from '../Header/RemoteImage';
-import { Barraquinha, EstoqueItem, formatarQuantidade } from '../../services/barracaService';
+import { Quiosque, EstoqueItem, formatarQuantidade } from '../../services/barracaService';
 import { formatarPreco } from '../../services/productService';
 import { useProdutos } from '../../context/ProductsContext';
 import { formatarDiaSemana } from '../../utils/dateFormat';
 
 interface BarracaCardProps {
-  barraquinha: Barraquinha;
+  quiosque: Quiosque;
   onPress: () => void;
   onDelete: () => void;
 }
@@ -74,7 +74,7 @@ const ExpandedItem = ({
   </View>
 );
 
-export function BarracaCard({ barraquinha, onPress, onDelete }: BarracaCardProps) {
+export function BarracaCard({ quiosque, onPress, onDelete }: BarracaCardProps) {
   const [expanded, setExpanded] = useState(false);
   const { produtos } = useProdutos();
   const imagemPorProdutoId = useMemo(() => {
@@ -86,9 +86,9 @@ export function BarracaCard({ barraquinha, onPress, onDelete }: BarracaCardProps
   const resolverImagem = (item: EstoqueItem) =>
     item.imagemUrl ?? imagemPorProdutoId.get(item.produtoId);
 
-  const itensComEstoque = barraquinha.itens.filter((item) => item.quantidade > 0);
-  const dataLabel = formatarDiaSemana(barraquinha.atualizadoEm);
-  const resumo = `${barraquinha.totalProdutos} produto(s) · ${barraquinha.totalUnidades} un disponíveis`;
+  const itensComEstoque = quiosque.itens.filter((item) => item.quantidade > 0);
+  const dataLabel = formatarDiaSemana(quiosque.atualizadoEm);
+  const resumo = `${quiosque.totalProdutos} produto(s) · ${quiosque.totalUnidades} un disponíveis`;
 
   return (
     <View style={styles.mainCard}>
@@ -97,7 +97,7 @@ export function BarracaCard({ barraquinha, onPress, onDelete }: BarracaCardProps
           <View style={styles.cardTitleContainer}>
             <View style={styles.dot} />
             <Text style={styles.cardTitle} numberOfLines={1}>
-              {barraquinha.nome}
+              {quiosque.nome}
             </Text>
           </View>
           <View style={styles.datePillCard}>
@@ -112,7 +112,7 @@ export function BarracaCard({ barraquinha, onPress, onDelete }: BarracaCardProps
               <Text style={styles.tagText}>{resumo}</Text>
             </View>
             <View style={styles.tag}>
-              <Text style={styles.tagText}>Evento: {barraquinha.eventoNome}</Text>
+              <Text style={styles.tagText}>Evento: {quiosque.eventoNome}</Text>
             </View>
           </View>
         ) : (

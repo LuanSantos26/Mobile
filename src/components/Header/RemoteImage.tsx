@@ -33,7 +33,7 @@ export function RemoteImage({
   return (
     <Image
       source={{ uri: resolvedUri }}
-      style={style}
+      style={[{ maxWidth: '100%', maxHeight: '100%' }, style]}
       resizeMode={resizeMode}
       onError={() => {
         if (!failed) setFailed(true);

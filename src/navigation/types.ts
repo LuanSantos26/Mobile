@@ -6,8 +6,9 @@ export type RootStackParamList = {
   Register: undefined;
   Cli_For: undefined;
   Login: undefined;
+  ForgotPassword: { email?: string } | undefined;
   Home: undefined;
-  Barraquinhas: undefined;
+  Quiosque: undefined;
   Configuracoes: undefined;
   FormasPagamento: undefined;
   Enderecos: undefined;

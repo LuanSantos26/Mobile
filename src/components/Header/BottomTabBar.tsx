@@ -17,7 +17,7 @@ export function useBottomTabBarHeight(): number {
   return TAB_BAR_HEIGHT + bottomInset;
 }
 
-export type BottomTabRoute = 'Home' | 'Quiosques' | 'Cart' | 'Sacola' | 'Cards' | 'FormasPagamento' | 'AddItem';
+export type BottomTabRoute = 'Home' | 'Quiosque' | 'Cart' | 'Sacola' | 'Cards' | 'FormasPagamento' | 'AddItem';
 
 interface BottomTabBarProps {
   activeRoute?: BottomTabRoute;
@@ -43,9 +43,9 @@ export function BottomTabBar({ activeRoute }: BottomTabBarProps) {
 
         <TouchableOpacity
           style={styles.tabItem}
-          onPress={() => activeRoute !== 'Quiosques' && navigation.navigate('Quiosques')}
+          onPress={() => activeRoute !== 'Quiosque' && navigation.navigate('Quiosque')}
         >
-          <Feather name="box" size={24} color={iconColor('Quiosques')} />
+          <Feather name="box" size={24} color={iconColor('Quiosque')} />
         </TouchableOpacity>
 
         <TouchableOpacity

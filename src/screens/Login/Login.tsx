@@ -15,8 +15,12 @@ import { WelcomeHeader, WelcomeBackButton } from '../../components/Header/welcom
 import { CustomButton } from '../../components/Button/CustomButton';
 import { useAuth } from '../../context/AuthContext';
 import { LAYOUT } from '../../theme/theme';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/types';
 
 export default function LoginScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -100,7 +104,13 @@ export default function LoginScreen() {
                 <CustomButton title="Login" onPress={handleLogin} />
               )}
 
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate('ForgotPassword', {
+                    email: email.trim() || undefined,
+                  })
+                }
+              >
                 <Text style={styles.forgotPassword}>Esqueceu a senha</Text>
               </TouchableOpacity>
             </View>
