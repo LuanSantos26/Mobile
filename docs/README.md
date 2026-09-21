@@ -120,5 +120,7 @@ Marcelo Vitor Viana da Silva
 
 Leticia Viviane Pereira da Silva
 
+José Lucas Luiz da Silva 
+
 📄 Licença
 Este projeto é destinado a fins acadêmicos e de aprendizado, podendo ser expandido para utilização comercial mediante adequações futuras.
