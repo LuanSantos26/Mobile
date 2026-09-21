@@ -109,7 +109,7 @@ Gerenciamento de Imagens: O app possui o utilitário imageFallback.ts e RemoteIm
 
 Diagramas: Na pasta docs/diagramas/ estão disponíveis mapas mentais e modelos de entidade-relacionamento lógicos e conceituais do ecossistema.
 
-Cronograma da equipe (8 semanas / 5 papéis): [CRONOGRAMA_EQUIPE.md](./CRONOGRAMA_EQUIPE.md)
+Cronograma da equipe (8 semanas / 5 papéis): [CRONOGRAMA_EQUIPE.md](./CRONOGRAMA_EQUIPE.md) · [PDF](./CRONOGRAMA_EQUIPE.pdf)
 
 👨‍💻 Equipe
 Luan Feitosa Santos
