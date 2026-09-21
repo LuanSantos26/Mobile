@@ -133,8 +133,9 @@ export function ConfiguracoesScreen() {
           onBack={goBack}
         />
 
-        <Text style={styles.sectionTitle}>Dados pessoais</Text>
         <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Dados pessoais</Text>
+          <Text style={styles.sectionSubtitle}>Nome e e-mail da conta</Text>
           <Text style={styles.label}>Nome</Text>
           <TextInput
             style={styles.input}
@@ -155,8 +156,8 @@ export function ConfiguracoesScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Alterar senha</Text>
         <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Alterar senha</Text>
           <Text style={styles.hint}>Deixe em branco para manter a senha atual.</Text>
           <Text style={styles.label}>Nova senha</Text>
           <TextInput
@@ -177,8 +178,9 @@ export function ConfiguracoesScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Dados da empresa</Text>
         <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Dados da empresa</Text>
+          <Text style={styles.sectionSubtitle}>Informações usadas nos pedidos</Text>
           <Text style={styles.label}>Nome da empresa</Text>
           <TextInput
             style={styles.input}
@@ -248,22 +250,28 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#333',
-    marginBottom: 10,
-    marginTop: 8,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#F8B125',
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: '#888',
+    marginBottom: 8,
   },
   card: {
     backgroundColor: '#FFF',
-    borderRadius: 12,
+    borderRadius: 20,
     padding: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#F3E3B1',
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
   },
   label: {
     fontSize: 13,
@@ -279,13 +287,13 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
+    borderColor: '#F3E3B1',
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 15,
     color: '#333',
-    backgroundColor: '#FFF',
+    backgroundColor: '#FFFDF7',
   },
   errorText: {
     color: '#D64545',
@@ -301,17 +309,17 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: '#F8B125',
-    borderRadius: 10,
+    borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 8,
   },
-  saveButtonDisabled: {
-    opacity: 0.7,
-  },
   saveButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#333',
+    color: '#FFF',
+  },
+  saveButtonDisabled: {
+    opacity: 0.7,
   },
 });

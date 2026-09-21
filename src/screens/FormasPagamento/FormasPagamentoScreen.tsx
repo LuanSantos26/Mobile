@@ -165,6 +165,7 @@ export function FormasPagamentoScreen() {
       <TabScreenLayout
         title="Formas de pagamento"
         subtitle="Cadastre as formas que deseja usar no checkout da sacola."
+        wrapContent={false}
         tabBar={<BottomTabBar activeRoute="FormasPagamento" />}
       >
         <PagePrimaryButton
@@ -173,61 +174,75 @@ export function FormasPagamentoScreen() {
           onPress={abrirModal}
           compact
           light
+          style={styles.addButton}
         />
 
         {loading ? (
           <ActivityIndicator color="#F8B125" style={{ marginTop: 24 }} />
         ) : error ? (
-          <View style={styles.emptyState}>
+          <View style={styles.sectionCard}>
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity onPress={carregar}>
               <Text style={styles.retryText}>Tentar novamente</Text>
             </TouchableOpacity>
           </View>
         ) : formas.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons name="wallet-outline" size={56} color="#F8B125" />
+          <View style={styles.sectionCard}>
+            <View style={styles.emptyIconWrap}>
+              <Ionicons name="wallet-outline" size={22} color="#F8B125" />
+            </View>
             <Text style={styles.emptyTitle}>Nenhuma forma cadastrada</Text>
             <Text style={styles.emptyText}>
               Adicione PIX, cartão ou dinheiro para finalizar pedidos na sacola.
             </Text>
           </View>
         ) : (
-          formas.map((forma) => (
-            <View key={forma.id} style={styles.formaCard}>
-              <TouchableOpacity
-                style={styles.formaMain}
-                activeOpacity={isFormaComDetalhes(forma.tipo) ? 0.75 : 1}
-                onPress={() => handlePressForma(forma)}
-                disabled={!isFormaComDetalhes(forma.tipo)}
-              >
-                <View style={styles.formaIconWrap}>
-                  <Ionicons
-                    name={iconeTipoPagamento(forma.tipo)}
-                    size={22}
-                    color="#F8B125"
-                  />
-                </View>
-                <View style={styles.formaInfo}>
-                  <Text style={styles.formaApelido}>{forma.apelido}</Text>
-                  <Text style={styles.formaTipo}>
-                    {forma.label || labelTipoPagamento(forma.tipo)}
-                    {forma.principal ? ' · Principal' : ''}
-                    {hintForma(forma.tipo)}
-                  </Text>
-                </View>
-                {isFormaComDetalhes(forma.tipo) ? (
-                  <Ionicons name="chevron-forward" size={20} color="#999" style={styles.chevron} />
-                ) : null}
-              </TouchableOpacity>
-              <IconActionButton
-                name="trash-outline"
-                size={22}
-                accessibilityLabel="Remover forma de pagamento"
-                onPress={() => confirmarRemocao(forma)}
-              />
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Cadastradas</Text>
+              <Text style={styles.sectionSubtitle}>
+                {formas.length} forma(s) de pagamento
+              </Text>
             </View>
-          ))
+            {formas.map((forma, index) => (
+              <View
+                key={forma.id}
+                style={[styles.formaCard, index === formas.length - 1 && styles.cardLast]}
+              >
+                <TouchableOpacity
+                  style={styles.formaMain}
+                  activeOpacity={isFormaComDetalhes(forma.tipo) ? 0.75 : 1}
+                  onPress={() => handlePressForma(forma)}
+                  disabled={!isFormaComDetalhes(forma.tipo)}
+                >
+                  <View style={styles.formaIconWrap}>
+                    <Ionicons
+                      name={iconeTipoPagamento(forma.tipo)}
+                      size={22}
+                      color="#F8B125"
+                    />
+                  </View>
+                  <View style={styles.formaInfo}>
+                    <Text style={styles.formaApelido}>{forma.apelido}</Text>
+                    <Text style={styles.formaTipo}>
+                      {forma.label || labelTipoPagamento(forma.tipo)}
+                      {forma.principal ? ' · Principal' : ''}
+                      {hintForma(forma.tipo)}
+                    </Text>
+                  </View>
+                  {isFormaComDetalhes(forma.tipo) ? (
+                    <Ionicons name="chevron-forward" size={16} color="#D4B56A" style={styles.chevron} />
+                  ) : null}
+                </TouchableOpacity>
+                <IconActionButton
+                  name="trash-outline"
+                  size={20}
+                  accessibilityLabel="Remover forma de pagamento"
+                  onPress={() => confirmarRemocao(forma)}
+                />
+              </View>
+            ))}
+          </View>
         )}
       </TabScreenLayout>
 
@@ -329,18 +344,47 @@ export function FormasPagamentoScreen() {
 }
 
 const styles = StyleSheet.create({
+  addButton: {
+    marginHorizontal: 15,
+    marginBottom: 16,
+  },
+  sectionCard: {
+    backgroundColor: '#FFF',
+    marginHorizontal: 15,
+    marginBottom: 16,
+    borderRadius: 20,
+    padding: 16,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+  },
+  sectionHeader: {
+    marginBottom: 14,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#F8B125',
+  },
+  sectionSubtitle: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#888',
+  },
   formaCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 14,
+    backgroundColor: '#FFFDF7',
+    borderRadius: 16,
+    padding: 12,
     marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#F3E3B1',
+  },
+  cardLast: {
+    marginBottom: 0,
   },
   formaMain: {
     flex: 1,
@@ -348,10 +392,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   formaIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#FFF8E1',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFF6DE',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -360,34 +404,40 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   formaApelido: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     color: '#333',
   },
   formaTipo: {
-    fontSize: 13,
-    color: '#777',
+    fontSize: 12,
+    color: '#888',
     marginTop: 2,
   },
   chevron: {
-    marginRight: 8,
+    marginRight: 4,
   },
-  emptyState: {
+  emptyIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFF6DE',
     alignItems: 'center',
-    paddingVertical: 32,
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginBottom: 10,
   },
   emptyTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700',
     color: '#333',
-    marginTop: 12,
+    textAlign: 'center',
   },
   emptyText: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 12,
+    color: '#888',
     textAlign: 'center',
-    marginTop: 8,
-    paddingHorizontal: 24,
+    marginTop: 6,
+    lineHeight: 18,
   },
   errorText: {
     color: '#D64545',
@@ -398,6 +448,7 @@ const styles = StyleSheet.create({
     color: '#F8B125',
     fontWeight: '600',
     marginTop: 10,
+    textAlign: 'center',
   },
   modalOverlay: {
     flex: 1,
