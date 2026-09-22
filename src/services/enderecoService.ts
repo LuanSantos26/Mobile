@@ -1,68 +1,24 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../config/api';
 import { normalizarCep } from '../utils/cepUtils';
+import { extractErrorMessage, parseResponse } from './http';
+import type {
+  EnderecoEntrega,
+  EnderecoEntregaPayload,
+  DadosCep,
+} from '../types/endereco';
+
+export type { EnderecoEntrega, EnderecoEntregaPayload, DadosCep };
 
 const ENDERECO_STORAGE_KEY = 'sacola:enderecoId';
 
-export interface EnderecoEntrega {
-  id: number;
-  empresaId: number;
-  apelido: string;
-  logradouro: string;
-  numero: string;
-  complemento?: string;
-  bairro: string;
-  cidade: string;
-  uf: string;
-  cep: string;
-  principal: boolean;
-  resumo: string;
-}
-
-export interface EnderecoEntregaPayload {
-  empresaId: number;
-  apelido: string;
-  logradouro: string;
-  numero: string;
-  complemento?: string;
-  bairro: string;
-  cidade: string;
-  uf: string;
-  cep: string;
-  principal?: boolean;
-}
-
-export interface DadosCep {
-  cep: string;
-  logradouro: string;
-  bairro: string;
-  cidade: string;
-  uf: string;
-}
-
-function extractErrorMessage(data: Record<string, unknown>, fallback: string): string {
-  if (typeof data.erro === 'string' && data.erro.trim()) return data.erro;
-  if (typeof data.message === 'string' && data.message.trim()) return data.message;
-    if (typeof data.error === 'string' && data.error.trim()) {
-    if (data.error === 'Method Not Allowed' || data.error === 'Not Found') {
-      return 'Servidor desatualizado. Reinicie o backend e tente novamente.';
-    }
-    return data.error;
-  }
-  return fallback;
-}
-
 export async function listarEnderecos(empresaId: number): Promise<EnderecoEntrega[]> {
   const response = await fetch(`${API_BASE_URL}/api/enderecos?empresaId=${empresaId}`);
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível carregar endereços.'),
-    );
-  }
-
-  return data as EnderecoEntrega[];
+  return parseResponse<EnderecoEntrega[]>(
+    response,
+    'Não foi possível carregar endereços.',
+    { treatOutdatedServer: true },
+  );
 }
 
 export async function consultarCep(cep: string): Promise<DadosCep | null> {
@@ -84,7 +40,7 @@ export async function consultarCep(cep: string): Promise<DadosCep | null> {
 
   if (!response.ok) {
     throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível consultar o CEP.'),
+      extractErrorMessage(data, 'Não foi possível consultar o CEP.', { treatOutdatedServer: true }),
     );
   }
 
@@ -114,7 +70,7 @@ export async function criarEndereco(payload: EnderecoEntregaPayload): Promise<En
 
   if (!response.ok) {
     throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível salvar o endereço.'),
+      extractErrorMessage(data, 'Não foi possível salvar o endereço.', { treatOutdatedServer: true }),
     );
   }
 

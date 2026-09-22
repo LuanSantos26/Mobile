@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -11,13 +10,14 @@ import {
 } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Background } from '../../components/Header/Background';
+import { Background } from '../../components/layout/Background';
 import { CustomInput } from '../../components/Input/CustomInput';
 import { WelcomeHeader, WelcomeBackButton } from '../../components/Header/welcomeHeader';
 import { CustomButton } from '../../components/Button/CustomButton';
 import { recuperarSenha } from '../../services/authService';
 import { LAYOUT } from '../../theme/theme';
 import { RootStackParamList } from '../../navigation/types';
+import { styles } from './styles';
 
 export function ForgotPasswordScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -144,61 +144,3 @@ export function ForgotPasswordScreen() {
     </Background>
   );
 }
-
-const styles = StyleSheet.create({
-  keyboardView: {
-    flex: 1,
-    width: '100%',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    alignItems: 'center',
-    paddingBottom: 40,
-  },
-  content: {
-    width: LAYOUT.formWidth,
-    flex: 1,
-    justifyContent: 'center',
-    alignSelf: 'center',
-  },
-  form: {
-    width: '100%',
-  },
-  title: {
-    color: '#FFF',
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 20,
-  },
-  errorText: {
-    color: '#FFE0E0',
-    textAlign: 'center',
-    marginBottom: 8,
-    fontSize: 14,
-  },
-  successText: {
-    color: '#E8F5E9',
-    textAlign: 'center',
-    marginBottom: 16,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  loader: {
-    marginTop: 20,
-  },
-  backToLogin: {
-    marginTop: 20,
-    color: 'white',
-    textDecorationLine: 'underline',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-});

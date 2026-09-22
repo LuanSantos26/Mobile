@@ -1,91 +1,25 @@
 import { API_BASE_URL } from '../config/api';
 import { Produto } from './productService';
+import { parseResponse } from './http';
+import type {
+  Fornecedor,
+  ItemSolicitacao,
+  EtapaPedido,
+  SolicitacaoCompra,
+  MetodoPagamento,
+  ItemSolicitacaoPayload,
+  SolicitacaoCompraPayload,
+} from '../types';
 
-export interface Fornecedor {
-  id: number;
-  nome: string;
-  descricao?: string;
-  tipo: string;
-  totalProdutos: number;
-  logoUrl?: string;
-  capaUrl?: string;
-}
-
-export interface ItemSolicitacao {
-  produtoId: number;
-  nome: string;
-  unidade: string;
-  quantidade: number;
-  precoUnitario: number;
-  subtotal: number;
-  imagemUrl?: string;
-}
-
-export interface EtapaPedido {
-  codigo: string;
-  label: string;
-  ordem: number;
-  concluida: boolean;
-  ativa: boolean;
-}
-
-export interface SolicitacaoCompra {
-  id: number;
-  pedidoId?: number;
-  fornecedorId: number;
-  fornecedorNome: string;
-  status: string;
-  statusLabel?: string;
-  etapas?: EtapaPedido[];
-  valorTotal: number;
-  observacao?: string;
-  metodoPagamento?: string;
-  enderecoResumo?: string;
-  taxaEntrega?: number;
-  criadoEm: string;
-  itens: ItemSolicitacao[];
-  previsaoEntregaMinutos?: number;
-  previsaoEntregaLabel?: string;
-}
-
-export type MetodoPagamento = 'pix' | 'credito' | 'debito' | 'dinheiro';
-
-export interface ItemSolicitacaoPayload {
-  produtoId: number;
-  quantidade: number;
-}
-
-export interface SolicitacaoCompraPayload {
-  empresaCompradoraId: number;
-  empresaFornecedoraId: number;
-  usuarioId: number;
-  observacao?: string;
-  metodoPagamento: MetodoPagamento;
-  enderecoEntregaId: number;
-  taxaEntrega?: number;
-  pagamentoReferencia?: string;
-  pagamentoDetalhes?: string;
-  itens: ItemSolicitacaoPayload[];
-}
-
-function extractErrorMessage(data: Record<string, unknown>, fallback: string): string {
-  if (typeof data.erro === 'string' && data.erro.trim()) return data.erro;
-  if (typeof data.message === 'string' && data.message.trim()) return data.message;
-  if (typeof data.error === 'string' && data.error.trim()) return data.error;
-  return fallback;
-}
-
-async function parseResponse<T>(response: Response): Promise<T> {
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível concluir a operação.'),
-    );
-  }
-
-  return data as T;
-}
+export type {
+  Fornecedor,
+  ItemSolicitacao,
+  EtapaPedido,
+  SolicitacaoCompra,
+  MetodoPagamento,
+  ItemSolicitacaoPayload,
+  SolicitacaoCompraPayload,
+};
 
 function normalizeProduto(data: Produto): Produto {
   return {

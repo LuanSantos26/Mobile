@@ -12,15 +12,15 @@ import {
   Platform,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { getImageUrl } from '../../config/api';
-import { RemoteImage } from '../Header/RemoteImage';
-import { useProdutos } from '../../context/ProductsContext';
+import { getImageUrl } from '../../../config/api';
+import { RemoteImage } from '../../../components/media/RemoteImage';
+import { useProdutos } from '../../../context/ProductsContext';
 import {
   Quiosque,
   QuiosquePayload,
   atualizarQuiosque,
   criarQuiosque,
-} from '../../services/barracaService';
+} from '../../../services/barracaService';
 
 interface BarracaFormModalProps {
   visible: boolean;

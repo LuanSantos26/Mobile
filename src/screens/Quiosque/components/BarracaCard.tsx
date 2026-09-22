@@ -8,12 +8,12 @@ import {
   Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getImageUrl } from '../../config/api';
-import { RemoteImage } from '../Header/RemoteImage';
-import { Quiosque, EstoqueItem, formatarQuantidade } from '../../services/barracaService';
-import { formatarPreco } from '../../services/productService';
-import { useProdutos } from '../../context/ProductsContext';
-import { formatarDiaSemana } from '../../utils/dateFormat';
+import { getImageUrl } from '../../../config/api';
+import { RemoteImage } from '../../../components/media/RemoteImage';
+import { Quiosque, EstoqueItem, formatarQuantidade } from '../../../services/barracaService';
+import { formatarPreco } from '../../../services/productService';
+import { useProdutos } from '../../../context/ProductsContext';
+import { formatarDiaSemana } from '../../../utils/dateFormat';
 
 interface BarracaCardProps {
   quiosque: Quiosque;

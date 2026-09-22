@@ -14,8 +14,8 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
-import { getImageUrl } from '../../config/api';
-import { NOME_PRODUTO_MAX, prepararImagemProduto } from '../../utils/productImage';
+import { getImageUrl } from '../../../config/api';
+import { NOME_PRODUTO_MAX, prepararImagemProduto } from '../../../utils/productImage';
 import {
   Produto,
   ProdutoPayload,
@@ -23,7 +23,7 @@ import {
   criarProduto,
   formatarPreco,
   uploadImagemProduto,
-} from '../../services/productService';
+} from '../../../services/productService';
 
 interface ProductFormModalProps {
   visible: boolean;

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Background } from '../../components/Header/Background';
+import { Background } from '../../components/layout/Background';
 import { CustomButton } from '../../components/Button/CustomButton';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { WelcomeHeader } from '../../components/Header/welcomeHeader';
 import { LAYOUT } from '../../theme/theme';
 import { RootStackParamList } from '../../navigation/types';
+import { styles } from './styles';
 
 export function WelcomeScreen() {
   const navigation = useNavigation<any>();
@@ -50,32 +51,3 @@ export function WelcomeScreen() {
     </Background>
   );
 }
-
-const styles = StyleSheet.create({
-  successBanner: {
-    marginTop: 8,
-    marginHorizontal: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-  },
-  successText: {
-    color: '#FFF',
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  footer: {
-    width: LAYOUT.formWidth,
-    alignSelf: 'center',
-    paddingBottom: 40,
-  },
-});

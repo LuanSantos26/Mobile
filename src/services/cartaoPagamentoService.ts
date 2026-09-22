@@ -1,40 +1,8 @@
 import { API_BASE_URL } from '../config/api';
+import { extractErrorMessage, parseResponse } from './http';
+import type { TipoCartao, CartaoSalvo, CartaoSalvoPayload } from '../types/pagamento';
 
-export type TipoCartao = 'credito' | 'debito';
-
-export interface CartaoSalvo {
-  id: number;
-  empresaId: number;
-  apelido: string | null;
-  tipo: TipoCartao;
-  bandeira: string;
-  ultimosDigitos: string;
-  numeroMascarado: string;
-  validade: string;
-  titular: string;
-}
-
-export interface CartaoSalvoPayload {
-  empresaId: number;
-  apelido?: string;
-  tipo: TipoCartao;
-  bandeira: string;
-  ultimosDigitos: string;
-  validade: string;
-  titular: string;
-}
-
-function extractErrorMessage(data: Record<string, unknown>, fallback: string): string {
-  if (typeof data.erro === 'string' && data.erro.trim()) return data.erro;
-  if (typeof data.message === 'string' && data.message.trim()) return data.message;
-  if (typeof data.error === 'string' && data.error.trim()) {
-    if (data.error === 'Method Not Allowed' || data.error === 'Not Found') {
-      return 'Servidor desatualizado. Reinicie o backend e tente novamente.';
-    }
-    return data.error;
-  }
-  return fallback;
-}
+export type { TipoCartao, CartaoSalvo, CartaoSalvoPayload };
 
 export function labelCartao(cartao: CartaoSalvo): string {
   if (cartao.apelido?.trim()) return cartao.apelido.trim();
@@ -43,15 +11,11 @@ export function labelCartao(cartao: CartaoSalvo): string {
 
 export async function listarCartoes(empresaId: number): Promise<CartaoSalvo[]> {
   const response = await fetch(`${API_BASE_URL}/api/cartoes-pagamento?empresaId=${empresaId}`);
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível carregar os cartões.'),
-    );
-  }
-
-  return data as CartaoSalvo[];
+  return parseResponse<CartaoSalvo[]>(
+    response,
+    'Não foi possível carregar os cartões.',
+    { treatOutdatedServer: true },
+  );
 }
 
 export async function listarCartoesPorTipo(
@@ -61,15 +25,12 @@ export async function listarCartoesPorTipo(
   const response = await fetch(
     `${API_BASE_URL}/api/cartoes-pagamento?empresaId=${empresaId}&tipo=${tipo}`,
   );
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível carregar os cartões.'),
-    );
-  }
-
-  return data as CartaoSalvo[];
+  const lista = await parseResponse<CartaoSalvo[]>(
+    response,
+    'Não foi possível carregar os cartões.',
+    { treatOutdatedServer: true },
+  );
+  return lista;
 }
 
 export async function salvarCartao(payload: CartaoSalvoPayload): Promise<CartaoSalvo> {
@@ -104,7 +65,7 @@ export async function salvarCartao(payload: CartaoSalvoPayload): Promise<CartaoS
 
   if (!response.ok) {
     throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível salvar o cartão.'),
+      extractErrorMessage(data, 'Não foi possível salvar o cartão.', { treatOutdatedServer: true }),
     );
   }
 
@@ -120,7 +81,7 @@ export async function removerCartao(empresaId: number, cartaoId: number): Promis
   if (!response.ok && response.status !== 204) {
     const data = await response.json().catch(() => ({}));
     throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível remover o cartão.'),
+      extractErrorMessage(data, 'Não foi possível remover o cartão.', { treatOutdatedServer: true }),
     );
   }
 }

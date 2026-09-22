@@ -2,7 +2,6 @@ import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -10,7 +9,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Background } from '../../components/Header/Background';
+import { Background } from '../../components/layout/Background';
 import { CustomInput } from '../../components/Input/CustomInput';
 import { CustomButton } from '../../components/Button/CustomButton';
 import { WelcomeHeader, WelcomeBackButton } from '../../components/Header/welcomeHeader';
@@ -18,6 +17,7 @@ import { cadastrarConta } from '../../services/authService';
 import { LAYOUT } from '../../theme/theme';
 import { RootStackParamList } from '../../navigation/types';
 import { formatarCnpjInput, formatarTelefoneInput } from '../../utils/pixUtils';
+import { styles } from './styles';
 export function RegisterScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const scrollRef = useRef<ScrollView>(null);
@@ -159,35 +159,3 @@ export function RegisterScreen() {
     </Background>
   );
 }
-
-const styles = StyleSheet.create({
-  keyboardView: {
-    flex: 1,
-    width: '100%',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    alignItems: 'center',
-    paddingBottom: 40,
-  },
-  header: {
-    width: '100%',
-    marginBottom: 10,
-  },
-  content: {
-    width: LAYOUT.formWidth,
-    alignSelf: 'center',
-  },
-  form: {
-    width: '100%',
-  },
-  errorText: {
-    color: '#FFE0E0',
-    textAlign: 'center',
-    marginBottom: 8,
-    fontSize: 14,
-  },
-  loader: {
-    marginTop: 20,
-  },
-});

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Background } from '../../components/Header/Background';
+import { Background } from '../../components/layout/Background';
 
 export function AnimationScreen() {
   const navigation = useNavigation<any>();

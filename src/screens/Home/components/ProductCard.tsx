@@ -1,8 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { getImageUrl } from '../../config/api';
-import { RemoteImage } from '../Header/RemoteImage';
-import { Produto, corEstoque, formatarPreco, formatarQuantidadeEstoque, labelEstoque, normalizarEstoque } from '../../services/productService';
+import { getImageUrl } from '../../../config/api';
+import { RemoteImage } from '../../../components/media/RemoteImage';
+import { Produto, corEstoque, formatarPreco, formatarQuantidadeEstoque, labelEstoque, normalizarEstoque } from '../../../services/productService';
 
 interface ProductCardProps { produto: Produto; onPress?: () => void; }
 
