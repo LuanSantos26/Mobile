@@ -1,56 +1,13 @@
 import { API_BASE_URL } from '../config/api';
+import { extractErrorMessage, parseResponse } from './http';
+import type {
+  EstoqueItem,
+  Quiosque,
+  EstoqueItemPayload,
+  QuiosquePayload,
+} from '../types/quiosque';
 
-export interface EstoqueItem {
-  produtoId: number;
-  nome: string;
-  unidade: string;
-  precoVenda: number;
-  quantidade: number;
-  imagemUrl?: string;
-}
-
-export interface Quiosque {
-  id: number;
-  nome: string;
-  eventoId: number;
-  eventoNome: string;
-  ativa: number;
-  totalProdutos: number;
-  totalUnidades: number;
-  atualizadoEm?: string;
-  itens: EstoqueItem[];
-}
-
-export interface EstoqueItemPayload {
-  produtoId: number;
-  quantidade: number;
-}
-
-export interface QuiosquePayload {
-  nome: string;
-  empresaId: number;
-  responsavelId: number;
-  itens?: EstoqueItemPayload[];
-}
-
-function extractErrorMessage(data: Record<string, unknown>, fallback: string): string {
-  if (typeof data.erro === 'string' && data.erro.trim()) return data.erro;
-  if (typeof data.message === 'string' && data.message.trim()) return data.message;
-  if (typeof data.error === 'string' && data.error.trim()) return data.error;
-  return fallback;
-}
-
-async function parseResponse<T>(response: Response): Promise<T> {
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível concluir a operação.'),
-    );
-  }
-
-  return data as T;
-}
+export type { EstoqueItem, Quiosque, EstoqueItemPayload, QuiosquePayload };
 
 function normalizeQuiosque(data: Quiosque): Quiosque {
   return {

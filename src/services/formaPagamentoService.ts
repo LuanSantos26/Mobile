@@ -1,34 +1,12 @@
 import { API_BASE_URL } from '../config/api';
+import { extractErrorMessage, parseResponse } from './http';
+import type {
+  TipoPagamento,
+  FormaPagamentoSalva,
+  FormaPagamentoPayload,
+} from '../types/pagamento';
 
-export type TipoPagamento = 'pix' | 'credito' | 'debito' | 'dinheiro';
-
-export interface FormaPagamentoSalva {
-  id: number;
-  empresaId: number;
-  tipo: TipoPagamento;
-  apelido: string;
-  label: string;
-  principal: boolean;
-}
-
-export interface FormaPagamentoPayload {
-  empresaId: number;
-  tipo: TipoPagamento;
-  apelido: string;
-  principal?: boolean;
-}
-
-function extractErrorMessage(data: Record<string, unknown>, fallback: string): string {
-  if (typeof data.erro === 'string' && data.erro.trim()) return data.erro;
-  if (typeof data.message === 'string' && data.message.trim()) return data.message;
-  if (typeof data.error === 'string' && data.error.trim()) {
-    if (data.error === 'Method Not Allowed') {
-      return 'Servidor desatualizado. Reinicie o backend e tente novamente.';
-    }
-    return data.error;
-  }
-  return fallback;
-}
+export type { TipoPagamento, FormaPagamentoSalva, FormaPagamentoPayload };
 
 export function labelTipoPagamento(tipo: string): string {
   switch (tipo) {
@@ -60,15 +38,11 @@ export function iconeTipoPagamento(tipo: string): 'phone-portrait-outline' | 'ca
 
 export async function listarFormasPagamento(empresaId: number): Promise<FormaPagamentoSalva[]> {
   const response = await fetch(`${API_BASE_URL}/api/formas-pagamento?empresaId=${empresaId}`);
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível carregar formas de pagamento.'),
-    );
-  }
-
-  return data as FormaPagamentoSalva[];
+  return parseResponse<FormaPagamentoSalva[]>(
+    response,
+    'Não foi possível carregar formas de pagamento.',
+    { treatOutdatedServer: true },
+  );
 }
 
 export async function criarFormaPagamento(payload: FormaPagamentoPayload): Promise<FormaPagamentoSalva> {
@@ -89,7 +63,9 @@ export async function criarFormaPagamento(payload: FormaPagamentoPayload): Promi
 
   if (!response.ok) {
     throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível salvar a forma de pagamento.'),
+      extractErrorMessage(data, 'Não foi possível salvar a forma de pagamento.', {
+        treatOutdatedServer: true,
+      }),
     );
   }
 
@@ -105,7 +81,9 @@ export async function removerFormaPagamento(id: number, empresaId: number): Prom
   if (!response.ok && response.status !== 204) {
     const data = await response.json().catch(() => ({}));
     throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível remover a forma de pagamento.'),
+      extractErrorMessage(data, 'Não foi possível remover a forma de pagamento.', {
+        treatOutdatedServer: true,
+      }),
     );
   }
 }

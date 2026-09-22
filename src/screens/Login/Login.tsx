@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { Background } from '../../components/Header/Background';
+import { Background } from '../../components/layout/Background';
 import { CustomInput } from '../../components/Input/CustomInput';
 import { WelcomeHeader, WelcomeBackButton } from '../../components/Header/welcomeHeader';
 import { CustomButton } from '../../components/Button/CustomButton';
@@ -18,6 +17,7 @@ import { LAYOUT } from '../../theme/theme';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
+import { styles } from './styles';
 
 export default function LoginScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -120,40 +120,3 @@ export default function LoginScreen() {
     </Background>
   );
 }
-
-const styles = StyleSheet.create({
-  keyboardView: {
-    flex: 1,
-    width: '100%',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    alignItems: 'center',
-    paddingBottom: 40,
-  },
-  content: {
-    width: LAYOUT.formWidth,
-    flex: 1,
-    justifyContent: 'center',
-    alignSelf: 'center',
-  },
-  form: {
-    width: '100%',
-  },
-  errorText: {
-    color: '#FFE0E0',
-    textAlign: 'center',
-    marginBottom: 8,
-    fontSize: 14,
-  },
-  loader: {
-    marginTop: 20,
-  },
-  forgotPassword: {
-    marginTop: 20,
-    color: 'white',
-    textDecorationLine: 'underline',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-});

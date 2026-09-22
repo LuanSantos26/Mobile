@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { RemoteImage } from '../Header/RemoteImage';
-import { IconActionButton } from '../Button/IconActionButton';
-import { CartItem } from '../../services/purchaseCartStorage';
-import { formatarPreco } from '../../services/productService';
+import { RemoteImage } from '../../../components/media/RemoteImage';
+import { IconActionButton } from '../../../components/Button/IconActionButton';
+import { CartItem } from '../../../services/purchaseCartStorage';
+import { formatarPreco } from '../../../services/productService';
 
 interface SacolaItemRowProps {
   item: CartItem;
