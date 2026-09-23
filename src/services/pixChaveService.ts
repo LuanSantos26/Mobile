@@ -5,25 +5,9 @@ import {
   extrairUltimosDigitosPix,
   normalizarDocumento,
 } from '../utils/pixUtils';
+import type { PixSalvo, PixSalvoPayload } from '../types/pagamento';
 
-export type { TipoChavePix };
-
-export interface PixSalvo {
-  id: string;
-  empresaId: number;
-  apelido: string;
-  tipoChave: TipoChavePix;
-  chaveMascarada: string;
-  ultimosDigitos: string;
-}
-
-export interface PixSalvoPayload {
-  empresaId: number;
-  apelido: string;
-  tipoChave: TipoChavePix;
-  chaveMascarada: string;
-  ultimosDigitos: string;
-}
+export type { TipoChavePix, PixSalvo, PixSalvoPayload };
 
 const STORAGE_KEY_PREFIX = '@quickstock_pix_chaves';
 

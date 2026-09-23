@@ -1,21 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { CartItem, StoredPurchaseCart } from '../types/marketplace';
 
-export interface CartItem {
-  produtoId: number;
-  fornecedorId: number;
-  fornecedorNome: string;
-  nome: string;
-  preco: number;
-  unidade: string;
-  quantidade: number;
-  imagemUrl?: string;
-}
+export type { CartItem, StoredPurchaseCart };
 
 const CART_KEY_PREFIX = '@quickstock_purchase_cart';
-
-export interface StoredPurchaseCart {
-  itens: CartItem[];
-}
 
 interface LegacyStoredPurchaseCart {
   fornecedorId?: number | null;

@@ -1,13 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { UsuarioLogado } from './authService';
+import type { StoredSession } from '../types/auth';
+
+export type { StoredSession };
 
 const SESSION_KEY = '@quickstock_session';
-
-export interface StoredSession {
-  token: string;
-  usuario: UsuarioLogado;
-  expiresAt: number;
-}
 
 export function isSessionExpired(expiresAt: number): boolean {
   return Date.now() >= expiresAt;

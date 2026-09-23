@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { formatarPreco } from '../../services/productService';
+import { formatarPreco } from '../../../services/productService';
 
 interface FinancialDonutChartProps {
   totalCompras: number;

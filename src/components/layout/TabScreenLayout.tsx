@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenTopGradient } from './ScreenTopGradient';
-import { ScreenHeader } from './ScreenHeader';
+import { ScreenHeader } from '../Header/ScreenHeader';
 import { PageHeader } from './PageHeader';
 import { PageContent } from './PageContent';
 import { useTabBarScrollPadding } from './BottomTabBar';

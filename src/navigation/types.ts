@@ -24,5 +24,4 @@ export type RootStackParamList = {
   Camioneiros: undefined;
   CadastroCamioneiros: undefined;
   Logistica: undefined;
-  VitrineScreen: undefined;
 };

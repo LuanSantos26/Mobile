@@ -1,38 +1,14 @@
 import { API_BASE_URL } from '../config/api';
+import { parseResponse } from './http';
+import type { TipoNotificacao, Notificacao } from '../types/notificacao';
 
-export type TipoNotificacao = 'compra' | 'promocao' | 'oferta' | 'sistema';
-
-export interface Notificacao {
-  id: string;
-  tipo: TipoNotificacao;
-  titulo: string;
-  mensagem: string;
-  fornecedorId?: number;
-  fornecedorNome?: string;
-  solicitacaoId?: number;
-  criadoEm: string;
-}
-
-function extractErrorMessage(data: Record<string, unknown>, fallback: string): string {
-  if (typeof data.erro === 'string' && data.erro.trim()) return data.erro;
-  if (typeof data.message === 'string' && data.message.trim()) return data.message;
-  if (typeof data.error === 'string' && data.error.trim()) return data.error;
-  return fallback;
-}
+export type { TipoNotificacao, Notificacao };
 
 export async function listarNotificacoes(empresaCompradoraId: number): Promise<Notificacao[]> {
   const response = await fetch(
     `${API_BASE_URL}/api/notificacoes?empresaCompradoraId=${empresaCompradoraId}`,
   );
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível carregar notificações.'),
-    );
-  }
-
-  return data as Notificacao[];
+  return parseResponse<Notificacao[]>(response, 'Não foi possível carregar notificações.');
 }
 
 export function labelTipoNotificacao(tipo: TipoNotificacao): string {

@@ -1,57 +1,28 @@
 import { API_BASE_URL } from '../config/api';
 import { listarSolicitacoes } from './marketplaceService';
 import { formatarDiaSemana } from '../utils/dateFormat';
+import { extractErrorMessage, parseResponse } from './http';
+import type {
+  MesValor,
+  MesLucro,
+  MesPedidos,
+  FormaPagamento,
+  FinanceiroResumo,
+  TotaisFinanceiros,
+  MovimentoStockDia,
+  StockDia,
+} from '../types/financeiro';
 
-export interface MesValor {
-  mes: string;
-  label: string;
-  valor: number;
-}
-
-export interface MesLucro {
-  mes: string;
-  label: string;
-  lucro: number;
-  gastos: number;
-}
-
-export interface MesPedidos {
-  mes: string;
-  label: string;
-  quantidade: number;
-}
-
-export interface FormaPagamento {
-  metodo: string;
-  label: string;
-  percentual: number;
-  valor: number;
-}
-
-export interface FinanceiroResumo {
-  lucroTotal: number;
-  lucroMesAtual: number;
-  mediaLucroMensal: number;
-  margemLucroPercentual: number;
-  mediaPedidosMensais: number;
-  totalPedidosMesAtual: number;
-  totalComprasMesAtual: number;
-  mediaComprasMensais: number;
-  totalVendasAcumulado?: number;
-  totalComprasAcumulado?: number;
-  lucrosMensais: MesLucro[];
-  comprasMensais: MesValor[];
-  vendasMensais?: MesValor[];
-  pedidosMensais: MesPedidos[];
-  formasPagamento: FormaPagamento[];
-}
-
-export interface TotaisFinanceiros {
-  totalCompras: number;
-  totalVendas: number;
-  lucroTotal: number;
-  margemPercentual: number;
-}
+export type {
+  MesValor,
+  MesLucro,
+  MesPedidos,
+  FormaPagamento,
+  FinanceiroResumo,
+  TotaisFinanceiros,
+  MovimentoStockDia,
+  StockDia,
+};
 
 /** Deriva totais fidedignos: lucro = vendas PDV − compras B2B (ignora lucro fake legado). */
 export function extrairTotaisFinanceiros(resumo: FinanceiroResumo | null): TotaisFinanceiros {
@@ -86,34 +57,6 @@ export function extrairTotaisFinanceiros(resumo: FinanceiroResumo | null): Totai
     totalVendas > 0 ? Math.round((lucroTotal / totalVendas) * 100) : 0;
 
   return { totalCompras, totalVendas, lucroTotal, margemPercentual };
-}
-
-export interface MovimentoStockDia {
-  tipo: 'compra' | 'venda';
-  nome: string;
-  horario: string;
-  quantidade: string;
-  valor: number;
-  origem: string;
-}
-
-export interface StockDia {
-  data: string;
-  dataLabel: string;
-  totalCompras: number;
-  totalVendas: number;
-  lucro: number;
-  margemPercentual: number;
-  quantidadeCompras: number;
-  quantidadeVendas: number;
-  movimentos: MovimentoStockDia[];
-}
-
-function extractErrorMessage(data: Record<string, unknown>, fallback: string): string {
-  if (typeof data.erro === 'string' && data.erro.trim()) return data.erro;
-  if (typeof data.message === 'string' && data.message.trim()) return data.message;
-  if (typeof data.error === 'string' && data.error.trim()) return data.error;
-  return fallback;
 }
 
 function normalizeResumo(data: FinanceiroResumo): FinanceiroResumo {
@@ -155,15 +98,11 @@ export async function buscarResumoFinanceiro(
   const response = await fetch(
     `${API_BASE_URL}/api/financeiro/resumo?empresaCompradoraId=${empresaCompradoraId}`,
   );
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível carregar estatísticas.'),
-    );
-  }
-
-  return normalizeResumo(data as FinanceiroResumo);
+  const data = await parseResponse<FinanceiroResumo>(
+    response,
+    'Não foi possível carregar estatísticas.',
+  );
+  return normalizeResumo(data);
 }
 
 function normalizeStockDia(data: StockDia): StockDia {
@@ -260,7 +199,7 @@ export async function buscarStockDia(empresaCompradoraId: number): Promise<Stock
     }
 
     throw new Error(
-      extractErrorMessage(data as Record<string, unknown>, 'Não foi possível carregar o stock do dia.'),
+      extractErrorMessage(data, 'Não foi possível carregar o stock do dia.'),
     );
   } catch (err) {
     if (err instanceof Error && err.message.startsWith('Não foi possível')) {
