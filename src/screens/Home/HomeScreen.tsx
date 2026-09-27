@@ -18,8 +18,18 @@ import { FinancialDonutChart } from './components/FinancialDonutChart';
 import { formatarPreco } from '../../services/productService';
 import { styles } from './styles';
 import { useHome } from './useHome';
+import { useAuth } from '../../context/AuthContext';
+import { ClienteHomeScreen } from '../ClienteHome/ClienteHomeScreen';
 
 export default function HomeScreen() {
+  const { perfilUso } = useAuth();
+  if (perfilUso === 'Cliente') {
+    return <ClienteHomeScreen />;
+  }
+  return <EmpresaHomeScreen />;
+}
+
+function EmpresaHomeScreen() {
   const {
     navigation,
     user,

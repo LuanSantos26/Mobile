@@ -20,15 +20,19 @@ import {
   UsuarioLogado,
   isLegacyToken,
 } from '../services/authService';
+import { loadPerfilUso, savePerfilUso } from '../services/perfilStorage';
+import type { PerfilCadastro } from '../types/auth';
 
 interface AuthContextValue {
   user: UsuarioLogado | null;
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  perfilUso: PerfilCadastro | null;
   signIn: (payload: LoginPayload) => Promise<void>;
   signOut: () => Promise<void>;
   updateUser: (usuario: UsuarioLogado) => Promise<void>;
+  setPerfilUso: (perfil: PerfilCadastro) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -37,14 +41,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UsuarioLogado | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [perfilUso, setPerfilUsoState] = useState<PerfilCadastro | null>(null);
 
-  const applySession = useCallback((session: StoredSession | null) => {
+  const applySession = useCallback(async (session: StoredSession | null) => {
     if (!session || isSessionExpired(session.expiresAt)) {
       setUser(null);
       setToken(null);
+      setPerfilUsoState(null);
       return false;
     }
 
+    const perfil = await loadPerfilUso(session.usuario.email);
+    setPerfilUsoState(perfil);
     setUser(session.usuario);
     setToken(session.token);
     return true;
@@ -56,12 +64,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!session || isSessionExpired(session.expiresAt)) {
         await clearSession();
-        applySession(null);
+        await applySession(null);
         return;
       }
 
       if (isLegacyToken(session.token)) {
-        applySession(session);
+        await applySession(session);
         return;
       }
 
@@ -73,10 +81,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           expiresAt: session.expiresAt,
         };
         await saveSession(refreshed);
-        applySession(refreshed);
+        await applySession(refreshed);
       } catch {
         await clearSession();
-        applySession(null);
+        await applySession(null);
       }
     } finally {
       setIsLoading(false);
@@ -108,7 +116,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       await saveSession(session);
-      const applied = applySession(session);
+      await savePerfilUso('admin', 'ClienteFornecedor');
+      const applied = await applySession(session);
 
       if (!applied) {
         throw new Error('Sessão inválida. Tente novamente.');
@@ -129,7 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     await saveSession(session);
-    const applied = applySession(session);
+    const applied = await applySession(session);
 
     if (!applied) {
       throw new Error('Sessão inválida. Tente novamente.');
@@ -137,9 +146,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [applySession]);
 
   const signOut = useCallback(async () => {
-    await clearSession();
-    applySession(null);
-  }, [applySession]);
+    try {
+      await clearSession();
+    } finally {
+      setUser(null);
+      setToken(null);
+      setPerfilUsoState(null);
+    }
+  }, []);
 
   const updateUser = useCallback(async (usuario: UsuarioLogado) => {
     const session = await loadSession();
@@ -153,8 +167,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     await saveSession(refreshed);
-    applySession(refreshed);
+    await applySession(refreshed);
   }, [applySession]);
+
+  const setPerfilUso = useCallback(async (perfil: PerfilCadastro) => {
+    setPerfilUsoState(perfil);
+    if (user?.email) {
+      await savePerfilUso(user.email, perfil);
+    }
+  }, [user?.email]);
 
   const value = useMemo(
     () => ({
@@ -162,11 +183,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       token,
       isLoading,
       isAuthenticated: !!token && !!user,
+      perfilUso,
       signIn,
       signOut,
       updateUser,
+      setPerfilUso,
     }),
-    [user, token, isLoading, signIn, signOut, updateUser],
+    [user, token, isLoading, perfilUso, signIn, signOut, updateUser, setPerfilUso],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

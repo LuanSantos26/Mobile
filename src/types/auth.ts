@@ -1,3 +1,5 @@
+export type PerfilCadastro = 'Cliente' | 'Fornecedor' | 'ClienteFornecedor';
+
 export interface CadastroContaPayload {
   empresa: {
     nome: string;
@@ -8,6 +10,7 @@ export interface CadastroContaPayload {
     nome: string;
     email: string;
     senha: string;
+    cpf?: string;
   };
 }
 

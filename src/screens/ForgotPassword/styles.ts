@@ -1,47 +1,29 @@
 import { StyleSheet } from 'react-native';
-import { LAYOUT } from '../../theme/theme';
+import { AUTH_NAVY } from '../../theme/authTheme';
 
 export const styles = StyleSheet.create({
-  keyboardView: {
-    flex: 1,
-    width: '100%',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    alignItems: 'center',
-    paddingBottom: 40,
-  },
-  content: {
-    width: LAYOUT.formWidth,
-    flex: 1,
-    justifyContent: 'center',
-    alignSelf: 'center',
-  },
-  form: {
-    width: '100%',
-  },
   title: {
-    color: '#FFF',
+    color: AUTH_NAVY,
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: '800',
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
-    color: 'rgba(255,255,255,0.9)',
+    color: '#8A93A3',
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 20,
   },
   errorText: {
-    color: '#FFE0E0',
+    color: '#C62828',
     textAlign: 'center',
     marginBottom: 8,
     fontSize: 14,
   },
   successText: {
-    color: '#E8F5E9',
+    color: '#1B7A4A',
     textAlign: 'center',
     marginBottom: 16,
     fontSize: 15,
@@ -52,8 +34,8 @@ export const styles = StyleSheet.create({
   },
   backToLogin: {
     marginTop: 20,
-    color: 'white',
-    textDecorationLine: 'underline',
+    color: AUTH_NAVY,
+    fontWeight: '700',
     fontSize: 14,
     textAlign: 'center',
   },

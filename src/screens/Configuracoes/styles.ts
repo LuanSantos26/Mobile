@@ -93,3 +93,133 @@ export const styles = StyleSheet.create({
     opacity: 0.7,
   },
 });
+
+const NAVY = '#0E2A5C';
+const GOLD = '#F8B125';
+const PAGE_BG = '#F3F5F8';
+
+export const clienteStyles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: PAGE_BG,
+  },
+  header: {
+    backgroundColor: NAVY,
+    paddingHorizontal: 20,
+    paddingBottom: 22,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  brandRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+  },
+  brandQuick: {
+    color: '#FFF',
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  brandStock: {
+    color: GOLD,
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  title: {
+    color: '#FFF',
+    fontSize: 22,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  sheet: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  card: {
+    backgroundColor: '#FFF',
+    borderRadius: 22,
+    padding: 16,
+    marginBottom: 12,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 14,
+  },
+  sectionIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#EEF2F7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: NAVY,
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: '#8A93A3',
+    marginTop: 1,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: NAVY,
+    marginBottom: 6,
+  },
+  field: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F4F7FB',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    minHeight: 48,
+    marginBottom: 12,
+    gap: 8,
+  },
+  input: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1F2937',
+    paddingVertical: 10,
+  },
+  saveButton: {
+    backgroundColor: GOLD,
+    borderRadius: 22,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  saveButtonDisabled: {
+    opacity: 0.7,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: NAVY,
+  },
+  errorText: {
+    color: '#C62828',
+    fontSize: 13,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  successText: {
+    color: '#2E7D32',
+    fontSize: 13,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+});

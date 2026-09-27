@@ -20,9 +20,9 @@ import {
 
 export function usePedidoAcompanhamento() {
   const navigation = useNavigation<any>();
-  const goBack = useAppGoBack('Cart');
   const route = useRoute<any>();
-  const { user } = useAuth();
+  const { user, perfilUso } = useAuth();
+  const goBack = useAppGoBack(perfilUso === 'Cliente' ? 'Pedidos' : 'Cart');
   const { refresh: refreshProdutos } = useProdutos();
 
   const pedidosIds: number[] = route.params?.pedidosIds ?? [route.params?.pedidoId];
@@ -125,5 +125,6 @@ export function usePedidoAcompanhamento() {
     subtituloHero,
     heroIcon,
     GOLD,
+    perfilUso,
   };
 }

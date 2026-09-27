@@ -1,101 +1,62 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { ScreenTopGradient } from '../../components/layout/ScreenTopGradient';
-import { BackTitleHeader } from '../../components/Header/BackTitleHeader';
-import { useAppGoBack } from '../../hooks/useAppGoBack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AuthScreenShell } from '../../components/auth/AuthScreenShell';
+import { CustomButton } from '../../components/Button/CustomButton';
+import { RootStackParamList } from '../../navigation/types';
+import type { PerfilCadastro } from '../../types/auth';
+import { AUTH_NAVY } from '../../theme/authTheme';
 import { styles } from './styles';
 
-type Perfil = 'Fornecedor' | 'Cliente';
+const AUTH_OPTIONS: {
+  perfil: PerfilCadastro;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}[] = [
+  { perfil: 'Cliente', label: 'Sou cliente', icon: 'person-outline' },
+  { perfil: 'Fornecedor', label: 'Sou fornecedor', icon: 'storefront-outline' },
+  { perfil: 'ClienteFornecedor', label: 'Cliente e fornecedor', icon: 'people-outline' },
+];
 
 export default function EscolhaUsuarioScreen() {
-  const navigation = useNavigation<any>();
-  const goBack = useAppGoBack('Home');
-  const [escolha, setEscolha] = useState<Perfil | null>(null);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [escolha, setEscolha] = useState<PerfilCadastro | null>(null);
 
   const handleContinuar = () => {
-    if (escolha) navigation.navigate('Login');
+    if (!escolha) return;
+    navigation.navigate('Register', { perfil: escolha });
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-      <ScreenTopGradient />
-      <BackTitleHeader title="Perfis" onBack={goBack} />
+    <AuthScreenShell subtitle="">
+      <Text style={styles.authQuestion}>Olá!{'\n'}Você é cliente ou fornecedor?</Text>
+      <Text style={styles.authHint}>Escolha o perfil para criar sua conta.</Text>
 
-      <View style={styles.content}>
-        <View style={styles.card}>
-          <Text style={styles.kicker}>Conta</Text>
-          <Text style={styles.title}>Escolha seu perfil</Text>
-          <Text style={styles.subtitle}>
-            Selecione como você vai usar o QuickStock neste acesso.
-          </Text>
-
+      {AUTH_OPTIONS.map((option) => {
+        const selected = escolha === option.perfil;
+        return (
           <TouchableOpacity
-            style={[styles.option, escolha === 'Fornecedor' && styles.optionSelected]}
-            onPress={() => setEscolha('Fornecedor')}
+            key={option.perfil}
+            style={[styles.authOption, selected && styles.authOptionSelected]}
+            onPress={() => setEscolha(option.perfil)}
             activeOpacity={0.85}
           >
-            <View style={[styles.iconWrap, escolha === 'Fornecedor' && styles.iconWrapSelected]}>
-              <Ionicons
-                name="storefront-outline"
-                size={22}
-                color={escolha === 'Fornecedor' ? '#FFF' : '#F8B125'}
-              />
+            <View style={styles.optionIcon}>
+              <Ionicons name={option.icon} size={20} color={AUTH_NAVY} />
             </View>
-            <View style={styles.optionCopy}>
-              <Text style={[styles.optionText, escolha === 'Fornecedor' && styles.optionTextSelected]}>
-                Fornecedor
-              </Text>
-              <Text style={[styles.optionHint, escolha === 'Fornecedor' && styles.optionHintSelected]}>
-                Vender e gerenciar o catálogo
-              </Text>
-            </View>
-            {escolha === 'Fornecedor' ? (
-              <Ionicons name="checkmark-circle" size={22} color="#FFF" />
-            ) : (
-              <Ionicons name="chevron-forward" size={16} color="#D4B56A" />
-            )}
+            <Text style={styles.authOptionText}>{option.label}</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C5CAD3" />
           </TouchableOpacity>
+        );
+      })}
 
-          <TouchableOpacity
-            style={[styles.option, styles.optionLast, escolha === 'Cliente' && styles.optionSelected]}
-            onPress={() => setEscolha('Cliente')}
-            activeOpacity={0.85}
-          >
-            <View style={[styles.iconWrap, escolha === 'Cliente' && styles.iconWrapSelected]}>
-              <Ionicons
-                name="person-outline"
-                size={22}
-                color={escolha === 'Cliente' ? '#FFF' : '#F8B125'}
-              />
-            </View>
-            <View style={styles.optionCopy}>
-              <Text style={[styles.optionText, escolha === 'Cliente' && styles.optionTextSelected]}>
-                Cliente
-              </Text>
-              <Text style={[styles.optionHint, escolha === 'Cliente' && styles.optionHintSelected]}>
-                Comprar de distribuidoras
-              </Text>
-            </View>
-            {escolha === 'Cliente' ? (
-              <Ionicons name="checkmark-circle" size={22} color="#FFF" />
-            ) : (
-              <Ionicons name="chevron-forward" size={16} color="#D4B56A" />
-            )}
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity
-          style={[styles.button, !escolha && styles.buttonDisabled]}
-          onPress={handleContinuar}
-          disabled={!escolha}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.buttonText}>Continuar</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+      <CustomButton
+        title="Continuar"
+        onPress={handleContinuar}
+        disabled={!escolha}
+      />
+    </AuthScreenShell>
   );
 }

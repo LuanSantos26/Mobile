@@ -1,57 +1,104 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, TouchableOpacityProps, StyleProp, ViewStyle } from 'react-native';
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  TouchableOpacityProps,
+  StyleProp,
+  ViewStyle,
+  View,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { AUTH_GOLD, AUTH_NAVY } from '../../theme/authTheme';
 
 interface CustomButtonProps extends TouchableOpacityProps {
   title: string;
-  variant?: 'primary' | 'secondary';
-  style?: StyleProp<ViewStyle>; // Adicionado para aceitar estilos extras
+  variant?: 'primary' | 'secondary' | 'outline';
+  showArrow?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
-export function CustomButton({ title, variant = 'primary', style, ...rest }: CustomButtonProps) {
+export function CustomButton({
+  title,
+  variant = 'primary',
+  showArrow = false,
+  style,
+  ...rest
+}: CustomButtonProps) {
   const isSecondary = variant === 'secondary';
+  const isOutline = variant === 'outline';
 
   return (
-    <TouchableOpacity 
-      // Agora ele junta o estilo padrão com o estilo extra que você mandar da tela
-      style={[styles.button, isSecondary && styles.buttonSecondary, style]} 
+    <TouchableOpacity
+      style={[
+        styles.button,
+        isSecondary && styles.buttonSecondary,
+        isOutline && styles.buttonOutline,
+        rest.disabled && styles.disabled,
+        style,
+      ]}
       {...rest}
     >
-      <Text style={[styles.text, isSecondary && styles.textSecondary]}>
-        {title}
-      </Text>
+      <View style={styles.inner}>
+        <Text
+          style={[
+            styles.text,
+            isSecondary && styles.textSecondary,
+            isOutline && styles.textOutline,
+          ]}
+        >
+          {title}
+        </Text>
+        {showArrow ? (
+          <Ionicons
+            name="arrow-forward"
+            size={18}
+            color={isSecondary || isOutline ? (isSecondary ? '#FFF' : AUTH_NAVY) : AUTH_NAVY}
+          />
+        ) : null}
+      </View>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#F6B72D', 
-    width: '100%', 
+    backgroundColor: AUTH_GOLD,
+    width: '100%',
     height: 55,
-    borderRadius: 15, 
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    alignSelf: 'center', 
+    alignSelf: 'center',
     marginTop: 10,
-    elevation: 3, 
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    shadowOffset: { width: 0, height: 2 },
   },
   buttonSecondary: {
     backgroundColor: 'transparent',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#FFF',
-    elevation: 0,
-    shadowOpacity: 0,
+  },
+  buttonOutline: {
+    backgroundColor: '#FFF',
+    borderWidth: 1.5,
+    borderColor: AUTH_NAVY,
+  },
+  disabled: {
+    opacity: 0.45,
+  },
+  inner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   text: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: AUTH_NAVY,
+    fontSize: 17,
+    fontWeight: '800',
   },
   textSecondary: {
     color: '#FFF',
+  },
+  textOutline: {
+    color: AUTH_NAVY,
   },
 });

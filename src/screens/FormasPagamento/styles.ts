@@ -223,3 +223,169 @@ export const styles = StyleSheet.create({
     color: '#333',
   },
 });
+
+const NAVY = '#0E2A5C';
+const GOLD = '#F8B125';
+const PAGE_BG = '#F3F5F8';
+
+export const clienteStyles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: PAGE_BG,
+  },
+  header: {
+    backgroundColor: NAVY,
+    paddingHorizontal: 20,
+    paddingBottom: 22,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  brandRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+  },
+  brandQuick: {
+    color: '#FFF',
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  brandStock: {
+    color: GOLD,
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  title: {
+    color: '#FFF',
+    fontSize: 24,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  subtitle: {
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  sheet: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  addButton: {
+    backgroundColor: GOLD,
+    borderRadius: 16,
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 14,
+  },
+  addButtonText: {
+    color: NAVY,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  emptyCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 22,
+    paddingVertical: 28,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  emptyTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1F2937',
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  emptyText: {
+    fontSize: 13,
+    color: '#8A93A3',
+    textAlign: 'center',
+    lineHeight: 19,
+    marginTop: 8,
+    maxWidth: 260,
+  },
+  infoCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 22,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  infoIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#EAF1FA',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#6B7280',
+    lineHeight: 18,
+  },
+  listCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 22,
+    padding: 8,
+  },
+  formaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    gap: 8,
+  },
+  formaMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  formaIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#EEF2F7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  formaInfo: {
+    flex: 1,
+  },
+  formaApelido: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: NAVY,
+  },
+  formaTipo: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  errorText: {
+    color: '#C62828',
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  retryText: {
+    color: GOLD,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+});

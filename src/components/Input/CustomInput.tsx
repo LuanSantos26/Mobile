@@ -1,20 +1,33 @@
-import React from 'react';
-import { View, TextInput, TextInputProps, StyleSheet } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { View, TextInput, TextInputProps, StyleSheet, TouchableOpacity } from 'react-native';
+import { Feather, Ionicons } from '@expo/vector-icons';
+import { AUTH_MUTED, AUTH_NAVY } from '../../theme/authTheme';
 
 interface CustomInputProps extends TextInputProps {
-  iconName: keyof typeof Feather.glyphMap;
+  iconName: keyof typeof Feather.glyphMap | 'business-outline';
 }
 
-export function CustomInput({ iconName, ...rest }: CustomInputProps) {
+export function CustomInput({ iconName, secureTextEntry, ...rest }: CustomInputProps) {
+  const [hidden, setHidden] = useState(!!secureTextEntry);
+
   return (
     <View style={styles.container}>
-      <Feather name={iconName} size={20} color="#F2994A" style={styles.icon} />
+      {iconName === 'business-outline' ? (
+        <Ionicons name="business-outline" size={20} color={AUTH_NAVY} style={styles.icon} />
+      ) : (
+        <Feather name={iconName} size={20} color={AUTH_NAVY} style={styles.icon} />
+      )}
       <TextInput
         style={styles.input}
-        placeholderTextColor="#A0A0A0"
+        placeholderTextColor={AUTH_MUTED}
+        secureTextEntry={secureTextEntry ? hidden : false}
         {...rest}
       />
+      {secureTextEntry ? (
+        <TouchableOpacity onPress={() => setHidden((v) => !v)} hitSlop={8}>
+          <Ionicons name={hidden ? 'eye-off-outline' : 'eye-outline'} size={20} color={AUTH_MUTED} />
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 }
@@ -23,24 +36,20 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    backgroundColor: '#EEF2F7',
+    borderRadius: 16,
     width: '100%',
-    height: 50,
-    marginBottom: 16,
-    paddingHorizontal: 15,
-    elevation: 2, // Sombra no Android
-    shadowColor: '#000', // Sombra no iOS
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+    minHeight: 52,
+    marginBottom: 14,
+    paddingHorizontal: 14,
   },
   icon: {
     marginRight: 10,
   },
   input: {
     flex: 1,
-    fontSize: 16,
-    color: '#333',
+    fontSize: 15,
+    color: AUTH_NAVY,
+    paddingVertical: 12,
   },
 });

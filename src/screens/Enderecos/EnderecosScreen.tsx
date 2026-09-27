@@ -4,20 +4,43 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { TabScreenLayout } from '../../components/layout/TabScreenLayout';
 import { PagePrimaryButton } from '../../components/Button/PagePrimaryButton';
-import { BottomTabBar } from '../../components/layout/BottomTabBar';
+import { BottomTabBar, useBottomTabBarHeight } from '../../components/layout/BottomTabBar';
+import { BackButton } from '../../components/Header/BackButton';
 import { EnderecoFormModal } from '../../components/Card/EnderecoFormModal';
 import { useAuth } from '../../context/AuthContext';
+import { useAppGoBack } from '../../hooks/useAppGoBack';
+import { useHeaderTopPadding } from '../../utils/safeArea';
 import { EnderecoEntrega, listarEnderecos } from '../../services/enderecoService';
-import { styles } from './styles';
+import { clienteStyles, styles } from './styles';
+
+const NAVY = '#0E2A5C';
+
+function EmptyIllustration() {
+  return (
+    <View style={clienteStyles.illustration}>
+      <View style={clienteStyles.illustrationBg} />
+      <Ionicons name="business-outline" size={36} color="#C5D4E8" />
+      <View style={clienteStyles.pinWrap}>
+        <Ionicons name="location" size={36} color={NAVY} />
+      </View>
+      <Ionicons name="car-outline" size={52} color={NAVY} style={{ marginTop: 28 }} />
+    </View>
+  );
+}
 
 export function EnderecosScreen() {
-  const { user } = useAuth();
+  const { user, perfilUso } = useAuth();
   const empresaId = user?.empresa?.id;
+  const isCliente = perfilUso === 'Cliente';
+  const goBack = useAppGoBack(isCliente ? 'Perfil' : 'Home');
+  const topPadding = useHeaderTopPadding(8);
+  const tabBarHeight = useBottomTabBarHeight();
 
   const [enderecos, setEnderecos] = useState<EnderecoEntrega[]>([]);
   const [loading, setLoading] = useState(false);
@@ -47,6 +70,107 @@ export function EnderecosScreen() {
   const handleEnderecoSalvo = async () => {
     await carregar();
   };
+
+  const modal = empresaId ? (
+    <EnderecoFormModal
+      visible={modalVisible}
+      empresaId={empresaId}
+      isFirstAddress={enderecos.length === 0}
+      onClose={() => setModalVisible(false)}
+      onSaved={handleEnderecoSalvo}
+    />
+  ) : null;
+
+  if (isCliente) {
+    return (
+      <View style={clienteStyles.root}>
+        <ScrollView
+          style={{ flex: 1 }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: tabBarHeight + 16 }}
+        >
+          <View style={[clienteStyles.header, { paddingTop: topPadding }]}>
+            <View style={clienteStyles.headerTop}>
+              <BackButton onPress={goBack} iconColor={NAVY} />
+              <View style={clienteStyles.brandRow}>
+                <Text style={clienteStyles.brandQuick}>Quick</Text>
+                <Text style={clienteStyles.brandStock}>Stock</Text>
+              </View>
+              <View style={{ width: 32 }} />
+            </View>
+            <Text style={clienteStyles.title}>Endereços de entrega</Text>
+            <Text style={clienteStyles.subtitle}>
+              Gerencie onde seu negócio recebe os pedidos.
+            </Text>
+          </View>
+
+          <View style={clienteStyles.sheet}>
+            <TouchableOpacity
+              style={clienteStyles.addButton}
+              onPress={() => setModalVisible(true)}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="add-circle" size={20} color={NAVY} />
+              <Text style={clienteStyles.addButtonText}>Adicionar endereço</Text>
+            </TouchableOpacity>
+
+            {loading ? (
+              <ActivityIndicator color={NAVY} style={{ marginTop: 24 }} />
+            ) : error ? (
+              <View style={clienteStyles.emptyCard}>
+                <Text style={clienteStyles.errorText}>{error}</Text>
+                <TouchableOpacity onPress={carregar}>
+                  <Text style={clienteStyles.retryText}>Tentar novamente</Text>
+                </TouchableOpacity>
+              </View>
+            ) : enderecos.length === 0 ? (
+              <>
+                <View style={clienteStyles.emptyCard}>
+                  <EmptyIllustration />
+                  <Text style={clienteStyles.emptyTitle}>Nenhum endereço cadastrado</Text>
+                  <Text style={clienteStyles.emptyText}>
+                    Adicione um endereço para receber as bebidas do seu negócio.
+                  </Text>
+                </View>
+                <View style={clienteStyles.infoCard}>
+                  <View style={clienteStyles.infoIcon}>
+                    <Ionicons name="information-circle" size={18} color={NAVY} />
+                  </View>
+                  <Text style={clienteStyles.infoText}>
+                    Você poderá escolher o endereço ao finalizar o pedido.
+                  </Text>
+                </View>
+              </>
+            ) : (
+              <View style={clienteStyles.listCard}>
+                {enderecos.map((endereco) => (
+                  <View key={endereco.id} style={clienteStyles.enderecoRow}>
+                    <View style={clienteStyles.enderecoIcon}>
+                      <Ionicons name="location-outline" size={20} color={NAVY} />
+                    </View>
+                    <View style={clienteStyles.enderecoInfo}>
+                      <Text style={clienteStyles.enderecoApelido}>{endereco.apelido}</Text>
+                      <Text style={clienteStyles.enderecoResumo} numberOfLines={2}>
+                        {endereco.resumo}
+                      </Text>
+                      {endereco.principal ? (
+                        <View style={clienteStyles.principalPill}>
+                          <Text style={clienteStyles.principalText}>Principal</Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        </ScrollView>
+
+        <BottomTabBar activeRoute="Enderecos" />
+        {modal}
+      </View>
+    );
+  }
 
   return (
     <>
@@ -118,16 +242,7 @@ export function EnderecosScreen() {
           </View>
         )}
       </TabScreenLayout>
-
-      {empresaId ? (
-        <EnderecoFormModal
-          visible={modalVisible}
-          empresaId={empresaId}
-          isFirstAddress={enderecos.length === 0}
-          onClose={() => setModalVisible(false)}
-          onSaved={handleEnderecoSalvo}
-        />
-      ) : null}
+      {modal}
     </>
   );
 }

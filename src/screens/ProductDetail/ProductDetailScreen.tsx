@@ -17,6 +17,8 @@ import { getImageUrl } from '../../config/api';
 import { formatarPreco } from '../../services/productService';
 import { styles } from './styles';
 import { useProductDetail } from './useProductDetail';
+import { useAuth } from '../../context/AuthContext';
+import { ClienteProductDetail } from './ClienteProductDetail';
 
 export function ProductDetailScreen() {
   const {
@@ -47,6 +49,32 @@ export function ProductDetailScreen() {
     estoqueColor,
     handleAddToCart,
   } = useProductDetail();
+  const { perfilUso } = useAuth();
+
+  if (perfilUso === 'Cliente' && !isCatalogo) {
+    return (
+      <ClienteProductDetail
+        productName={productName}
+        descricao={descricao}
+        imagemUrl={imagemUrl}
+        unidade={unidade}
+        precoVenda={precoVenda}
+        productCodigo={productCodigo}
+        fornecedorNome={fornecedorNome}
+        fornecedorLogoUrl={fornecedorLogoUrl}
+        quantity={quantity}
+        setQuantity={setQuantity}
+        estoqueRestante={estoqueRestante}
+        esgotado={esgotado}
+        adding={adding}
+        feedback={feedback}
+        loading={loading}
+        onBack={goBack}
+        onOpenStore={goBack}
+        onAddToCart={handleAddToCart}
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>

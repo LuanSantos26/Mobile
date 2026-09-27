@@ -3,7 +3,9 @@ import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { usePurchaseCart } from '../../context/PurchaseCartContext';
+import { useAuth } from '../../context/AuthContext';
 import { useBottomInset } from '../../utils/safeArea';
+import { ClienteTabBar } from './ClienteTabBar';
 
 export const TAB_BAR_HEIGHT = 68;
 
@@ -17,7 +19,7 @@ export function useBottomTabBarHeight(): number {
   return TAB_BAR_HEIGHT + bottomInset;
 }
 
-export type BottomTabRoute = 'Home' | 'Quiosque' | 'Cart' | 'Sacola' | 'Cards' | 'FormasPagamento' | 'AddItem';
+export type BottomTabRoute = 'Home' | 'Explorar' | 'Reservas' | 'Pedidos' | 'Perfil' | 'Quiosque' | 'Cart' | 'Sacola' | 'Cards' | 'FormasPagamento' | 'AddItem' | 'Configuracoes' | 'Enderecos' | 'PedidoAcompanhamento';
 
 interface BottomTabBarProps {
   activeRoute?: BottomTabRoute;
@@ -25,8 +27,13 @@ interface BottomTabBarProps {
 
 export function BottomTabBar({ activeRoute }: BottomTabBarProps) {
   const navigation = useNavigation<any>();
+  const { perfilUso } = useAuth();
   const { itemCount } = usePurchaseCart();
   const bottomInset = useBottomInset();
+
+  if (perfilUso === 'Cliente') {
+    return <ClienteTabBar activeRoute={activeRoute} />;
+  }
 
   const iconColor = (route: BottomTabRoute) =>
     activeRoute === route ? '#FFF' : 'rgba(255,255,255,0.85)';

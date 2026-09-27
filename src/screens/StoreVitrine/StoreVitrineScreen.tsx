@@ -23,12 +23,15 @@ import {
 } from '../../services/marketplaceService';
 import { formatarPreco, Produto, labelEstoque, corEstoque, normalizarEstoque } from '../../services/productService';
 import { styles } from './styles';
+import { useAuth } from '../../context/AuthContext';
+import { ClienteQuiosqueVitrine } from './ClienteQuiosqueVitrine';
 
 const GOLD = '#F8B125';
 
 export function StoreVitrineScreen() {
   const navigation = useNavigation<any>();
-  const goBack = useAppGoBack('Cart');
+  const { perfilUso } = useAuth();
+  const goBack = useAppGoBack(perfilUso === 'Cliente' ? 'Explorar' : 'Cart');
   const route = useRoute<any>();
   const { itemCount } = usePurchaseCart();
 
@@ -71,8 +74,6 @@ export function StoreVitrineScreen() {
     return produtos.filter((p) => p.nome.toLowerCase().includes(termo));
   }, [produtos, search]);
 
-  const highlights = produtosFiltrados.slice(0, 3);
-
   const abrirProduto = (produto: Produto) => {
     navigation.navigate('ProductDetail', {
       produtoId: produto.id,
@@ -91,6 +92,28 @@ export function StoreVitrineScreen() {
       fornecedorTipo: tipo,
     });
   };
+
+  if (perfilUso === 'Cliente') {
+    return (
+      <ClienteQuiosqueVitrine
+        fornecedorId={fornecedorId}
+        fornecedorNome={fornecedorNome}
+        descricao={descricao}
+        logoUrl={logoUrl}
+        capaUrl={capaUrl}
+        tipo={tipo}
+        produtos={produtos}
+        loading={loading}
+        error={error}
+        search={search}
+        setSearch={setSearch}
+        onBack={goBack}
+        onOpenProduct={abrirProduto}
+      />
+    );
+  }
+
+  const highlights = produtosFiltrados.slice(0, 3);
 
   const renderProduct = (produto: Produto, key: string, featured = false) => {
     const estoqueQtd = normalizarEstoque(produto.estoque);

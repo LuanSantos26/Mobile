@@ -1,107 +1,48 @@
 import { StyleSheet } from 'react-native';
-import { COLORS } from '../../theme/theme';
+import { AUTH_NAVY } from '../../theme/authTheme';
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.pageBackground,
+  authQuestion: {
+    color: AUTH_NAVY,
+    fontSize: 26,
+    fontWeight: '800',
+    textAlign: 'center',
+    lineHeight: 32,
+    marginBottom: 8,
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 15,
-    paddingTop: 8,
+  authHint: {
+    marginBottom: 22,
+    color: '#8A93A3',
+    fontSize: 14,
+    textAlign: 'center',
   },
-  card: {
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.creamBorder,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-  },
-  kicker: {
-    fontSize: 12,
-    color: '#888',
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: COLORS.primaryGold,
-    marginBottom: 6,
-  },
-  subtitle: {
-    fontSize: 13,
-    color: '#888',
-    lineHeight: 18,
-    marginBottom: 16,
-  },
-  option: {
+  authOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.cream,
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: COLORS.creamBorder,
+    backgroundColor: '#FFF',
+    borderRadius: 18,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    marginBottom: 12,
+    gap: 12,
+    borderWidth: 2,
+    borderColor: '#FFF',
   },
-  optionLast: {
-    marginBottom: 0,
+  authOptionSelected: {
+    borderColor: AUTH_NAVY,
   },
-  optionSelected: {
-    backgroundColor: COLORS.primaryGold,
-    borderColor: COLORS.primaryGold,
-  },
-  iconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.creamSoft,
+  optionIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#EEF2F7',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
   },
-  iconWrapSelected: {
-    backgroundColor: 'rgba(255,255,255,0.22)',
-  },
-  optionCopy: {
+  authOptionText: {
     flex: 1,
-  },
-  optionText: {
     fontSize: 16,
     fontWeight: '700',
-    color: COLORS.textDark,
-  },
-  optionTextSelected: {
-    color: COLORS.textWhite,
-  },
-  optionHint: {
-    marginTop: 2,
-    fontSize: 12,
-    color: '#888',
-  },
-  optionHintSelected: {
-    color: 'rgba(255,255,255,0.9)',
-  },
-  button: {
-    marginTop: 18,
-    backgroundColor: COLORS.primaryGold,
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-  },
-  buttonDisabled: {
-    opacity: 0.45,
-  },
-  buttonText: {
-    color: COLORS.textWhite,
-    fontSize: 16,
-    fontWeight: '700',
+    color: AUTH_NAVY,
   },
 });
