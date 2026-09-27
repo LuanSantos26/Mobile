@@ -14,12 +14,14 @@ interface BackButtonProps {
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
+  iconColor?: string;
 }
 
 export function BackButton({
   onPress,
   style,
   accessibilityLabel = 'Voltar',
+  iconColor = '#F8B125',
 }: BackButtonProps) {
   return (
     <TouchableOpacity
@@ -28,7 +30,7 @@ export function BackButton({
       activeOpacity={0.7}
       accessibilityLabel={accessibilityLabel}
     >
-      <Ionicons name="chevron-back" size={CHEVRON_SIZE} color="#F8B125" />
+      <Ionicons name="chevron-back" size={CHEVRON_SIZE} color={iconColor} />
     </TouchableOpacity>
   );
 }

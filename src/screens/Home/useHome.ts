@@ -75,11 +75,16 @@ export function useHome() {
     [resumoFinanceiro],
   );
 
-  const quickActions = [
+  const quickActions: {
+    title: string;
+    icon: 'cash-outline' | 'bus-outline' | 'person-add-outline' | 'cube-outline';
+    screen: string;
+    subtitle?: string;
+    wide?: boolean;
+  }[] = [
     { title: 'Vendas', icon: 'cash-outline' as const, screen: 'EmpresaVendas' },
     { title: 'Caminhoneiros', icon: 'bus-outline' as const, screen: 'Camioneiros' },
     { title: 'Cadastro', icon: 'person-add-outline' as const, screen: 'CadastroCamioneiros' },
-    { title: 'Perfis', icon: 'people-outline' as const, screen: 'Cli_For', subtitle: 'Cliente ou fornecedor' },
     { title: 'Logística', icon: 'cube-outline' as const, screen: 'Logistica', wide: true },
   ];
 

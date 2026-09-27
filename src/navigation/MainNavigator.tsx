@@ -19,7 +19,10 @@ import { EmpresaVendasScreen } from '../screens/EmpresaVendas/EmpresaVendasScree
 import { CamioneirosScreen } from '../screens/Logistica/CamioneirosScreen';
 import { CadastroCamioneirosScreen } from '../screens/Logistica/CadastroCamioneirosScreen';
 import { LogisticaScreen } from '../screens/Logistica/LogisticaScreen';
-import EscolhaUsuarioScreen from '../screens/Cli_For/Cli_For';
+import { ExplorarScreen } from '../screens/Explorar/ExplorarScreen';
+import { ReservasScreen } from '../screens/Reservas/ReservasScreen';
+import { PedidosScreen } from '../screens/Pedidos/PedidosScreen';
+import { PerfilScreen } from '../screens/Perfil/PerfilScreen';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -27,6 +30,10 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export function MainNavigator() {
   return <ProductsProvider><QuiosqueProvider><Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="Home" component={HomeScreen} />
+    <Stack.Screen name="Explorar" component={ExplorarScreen} />
+    <Stack.Screen name="Reservas" component={ReservasScreen} />
+    <Stack.Screen name="Pedidos" component={PedidosScreen} />
+    <Stack.Screen name="Perfil" component={PerfilScreen} />
     <Stack.Screen name="Quiosque" component={QuiosqueScreen} />
     <Stack.Screen name="Configuracoes" component={ConfiguracoesScreen} />
     <Stack.Screen name="FormasPagamento" component={FormasPagamentoScreen} />
@@ -42,7 +49,6 @@ export function MainNavigator() {
     <Stack.Screen name="EmpresaVendas" component={EmpresaVendasScreen} />
     <Stack.Screen name="Camioneiros" component={CamioneirosScreen} />
     <Stack.Screen name="CadastroCamioneiros" component={CadastroCamioneirosScreen} />
-    <Stack.Screen name="Cli_For" component={EscolhaUsuarioScreen} />
     <Stack.Screen name="Logistica" component={LogisticaScreen} />
   </Stack.Navigator></QuiosqueProvider></ProductsProvider>;
 }

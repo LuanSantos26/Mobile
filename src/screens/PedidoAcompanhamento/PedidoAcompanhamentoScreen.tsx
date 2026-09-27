@@ -14,6 +14,7 @@ import { labelMetodoPagamento } from '../../services/marketplaceService';
 import { formatarPreco } from '../../services/productService';
 import { formatarDataCurta } from '../../utils/dateFormat';
 import { styles } from './styles';
+import { ClientePedidoDetail } from './ClientePedidoDetail';
 import { GOLD, InfoRow, ProgressBar, TimelineStep } from './components/PedidoParts';
 import { usePedidoAcompanhamento } from './usePedidoAcompanhamento';
 
@@ -36,6 +37,7 @@ export function PedidoAcompanhamentoScreen() {
     tituloHero,
     subtituloHero,
     heroIcon,
+    perfilUso,
   } = usePedidoAcompanhamento();
 
   if (loading && !pedido) {
@@ -64,6 +66,17 @@ export function PedidoAcompanhamentoScreen() {
   }
 
   if (!pedido) return null;
+
+  if (perfilUso === 'Cliente') {
+    return (
+      <ClientePedidoDetail
+        goBack={goBack}
+        pedido={pedido}
+        etapas={etapas}
+        error={error}
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>

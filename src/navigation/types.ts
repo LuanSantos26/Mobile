@@ -1,13 +1,18 @@
 import type { SolicitacaoCompra } from '../services/marketplaceService';
+import type { PerfilCadastro } from '../types/auth';
 
 export type RootStackParamList = {
   Animation: undefined;
   Welcome: { mensagemSucesso?: string } | undefined;
-  Register: undefined;
+  Register: { perfil?: PerfilCadastro } | undefined;
   Cli_For: undefined;
   Login: undefined;
   ForgotPassword: { email?: string } | undefined;
   Home: undefined;
+  Explorar: undefined;
+  Reservas: undefined;
+  Pedidos: undefined;
+  Perfil: undefined;
   Quiosque: undefined;
   Configuracoes: undefined;
   FormasPagamento: undefined;

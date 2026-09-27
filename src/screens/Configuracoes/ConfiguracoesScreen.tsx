@@ -9,16 +9,62 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
+import { BackButton } from '../../components/Header/BackButton';
 import { BackTitleHeader } from '../../components/Header/BackTitleHeader';
+import { BottomTabBar, useBottomTabBarHeight } from '../../components/layout/BottomTabBar';
 import { useAppGoBack } from '../../hooks/useAppGoBack';
+import { useHeaderTopPadding } from '../../utils/safeArea';
 import { atualizarEmpresa, atualizarUsuario } from '../../services/authService';
 import { formatarCnpjInput, formatarTelefoneInput, normalizarDocumento } from '../../utils/pixUtils';
-import { styles } from './styles';
+import { clienteStyles, styles } from './styles';
+
+const NAVY = '#0E2A5C';
+
+function IconField({
+  icon,
+  value,
+  onChangeText,
+  placeholder,
+  keyboardType,
+  autoCapitalize,
+  secureTextEntry,
+  maxLength,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder: string;
+  keyboardType?: 'default' | 'email-address' | 'number-pad';
+  autoCapitalize?: 'none' | 'words';
+  secureTextEntry?: boolean;
+  maxLength?: number;
+}) {
+  return (
+    <View style={clienteStyles.field}>
+      <Ionicons name={icon} size={18} color={NAVY} />
+      <TextInput
+        style={clienteStyles.input}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor="#9AA3B2"
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
+        secureTextEntry={secureTextEntry}
+        maxLength={maxLength}
+      />
+    </View>
+  );
+}
 
 export function ConfiguracoesScreen() {
-  const goBack = useAppGoBack('Home');
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, perfilUso } = useAuth();
+  const isCliente = perfilUso === 'Cliente';
+  const goBack = useAppGoBack(isCliente ? 'Perfil' : 'Home');
+  const topPadding = useHeaderTopPadding(8);
+  const tabBarHeight = useBottomTabBarHeight();
 
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -63,7 +109,7 @@ export function ConfiguracoesScreen() {
       return;
     }
     if (!nomeEmpresaTrim) {
-      setError('Informe o nome da empresa.');
+      setError(isCliente ? 'Informe o nome do negócio.' : 'Informe o nome da empresa.');
       return;
     }
     if (cnpjDigits.length !== 14) {
@@ -118,6 +164,143 @@ export function ConfiguracoesScreen() {
     }
   };
 
+  if (isCliente) {
+    return (
+      <View style={clienteStyles.root}>
+        <ScrollView
+          style={{ flex: 1 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: tabBarHeight + 16 }}
+        >
+          <View style={[clienteStyles.header, { paddingTop: topPadding }]}>
+            <View style={clienteStyles.headerTop}>
+              <BackButton onPress={goBack} iconColor={NAVY} />
+              <View style={clienteStyles.brandRow}>
+                <Text style={clienteStyles.brandQuick}>Quick</Text>
+                <Text style={clienteStyles.brandStock}>Stock</Text>
+              </View>
+              <View style={{ width: 32 }} />
+            </View>
+            <Text style={clienteStyles.title}>Dados do cliente</Text>
+          </View>
+
+          <View style={clienteStyles.sheet}>
+            <View style={clienteStyles.card}>
+              <View style={clienteStyles.sectionHeader}>
+                <View style={clienteStyles.sectionIcon}>
+                  <Ionicons name="person-outline" size={18} color={NAVY} />
+                </View>
+                <View>
+                  <Text style={clienteStyles.sectionTitle}>Dados pessoais</Text>
+                  <Text style={clienteStyles.sectionSubtitle}>Nome e e-mail da conta</Text>
+                </View>
+              </View>
+              <Text style={clienteStyles.label}>Nome</Text>
+              <IconField
+                icon="person-outline"
+                value={nome}
+                onChangeText={setNome}
+                placeholder="Seu nome"
+                autoCapitalize="words"
+              />
+              <Text style={clienteStyles.label}>E-mail</Text>
+              <IconField
+                icon="mail-outline"
+                value={email}
+                onChangeText={setEmail}
+                placeholder="seu@email.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={clienteStyles.card}>
+              <View style={clienteStyles.sectionHeader}>
+                <View style={clienteStyles.sectionIcon}>
+                  <Ionicons name="business-outline" size={18} color={NAVY} />
+                </View>
+                <View>
+                  <Text style={clienteStyles.sectionTitle}>Dados do negócio</Text>
+                  <Text style={clienteStyles.sectionSubtitle}>
+                    Nome, CNPJ e informações da empresa
+                  </Text>
+                </View>
+              </View>
+              <Text style={clienteStyles.label}>Nome do negócio</Text>
+              <IconField
+                icon="storefront-outline"
+                value={nomeEmpresa}
+                onChangeText={setNomeEmpresa}
+                placeholder="Nome do estabelecimento"
+                autoCapitalize="words"
+              />
+              <Text style={clienteStyles.label}>CNPJ</Text>
+              <IconField
+                icon="document-text-outline"
+                value={cnpjEmpresa}
+                onChangeText={(text) => setCnpjEmpresa(formatarCnpjInput(text))}
+                placeholder="00.000.000/0000-00"
+                keyboardType="number-pad"
+                maxLength={18}
+              />
+            </View>
+
+            <View style={clienteStyles.card}>
+              <View style={clienteStyles.sectionHeader}>
+                <View style={clienteStyles.sectionIcon}>
+                  <Ionicons name="lock-closed-outline" size={18} color={NAVY} />
+                </View>
+                <View>
+                  <Text style={clienteStyles.sectionTitle}>Alterar senha</Text>
+                  <Text style={clienteStyles.sectionSubtitle}>
+                    Deixe em branco para manter a senha atual.
+                  </Text>
+                </View>
+              </View>
+              <Text style={clienteStyles.label}>Nova senha</Text>
+              <IconField
+                icon="lock-closed-outline"
+                value={senha}
+                onChangeText={setSenha}
+                placeholder="Mínimo 6 caracteres"
+                autoCapitalize="none"
+                secureTextEntry
+              />
+              <Text style={clienteStyles.label}>Confirmar senha</Text>
+              <IconField
+                icon="lock-closed-outline"
+                value={confirmarSenha}
+                onChangeText={setConfirmarSenha}
+                placeholder="Repita a nova senha"
+                autoCapitalize="none"
+                secureTextEntry
+              />
+            </View>
+
+            {error ? <Text style={clienteStyles.errorText}>{error}</Text> : null}
+            {success ? <Text style={clienteStyles.successText}>{success}</Text> : null}
+
+            <TouchableOpacity
+              style={[clienteStyles.saveButton, loading && clienteStyles.saveButtonDisabled]}
+              onPress={handleSalvar}
+              disabled={loading}
+              activeOpacity={0.85}
+            >
+              {loading ? (
+                <ActivityIndicator color={NAVY} />
+              ) : (
+                <Text style={clienteStyles.saveButtonText}>Salvar alterações</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+
+        <BottomTabBar activeRoute="Configuracoes" />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
       <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
@@ -128,10 +311,7 @@ export function ConfiguracoesScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <BackTitleHeader
-          title="Configurações da conta"
-          onBack={goBack}
-        />
+        <BackTitleHeader title="Configurações da conta" onBack={goBack} />
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Dados pessoais</Text>

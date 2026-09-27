@@ -1,26 +1,33 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { SPACING } from '../../../theme/theme';
+import { AuthBrand } from '../../auth/AuthBrand';
 import { BackButton } from '../BackButton';
 import { useAppGoBack } from '../../../hooks/useAppGoBack';
 import { useHeaderTopPadding } from '../../../utils/safeArea';
 
 interface WelcomeHeaderProps {
     hideReturnButton?: boolean;
+    subtitle?: string;
+    description?: string;
 }
 
-export function WelcomeBackButton() {
+export function WelcomeBackButton({ iconColor }: { iconColor?: string }) {
     const goBack = useAppGoBack('Welcome');
     const topPadding = useHeaderTopPadding(SPACING.xs);
 
     return (
         <View style={[styles.topBackWrap, { paddingTop: topPadding }]}>
-            <BackButton onPress={goBack} style={styles.backButtonCorner} />
+            <BackButton onPress={goBack} style={styles.backButtonCorner} iconColor={iconColor} />
         </View>
     );
 }
 
-export function WelcomeHeader({ hideReturnButton = false }: WelcomeHeaderProps) {
+export function WelcomeHeader({
+    hideReturnButton = false,
+    subtitle = 'BEM-VINDO AO QUICKSTOCK',
+    description = 'Gerenciamento inteligente',
+}: WelcomeHeaderProps) {
     const goBack = useAppGoBack('Welcome');
     const topPadding = useHeaderTopPadding(SPACING.xs);
 
@@ -33,9 +40,9 @@ export function WelcomeHeader({ hideReturnButton = false }: WelcomeHeaderProps) 
             ) : null}
 
             <View style={[styles.content, hideReturnButton && styles.contentWithoutBack]}>
-                <Text style={styles.title}>Quickstock</Text>
-                <Text style={styles.subtitle}>BEM-VINDO AO QUICKSTOCK</Text>
-                <Text style={styles.description}>Gerenciamento inteligente</Text>
+                <AuthBrand light size="lg" />
+                <Text style={styles.subtitle}>{subtitle}</Text>
+                <Text style={styles.description}>{description}</Text>
             </View>
         </View>
     );
@@ -76,11 +83,14 @@ const styles = StyleSheet.create({
     subtitle: {
         fontSize: 16,
         color: '#FFF',
-        letterSpacing: 1
+        letterSpacing: 1,
+        textAlign: 'center',
     },
     description: {
         fontSize: 14,
         color: '#FFF',
-        marginBottom: 40
+        marginBottom: 28,
+        textAlign: 'center',
+        paddingHorizontal: 16,
     }
 });

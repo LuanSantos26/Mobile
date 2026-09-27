@@ -1,22 +1,13 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  ActivityIndicator,
-} from 'react-native';
-import { Background } from '../../components/layout/Background';
+import { Text, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { AuthScreenShell } from '../../components/auth/AuthScreenShell';
 import { CustomInput } from '../../components/Input/CustomInput';
-import { WelcomeHeader, WelcomeBackButton } from '../../components/Header/welcomeHeader';
 import { CustomButton } from '../../components/Button/CustomButton';
 import { useAuth } from '../../context/AuthContext';
-import { LAYOUT } from '../../theme/theme';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
+import { AUTH_NAVY } from '../../theme/authTheme';
 import { styles } from './styles';
 
 export default function LoginScreen() {
@@ -38,85 +29,51 @@ export default function LoginScreen() {
     const emailNormalizado = email.trim().toLowerCase();
     const senhaNormalizada = senha.trim();
 
-    if (emailNormalizado === 'admin' && senhaNormalizada === '1234') {
-      setLoading(true);
-      try {
-        await signIn({ email: 'admin', senha: '1234' });
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : 'Erro ao fazer login. Tente novamente.';
-        setError(message);
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-
     setLoading(true);
-
     try {
       await signIn({ email: emailNormalizado, senha: senhaNormalizada });
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Erro ao fazer login. Tente novamente.';
-      setError(message);
+      setError(err instanceof Error ? err.message : 'Erro ao fazer login. Tente novamente.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Background edges={['left', 'right', 'bottom']}>
-      <WelcomeBackButton />
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <AuthScreenShell>
+      <CustomInput
+        iconName="mail"
+        placeholder="Digite seu e-mail"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <CustomInput
+        iconName="lock"
+        placeholder="Digite sua senha"
+        secureTextEntry
+        value={senha}
+        onChangeText={setSenha}
+      />
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+      {loading ? (
+        <ActivityIndicator color={AUTH_NAVY} style={styles.loader} />
+      ) : (
+        <CustomButton title="Entrar" showArrow onPress={handleLogin} />
+      )}
+
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate('ForgotPassword', {
+            email: email.trim() || undefined,
+          })
+        }
       >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.content}>
-            <WelcomeHeader hideReturnButton />
-            <View style={styles.form}>
-              <CustomInput
-                iconName="mail"
-                placeholder="Digite seu e-mail"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={setEmail}
-              />
-              <CustomInput
-                iconName="lock"
-                placeholder="Digite sua senha"
-                secureTextEntry
-                value={senha}
-                onChangeText={setSenha}
-              />
-
-              {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-              {loading ? (
-                <ActivityIndicator color="#FFF" style={styles.loader} />
-              ) : (
-                <CustomButton title="Login" onPress={handleLogin} />
-              )}
-
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate('ForgotPassword', {
-                    email: email.trim() || undefined,
-                  })
-                }
-              >
-                <Text style={styles.forgotPassword}>Esqueceu a senha</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </Background>
+        <Text style={styles.forgotPassword}>Esqueceu a senha?</Text>
+      </TouchableOpacity>
+    </AuthScreenShell>
   );
 }

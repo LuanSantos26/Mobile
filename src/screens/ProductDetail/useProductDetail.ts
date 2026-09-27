@@ -10,12 +10,15 @@ import {
 } from '../../services/productService';
 import { listarProdutosFornecedor } from '../../services/marketplaceService';
 
+import { useAuth } from '../../context/AuthContext';
+
 export const GOLD = '#F8B125';
 
 export function useProductDetail() {
 
   const navigation = useNavigation<any>();
-  const goBack = useAppGoBack('Cart');
+  const { perfilUso } = useAuth();
+  const goBack = useAppGoBack(perfilUso === 'Cliente' ? 'Explorar' : 'Cart');
   const route = useRoute<any>();
   const { addItem, itemCount, itens } = usePurchaseCart();
 
@@ -146,6 +149,7 @@ export function useProductDetail() {
     fornecedorNome,
     fornecedorDescricao,
     fornecedorLogoUrl,
+    fornecedorId,
     isCatalogo,
     productName,
     descricao,

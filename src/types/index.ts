@@ -1,4 +1,5 @@
 export type {
+  PerfilCadastro,
   CadastroContaPayload,
   UsuarioLogado,
   CadastroContaResponse,
