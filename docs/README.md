@@ -6,7 +6,7 @@
 
 O **Stock4event Mobile** é a interface front-end móvel do ecossistema Stock4event. Desenvolvido com **React Native** e **Expo**, o aplicativo foi projetado para gerenciar estoques descentralizados, vendas em eventos, controle de quiosques e fluxo de pagamentos de forma ágil e intuitiva.
 
-Este aplicativo consome a [API REST do Stock4event Backend](https://github.com/LuanSantos26/QuickStock-BackEnd).
+Este aplicativo consome a [API REST do Stock4event Backend](https://github.com/LuanSantos26/Stock4Event-BackEnd).
 
 ---
 
@@ -23,14 +23,16 @@ O app tem dois fluxos, escolhidos no cadastro. Os dois seguem o mesmo layout, e 
 
 ## 🚀 Funcionalidades
 
-* **🔒 Autenticação e Perfis:** Login, cadastro de usuário e empresa, escolha de perfil (Cliente ou Fornecedor).
+* **🔒 Autenticação e Perfis:** Login, cadastro de usuário e empresa, escolha de perfil (Cliente, Fornecedor ou Cliente e fornecedor). O cadastro confere o formato do e-mail, e o backend envia um e-mail de boas-vindas na versão do perfil escolhido.
 * **🛍️ Compras do cliente:** Vitrine de fornecedores e quiosques, carrinho, checkout e acompanhamento do pedido.
 * **🏕️ Quiosques do cliente:** O cliente monta os próprios quiosques para vender em eventos, usando o que comprou e recebeu pelo app. O total comprado é dividido entre os quiosques, e o cliente define o preço de venda de cada produto.
 * **🎪 Quiosques do fornecedor:** Filiais e pontos de venda com estoque por produto.
 * **📦 Catálogo do fornecedor:** Cadastro, edição e remoção de produtos com imagem.
 * **📊 Vendas e logística:** Resumo de vendas, gráficos, caminhoneiros e status de entrega.
 * **💳 Checkout e Pagamentos:** Múltiplas formas de pagamento, Pix e cartões salvos.
-* **⚙️ Gestão de Conta:** Dados do usuário e da empresa, endereços de entrega e notificações.
+* **⚙️ Gestão de Conta (Ajustes):** menu com subtelas, cada uma com o próprio botão de salvar: *Dados pessoais*, *Alterar senha* e *Dados da empresa* (no cliente, *Dados do negócio*). Também há endereços de entrega e notificações.
+* **🏪 Perfil da loja (fornecedor):** foto, capa e descrição da loja, exibidas aos clientes na vitrine, no Explorar e no início.
+* **🧑 Foto de perfil (cliente):** adicionada em *Dados pessoais* e exibida em *Meu perfil*.
 
 ---
 
@@ -154,7 +156,8 @@ npm test
 
 * **Cores por perfil:** as paletas ficam em `src/theme/theme.ts`. Use `CLIENTE_COLORS` nas telas do cliente e `COMPANY_COLORS` nas do fornecedor, em vez de valores soltos.
 * **Cabeçalhos do fornecedor:** `ScreenHeader` (abas principais, com menu e sino) e `BackTitleHeader` (telas internas, com voltar). As telas usam o `TabScreenLayout`, que já monta o cabeçalho com título e subtítulo.
-* **Imagens:** `imageFallback.ts` e `RemoteImage.tsx` tratam falhas no carregamento das imagens vindas da API.
+* **Imagens:** `imageFallback.ts` e `RemoteImage.tsx` tratam falhas no carregamento das imagens vindas da API. Fotos de produto, logo, capa e foto de perfil são reduzidas no aparelho (`prepararImagemProduto`) e enviadas aos endpoints de upload do backend (`/api/produtos/upload`, `/api/empresas/upload` e `/api/usuarios/upload`).
+* **Ajustes:** as subtelas ficam em `src/screens/Configuracoes/` (`PerfilLojaScreen`, `DadosPessoaisScreen`, `AlterarSenhaScreen`, `DadosEmpresaScreen`). Os componentes `AjustesSubtela`, `AjustesMenuItem` e `AjustesCampo` mudam de visual conforme o perfil ativo, então uma subtela nova serve aos dois perfis.
 * **Especificações:** o design dos quiosques do cliente está em [superpowers/specs/2026-10-03-quiosque-cliente-design.md](./superpowers/specs/2026-10-03-quiosque-cliente-design.md).
 * **Diagramas:** em `docs/diagramas/` estão a arquitetura, o fluxo de navegação e os modelos de entidade-relacionamento.
 * **Cronograma da equipe** (8 semanas / 5 papéis): [CRONOGRAMA_EQUIPE.md](./CRONOGRAMA_EQUIPE.md) · [PDF](./CRONOGRAMA_EQUIPE.pdf)
