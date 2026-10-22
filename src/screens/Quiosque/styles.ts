@@ -1,0 +1,80 @@
+import { StyleSheet } from 'react-native';
+import { COMPANY_COLORS } from '../../theme/theme';
+
+export const styles = StyleSheet.create({
+  scrollContent: {},
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    marginTop: 16,
+    paddingHorizontal: 12,
+    height: 42,
+    borderRadius: 21,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#333',
+    paddingVertical: 0,
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COMPANY_COLORS.primary,
+    borderRadius: 22,
+    paddingVertical: 12,
+    marginHorizontal: 15,
+    marginBottom: 16,
+    gap: 6,
+  },
+  addButtonText: {
+    color: '#FFF',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  loader: {
+    marginTop: 24,
+  },
+  emptyState: {
+    alignItems: 'center',
+    marginTop: 8,
+    marginHorizontal: 15,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  emptyText: {
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  errorTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1F2937',
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  errorText: {
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  retryText: {
+    color: COMPANY_COLORS.primary,
+    fontWeight: '800',
+    fontSize: 14,
+  },
+});

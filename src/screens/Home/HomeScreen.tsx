@@ -1,109 +1,57 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Dimensions,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { ScreenHeader } from '../../components/Header/ScreenHeader';
 import { CalendarDatePill } from '../../components/Header/CalendarDatePill';
-import { BottomTabBar, useTabBarScrollPadding } from '../../components/Header/BottomTabBar';
-import { ScreenTopGradient } from '../../components/Header/ScreenTopGradient';
-import { ProductStockCard } from '../../components/Card/ProductCard';
-import { FinancialDonutChart } from '../../components/Card/FinancialDonutChart';
+import { BottomTabBar } from '../../components/layout/BottomTabBar';
+import { ProductStockCard } from './components/ProductCard';
+import { FinancialDonutChart } from './components/FinancialDonutChart';
+import { formatarPreco } from '../../services/productService';
+import { styles } from './styles';
+import { useHome } from './useHome';
 import { useAuth } from '../../context/AuthContext';
-import { useProdutos } from '../../context/ProductsContext';
-import {
-  formatarPreco,
-  normalizarEstoque,
-  Produto,
-} from '../../services/productService';
-import { buscarResumoFinanceiro, extrairTotaisFinanceiros, FinanceiroResumo } from '../../services/financeiroService';
-
-const { width } = Dimensions.get('window');
+import { ClienteHomeScreen } from '../ClienteHome/ClienteHomeScreen';
+import { COMPANY_COLORS } from '../../theme/theme';
 
 export default function HomeScreen() {
-  const navigation = useNavigation<any>();
-  const { user } = useAuth();
-  const { produtos, loading, refresh } = useProdutos();
-  const empresaId = user?.empresa?.id;
+  const { perfilUso } = useAuth();
+  if (perfilUso === 'Cliente') {
+    return <ClienteHomeScreen />;
+  }
+  return <EmpresaHomeScreen />;
+}
 
-  const [resumoFinanceiro, setResumoFinanceiro] = useState<FinanceiroResumo | null>(null);
-  const [loadingFinanceiro, setLoadingFinanceiro] = useState(false);
-
-  const carregarFinanceiro = useCallback(async () => {
-    if (!empresaId) return;
-    setLoadingFinanceiro(true);
-    try {
-      const data = await buscarResumoFinanceiro(empresaId);
-      setResumoFinanceiro(data);
-    } catch {
-      setResumoFinanceiro(null);
-    } finally {
-      setLoadingFinanceiro(false);
-    }
-  }, [empresaId]);
-
-  useFocusEffect(
-    useCallback(() => {
-      refresh();
-      carregarFinanceiro();
-    }, [refresh, carregarFinanceiro]),
-  );
-
-  const totalCatalogo = produtos.length;
-  const valorCatalogo = produtos.reduce((acc, item) => acc + item.precoVenda, 0);
-  const totalUnidadesEstoque = produtos.reduce(
-    (acc, item) => acc + normalizarEstoque(item.estoque),
-    0,
-  );
-
-  const abrirDetalheProduto = useCallback(
-    (produto: Produto) => {
-      navigation.navigate('ProductDetail', {
-        produtoId: produto.id,
-        fornecedorId: user?.empresa?.id,
-        fornecedorNome: user?.empresa?.nome ?? 'Minha empresa',
-        productName: produto.nome,
-        price: formatarPreco(produto.precoVenda),
-        precoVenda: produto.precoVenda,
-        descricao: produto.descricao,
-        imagemUrl: produto.imagemUrl,
-        unidade: produto.unidade,
-        estoque: produto.estoque,
-        codigo: produto.codigo,
-        origem: 'catalogo',
-      });
-    },
-    [navigation, user?.empresa?.id, user?.empresa?.nome],
-  );
-
-  const { totalCompras, totalVendas, lucroTotal, margemPercentual } = useMemo(
-    () => extrairTotaisFinanceiros(resumoFinanceiro),
-    [resumoFinanceiro],
-  );
-
-  const quickActions = [
-    { title: 'Vendas', icon: 'cash-outline', screen: 'EmpresaVendas' },
-    { title: 'Caminhoneiros', icon: 'truck-outline', screen: 'Camioneiros' },
-    { title: 'Cadastro', icon: 'person-add-outline', screen: 'CadastroCamioneiros' },
-    { title: 'Cliente ou fornecedor', icon: 'people-outline', screen: 'Cli_For' },
-    { title: 'Logística', icon: 'cube-outline', screen: 'Logistica' },
-  ];
-
-  const scrollBottomPadding = useTabBarScrollPadding();
+function EmpresaHomeScreen() {
+  const {
+    navigation,
+    user,
+    produtos,
+    loading,
+    resumoFinanceiro,
+    loadingFinanceiro,
+    totalCatalogo,
+    valorCatalogo,
+    totalUnidadesEstoque,
+    abrirDetalheProduto,
+    totalCompras,
+    totalVendas,
+    lucroTotal,
+    margemPercentual,
+    quickActions,
+    scrollBottomPadding,
+  } = useHome();
 
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.container} edges={['left', 'right']}>
-        <ScreenTopGradient />
 
         <ScrollView
           style={styles.scrollView}
@@ -114,30 +62,34 @@ export default function HomeScreen() {
         {/* CABEÇALHO */}
         <ScreenHeader
           showGreeting
-          greeting="Bem vindo."
-          name={user?.nome?.split(' ')[0] ?? 'Usuário'}
-        />
-
-        {/* BARRA DE PESQUISA */}
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={18} color="#F8B125" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Pesquisar..."
-            placeholderTextColor="#999"
-          />
-        </View>
+          greeting="Gerencie seu estoque e suas vendas."
+          name={user?.empresa?.nome ?? user?.nome?.split(' ')[0] ?? 'Sua empresa'}
+          overlap
+        >
+          {/* BARRA DE PESQUISA */}
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={18} color={COMPANY_COLORS.primary} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Pesquisar..."
+              placeholderTextColor="#999"
+            />
+          </View>
+        </ScreenHeader>
 
         {/* ÚLTIMO ESTOQUE */}
-        <View style={styles.mainCard}>
+        <View style={[styles.mainCard, styles.mainCardOverlap]}>
           <View style={styles.cardHeader}>
-            <View style={styles.cardTitleContainer}>
-              <View style={[styles.dot, { backgroundColor: 'red' }]} />
-              <Text style={styles.cardTitle}>Último estoque</Text>
+            <View style={styles.cardTitleBlock}>
+              <View style={styles.cardTitleContainer}>
+                <View style={[styles.dot, { backgroundColor: '#D64545' }]} />
+                <Text style={styles.cardTitle}>Último estoque</Text>
+              </View>
+              <Text style={styles.cardSubtitle}>Produtos cadastrados na empresa</Text>
             </View>
             <CalendarDatePill compact />
           </View>
-            <View style={styles.tagsContainer}>
+          <View style={styles.tagsContainer}>
             <View style={styles.tag}>
               <Text style={styles.tagText}>{totalCatalogo} produto(s)</Text>
             </View>
@@ -152,7 +104,7 @@ export default function HomeScreen() {
             contentContainerStyle={styles.horizontalScrollContent}
           >
             {loading ? (
-              <ActivityIndicator color="#F8B125" style={{ marginVertical: 12 }} />
+              <ActivityIndicator color={COMPANY_COLORS.primary} style={{ marginVertical: 12 }} />
             ) : produtos.length === 0 ? (
               <Text style={styles.emptyProductsText}>Nenhum produto cadastrado.</Text>
             ) : (
@@ -167,12 +119,38 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
+        {/* AÇÕES RÁPIDAS */}
+        <View style={styles.quickActionsSection}>
+          <Text style={styles.quickActionsTitle}>Ações rápidas</Text>
+          <View style={styles.quickActionsGrid}>
+            {quickActions.map((item) => (
+              <TouchableOpacity
+                key={item.screen}
+                style={styles.quickActionCard}
+                activeOpacity={0.85}
+                onPress={() => navigation.navigate(item.screen)}
+              >
+                <View style={styles.quickActionIconWrap}>
+                  <Ionicons name={item.icon} size={22} color={COMPANY_COLORS.primary} />
+                </View>
+                <Text style={styles.quickActionText} numberOfLines={1}>{item.title}</Text>
+                {item.subtitle ? (
+                  <Text style={styles.quickActionHint} numberOfLines={2}>{item.subtitle}</Text>
+                ) : null}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         {/* ESTOQUE ONLINE */}
         <View style={styles.mainCard}>
           <View style={styles.cardHeader}>
-            <View style={styles.cardTitleContainer}>
-              <View style={[styles.dot, { backgroundColor: '#32CD32' }]} />
-              <Text style={styles.cardTitle}>Estoque Online</Text>
+            <View style={styles.cardTitleBlock}>
+              <View style={styles.cardTitleContainer}>
+                <View style={[styles.dot, { backgroundColor: '#32CD32' }]} />
+                <Text style={styles.cardTitle}>Estoque online</Text>
+              </View>
+              <Text style={styles.cardSubtitle}>Visão rápida do catálogo ativo</Text>
             </View>
             <CalendarDatePill compact />
           </View>
@@ -181,7 +159,7 @@ export default function HomeScreen() {
               <Text style={styles.tagText}>Valor ref. {formatarPreco(valorCatalogo)}</Text>
             </View>
             <View style={styles.tag}>
-              <Text style={styles.tagText}>
+              <Text style={styles.tagText} numberOfLines={1}>
                 {user?.empresa?.nome ?? 'Sua empresa'}
               </Text>
             </View>
@@ -203,22 +181,25 @@ export default function HomeScreen() {
         </View>
 
         {/* RESUMO FINANCEIRO */}
-        <View style={styles.financialContainer}>
-          <View style={[styles.financialBox, { borderLeftColor: '#D64545' }]}>
-            <Text style={styles.financialLabel}>Total gasto</Text>
-            <Text style={styles.financialValue}>
-              {loadingFinanceiro ? '...' : formatarPreco(totalCompras)}
-            </Text>
+        <View style={styles.mainCard}>
+          <View style={styles.financeHeader}>
+            <Text style={styles.cardTitle}>Resumo financeiro</Text>
+            <Text style={styles.cardSubtitle}>Compras, vendas e lucro da conta</Text>
           </View>
-          <View style={[styles.financialBox, { borderLeftColor: '#32CD32' }]}>
-            <Text style={styles.financialLabel}>Total de lucro</Text>
-            <Text style={styles.financialValue}>
-              {loadingFinanceiro ? '...' : formatarPreco(lucroTotal)}
-            </Text>
+          <View style={styles.financialContainer}>
+            <View style={[styles.financialBox, styles.financialBoxSpend]}>
+              <Text style={styles.financialLabel}>Total gasto</Text>
+              <Text style={[styles.financialValue, { color: '#D64545' }]}>
+                {loadingFinanceiro ? '...' : formatarPreco(totalCompras)}
+              </Text>
+            </View>
+            <View style={[styles.financialBox, styles.financialBoxProfit]}>
+              <Text style={styles.financialLabel}>Total de lucro</Text>
+              <Text style={[styles.financialValue, { color: lucroTotal < 0 ? '#D64545' : '#2E7D32' }]}>
+                {loadingFinanceiro ? '...' : formatarPreco(lucroTotal)}
+              </Text>
+            </View>
           </View>
-        </View>
-
-        <View style={styles.chartSection}>
           <FinancialDonutChart
             totalCompras={totalCompras}
             totalVendas={totalVendas}
@@ -228,23 +209,6 @@ export default function HomeScreen() {
           />
         </View>
 
-        <View style={styles.quickActionsSection}>
-          <Text style={styles.quickActionsTitle}>Operação da empresa</Text>
-          <View style={styles.quickActionsGrid}>
-            {quickActions.map((item) => (
-              <TouchableOpacity
-                key={item.screen}
-                style={styles.quickActionCard}
-                activeOpacity={0.85}
-                onPress={() => navigation.navigate(item.screen)}
-              >
-                <Ionicons name={item.icon as any} size={26} color="#F8B125" />
-                <Text style={styles.quickActionText}>{item.title}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
       </ScrollView>
       </SafeAreaView>
 
@@ -252,286 +216,3 @@ export default function HomeScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  // ==========================================
-  // ESTRUTURA E CONFIGURAÇÕES GERAIS
-  // ==========================================
-  container: { 
-    flex: 1, 
-    backgroundColor: '#FAFAFA',
-  },
-  root: {
-    flex: 1,
-    backgroundColor: '#FAFAFA',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  topGradient: { 
-    position: 'absolute', 
-    top: 0, 
-    left: 0, 
-    right: 0, 
-    height: 350,
-  },
-  scrollContent: {
-  },
-  emptyProductsText: {
-    color: '#666',
-    fontSize: 14,
-    paddingVertical: 12,
-  },
-
-  // ==========================================
-  // CABEÇALHO (HEADER) — ver ScreenHeader
-  // ==========================================
-  // FILTRO / BARRA DE PESQUISA
-  // ==========================================
-  searchContainer: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    backgroundColor: '#FFF', 
-    marginHorizontal: 15, 
-    marginTop: 20, 
-    marginBottom: 20, 
-    paddingHorizontal: 12, 
-    height: 40, 
-    borderRadius: 20, 
-    borderWidth: 1, 
-    borderColor: '#F0E6CC',
-  },
-  searchInput: { 
-    flex: 1, 
-    marginLeft: 8, 
-    fontSize: 14,
-    color: '#333',
-    paddingVertical: 0,
-  },
-
-  // ==========================================
-  // CARDS PRINCIPAIS (MAIN CARD)
-  // ==========================================
-  mainCard: { 
-    backgroundColor: '#FFF', 
-    marginHorizontal: 15, 
-    borderRadius: 20, 
-    padding: 15, 
-    marginBottom: 20, 
-    elevation: 8, 
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 4 }, 
-    shadowOpacity: 0.15, 
-    shadowRadius: 10,
-  },
-  cardHeader: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: 10,
-  },
-  cardTitleContainer: { 
-    flexDirection: 'row', 
-    alignItems: 'center',
-  },
-  dot: { 
-    width: 10, 
-    height: 10, 
-    borderRadius: 5, 
-    marginRight: 8,
-  },
-  cardTitle: { 
-    fontSize: 18, 
-    fontWeight: 'bold', 
-    color: '#F8B125',
-  },
-  datePillCard: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    borderWidth: 1, 
-    borderColor: '#F8B125', 
-    paddingHorizontal: 10, 
-    paddingVertical: 4, 
-    borderRadius: 15,
-  },
-  dateTextCard: { 
-    color: '#F8B125', 
-    fontSize: 10, 
-    fontWeight: 'bold',
-  },
-  tagsContainer: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    marginBottom: 10,
-  },
-  tag: { 
-    borderWidth: 1, 
-    borderColor: '#F8B125', 
-    borderRadius: 15, 
-    paddingHorizontal: 10, 
-    paddingVertical: 3,
-  },
-  tagText: { 
-    fontSize: 10, 
-    color: '#333',
-  },
-
-  // ==========================================
-  // ELEMENTOS DE ITENS DO ESTOQUE
-  // ==========================================
-  horizontalScroll: { 
-    flexDirection: 'row',
-  },
-  horizontalScrollContent: {
-    paddingVertical: 4,
-    paddingRight: 4,
-  },
-  stockItemCard: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    backgroundColor: '#FFF', 
-    borderWidth: 1.5, 
-    borderColor: '#F8B125', 
-    borderRadius: 25, 
-    padding: 10, 
-    marginRight: 10, 
-    minWidth: 160,
-  },
-  stockIcon: { 
-    marginRight: 8,
-  },
-  stockTextContainer: { 
-    justifyContent: 'center',
-  },
-  stockItemName: { 
-    fontSize: 14, 
-    fontWeight: 'bold', 
-    color: '#000',
-  },
-  stockItemTotal: { 
-    fontSize: 12, 
-    color: '#000', 
-    fontWeight: 'bold',
-  },
-  stockItemTotalNumber: { 
-    color: '#F8B125', 
-    fontSize: 16,
-  },
-
-  // ==========================================
-  // SESSÃO FINANCEIRA E GRÁFICOS
-  // ==========================================
-  financialContainer: { 
-    flexDirection: 'row', 
-    justifyContent: 'center', 
-    marginHorizontal: 15, 
-    marginTop: 10,
-  },
-  financialBox: { 
-    backgroundColor: '#FFF', 
-    borderWidth: 1, 
-    borderColor: '#F8B125', 
-    borderLeftWidth: 6, 
-    borderRadius: 10, 
-    paddingVertical: 10, 
-    paddingHorizontal: 20, 
-    alignItems: 'center', 
-    marginHorizontal: 10, 
-    minWidth: 120,
-  },
-  financialLabel: { 
-    fontSize: 12, 
-    color: '#666',
-  },
-  financialValue: { 
-    fontSize: 16, 
-    fontWeight: 'bold', 
-    color: '#333', 
-    marginTop: 4,
-  },
-  chartSection: {
-    paddingHorizontal: 15,
-  },
-  quickActionsSection: {
-    marginHorizontal: 15,
-    marginTop: 18,
-    marginBottom: 18,
-  },
-  quickActionsTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#222',
-    marginBottom: 12,
-  },
-  quickActionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  quickActionCard: {
-    width: '48%',
-    backgroundColor: '#FFF',
-    borderRadius: 18,
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#F3E3B1',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 5,
-  },
-  quickActionText: {
-    marginTop: 8,
-    color: '#333',
-    fontWeight: '700',
-    fontSize: 13,
-    textAlign: 'center',
-  },
-
-  // ==========================================
-  // BARRA DE NAVEGAÇÃO INFERIOR (BOTTOM BAR)
-  // ==========================================
-  bottomBar: { 
-    position: 'absolute', 
-    bottom: 0, 
-    left: 0, 
-    right: 0, 
-    height: 70, 
-    backgroundColor: '#F8B125', 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    paddingHorizontal: 15,
-  },
-  tabItem: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center',
-  },
-  floatingButtonContainer: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center',
-  },
-  floatingButton: { 
-    width: 76, 
-    height: 76, 
-    borderRadius: 38, 
-    backgroundColor: '#FFF', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    position: 'absolute', 
-    bottom: -15, 
-    borderWidth: 2, 
-    borderColor: '#F8B125', 
-    elevation: 6, 
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 4 }, 
-    shadowOpacity: 0.2, 
-    shadowRadius: 5,
-  },
-});

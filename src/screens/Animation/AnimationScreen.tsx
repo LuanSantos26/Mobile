@@ -1,97 +1,120 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, Text } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, Image, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Background } from '../../components/Header/Background';
+import { AuthBrand } from '../../components/auth/AuthBrand';
+import { BottlesHero } from '../../components/auth/BottlesHero';
+import { AUTH_GOLD, AUTH_NAVY } from '../../theme/authTheme';
 
 export function AnimationScreen() {
   const navigation = useNavigation<any>();
-  const logoOpacity = useRef(new Animated.Value(0)).current;
-  const logoScale = useRef(new Animated.Value(0.75)).current;
-  const titleOpacity = useRef(new Animated.Value(0)).current;
+  const [phase, setPhase] = useState<'loading' | 'splash'>('loading');
+  const progress = useRef(new Animated.Value(0)).current;
+  const fade = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    const animation = Animated.sequence([
-      Animated.parallel([
-        Animated.timing(logoOpacity, {
-          toValue: 1,
-          duration: 700,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.spring(logoScale, {
-          toValue: 1,
-          tension: 28,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.delay(1300),
-      Animated.timing(logoOpacity, {
-        toValue: 0,
-        duration: 500,
-        easing: Easing.in(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(titleOpacity, {
+    const run = Animated.sequence([
+      Animated.timing(progress, {
         toValue: 1,
-        duration: 500,
-        easing: Easing.out(Easing.cubic),
+        duration: 1600,
+        easing: Easing.inOut(Easing.cubic),
+        useNativeDriver: false,
+      }),
+      Animated.timing(fade, {
+        toValue: 0,
+        duration: 280,
         useNativeDriver: true,
       }),
-      Animated.delay(1200),
     ]);
 
-    animation.start(() => navigation.replace('Welcome'));
+    run.start(() => {
+      setPhase('splash');
+      fade.setValue(0);
+      Animated.timing(fade, {
+        toValue: 1,
+        duration: 450,
+        useNativeDriver: true,
+      }).start();
+    });
 
-    return () => animation.stop();
-  }, [logoOpacity, logoScale, titleOpacity, navigation]);
+    const timeout = setTimeout(() => navigation.replace('Welcome'), 3400);
+    return () => {
+      run.stop();
+      clearTimeout(timeout);
+    };
+  }, [fade, navigation, progress]);
+
+  const barWidth = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['8%', '100%'],
+  });
 
   return (
-    <Background>
-      <Animated.View style={styles.container}>
-        <Animated.Image
-          source={require('../../../assets/favicon.png')}
-          style={[
-            styles.logo,
-            {
-              opacity: logoOpacity,
-              transform: [{ scale: logoScale }],
-            },
-          ]}
-        />
-        <Animated.Text style={[styles.brandText, { opacity: titleOpacity }]}>
-          QUICKSTOCK
-        </Animated.Text>
-        <Animated.Text style={[styles.subtitle, { opacity: titleOpacity }]}>
-          Agilidade que Conecta Mercados
-        </Animated.Text>
+    <View style={styles.root}>
+      <Animated.View style={[styles.center, { opacity: fade }]}>
+        {phase === 'loading' ? (
+          <>
+            <Image
+              source={require('../../assets/brand/avatar.png')}
+              style={styles.avatar}
+              accessibilityLabel="Stock4event"
+            />
+            <View style={styles.track}>
+              <Animated.View style={[styles.fill, { width: barWidth }]} />
+            </View>
+            <Text style={styles.loading}>Carregando...</Text>
+          </>
+        ) : (
+          <>
+            <AuthBrand light slogan size="lg" />
+            <View style={styles.splashArt}>
+              <BottlesHero compact />
+            </View>
+          </>
+        )}
       </Animated.View>
-    </Background>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
+  root: {
+    flex: 1,
+    backgroundColor: AUTH_NAVY,
+  },
+  center: {
+    flex: 1,
     alignItems: 'center',
-    paddingBottom: 40,
+    justifyContent: 'center',
+    paddingHorizontal: 32,
   },
-  logo: {
-    width: 210,
-    height: 210,
-    resizeMode: 'contain',
+  avatar: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    marginBottom: 28,
   },
-  brandText: {
-    marginTop: 18,
-    color: '#FFFFFF',
-    fontSize: 30,
-    fontWeight: '800',
-    letterSpacing: 2,
+  track: {
+    width: 180,
+    height: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    overflow: 'hidden',
   },
-  subtitle: {
-    marginTop: 4,
-    color: '#FFFFFF',
-    fontSize: 16,
+  fill: {
+    height: '100%',
+    borderRadius: 8,
+    backgroundColor: AUTH_GOLD,
+  },
+  loading: {
+    marginTop: 14,
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  splashArt: {
+    position: 'absolute',
+    bottom: 48,
+    left: 0,
+    right: 0,
   },
 });

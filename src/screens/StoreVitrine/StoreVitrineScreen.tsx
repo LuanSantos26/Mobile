@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   TextInput,
@@ -16,19 +15,24 @@ import { BackTitleHeader } from '../../components/Header/BackTitleHeader';
 import { HeaderCartBadge } from '../../components/Header/HeaderCartBadge';
 import { useAppGoBack } from '../../hooks/useAppGoBack';
 import { usePurchaseCart } from '../../context/PurchaseCartContext';
-import { RemoteImage } from '../../components/Header/RemoteImage';
+import { RemoteImage } from '../../components/media/RemoteImage';
 import { getImageUrl } from '../../config/api';
 import {
   labelTipoFornecedor,
   listarProdutosFornecedor,
 } from '../../services/marketplaceService';
 import { formatarPreco, Produto, labelEstoque, corEstoque, normalizarEstoque } from '../../services/productService';
+import { styles } from './styles';
+import { useAuth } from '../../context/AuthContext';
+import { ClienteQuiosqueVitrine } from './ClienteQuiosqueVitrine';
+import { COMPANY_COLORS } from '../../theme/theme';
 
-const GOLD = '#F8B125';
+const ACCENT = COMPANY_COLORS.primary;
 
 export function StoreVitrineScreen() {
   const navigation = useNavigation<any>();
-  const goBack = useAppGoBack('Cart');
+  const { perfilUso } = useAuth();
+  const goBack = useAppGoBack(perfilUso === 'Cliente' ? 'Explorar' : 'Cart');
   const route = useRoute<any>();
   const { itemCount } = usePurchaseCart();
 
@@ -71,8 +75,6 @@ export function StoreVitrineScreen() {
     return produtos.filter((p) => p.nome.toLowerCase().includes(termo));
   }, [produtos, search]);
 
-  const highlights = produtosFiltrados.slice(0, 3);
-
   const abrirProduto = (produto: Produto) => {
     navigation.navigate('ProductDetail', {
       produtoId: produto.id,
@@ -92,14 +94,40 @@ export function StoreVitrineScreen() {
     });
   };
 
-  const renderProduct = (produto: Produto, key: string) => {
+  if (perfilUso === 'Cliente') {
+    return (
+      <ClienteQuiosqueVitrine
+        fornecedorId={fornecedorId}
+        fornecedorNome={fornecedorNome}
+        descricao={descricao}
+        logoUrl={logoUrl}
+        capaUrl={capaUrl}
+        tipo={tipo}
+        produtos={produtos}
+        loading={loading}
+        error={error}
+        search={search}
+        setSearch={setSearch}
+        onBack={goBack}
+        onOpenProduct={abrirProduto}
+      />
+    );
+  }
+
+  const highlights = produtosFiltrados.slice(0, 3);
+
+  const renderProduct = (produto: Produto, key: string, featured = false) => {
     const estoqueQtd = normalizarEstoque(produto.estoque);
     const esgotado = estoqueQtd <= 0;
 
     return (
     <TouchableOpacity
       key={key}
-      style={[styles.productSmall, esgotado && styles.productSmallDisabled]}
+      style={[
+        styles.productSmall,
+        featured && styles.productFeatured,
+        esgotado && styles.productSmallDisabled,
+      ]}
       activeOpacity={0.85}
       onPress={() => abrirProduto(produto)}
     >
@@ -134,8 +162,6 @@ export function StoreVitrineScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-      <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -143,6 +169,7 @@ export function StoreVitrineScreen() {
         <BackTitleHeader
           title={fornecedorNome}
           onBack={goBack}
+          inset={0}
           rightSlot={
             itemCount > 0 ? (
               <HeaderCartBadge
@@ -154,10 +181,10 @@ export function StoreVitrineScreen() {
         />
 
         <View style={styles.searchContainer}>
-          <Ionicons name="search" size={24} color={GOLD} />
+          <Ionicons name="search" size={18} color={ACCENT} />
           <TextInput
             placeholder="Procure o produto"
-            placeholderTextColor="#666"
+            placeholderTextColor="#999"
             value={search}
             onChangeText={setSearch}
             style={styles.searchInput}
@@ -174,13 +201,10 @@ export function StoreVitrineScreen() {
             />
           ) : (
             <LinearGradient
-              colors={['#F8B125', '#FFD76A']}
+              colors={[COMPANY_COLORS.primary, COMPANY_COLORS.primaryMuted]}
               style={styles.bannerImage}
             />
           )}
-          <TouchableOpacity style={styles.heartBanner} activeOpacity={0.8}>
-            <Ionicons name="heart-outline" size={26} color={GOLD} />
-          </TouchableOpacity>
         </View>
 
         <View style={styles.storeCard}>
@@ -191,15 +215,9 @@ export function StoreVitrineScreen() {
             resizeMode="cover"
           />
 
-          <TouchableOpacity style={styles.storeRow} activeOpacity={0.8}>
-            <Text style={styles.storeTitle} numberOfLines={1}>
-              {fornecedorNome}
-            </Text>
-
-            <Ionicons name="chevron-forward" size={28} color="#000" />
-          </TouchableOpacity>
-
-          <View style={styles.divider} />
+          <Text style={styles.storeTitle} numberOfLines={1}>
+            {fornecedorNome}
+          </Text>
 
           <Text style={styles.delivery}>
             {descricao || 'Distribuidora parceira de bebidas para revenda.'}
@@ -213,21 +231,39 @@ export function StoreVitrineScreen() {
         </View>
 
         {loading ? (
-          <ActivityIndicator color={GOLD} style={{ marginTop: 24 }} />
+          <ActivityIndicator color={ACCENT} style={{ marginTop: 24 }} />
         ) : error ? (
           <Text style={styles.errorText}>{error}</Text>
         ) : produtosFiltrados.length === 0 ? (
           <Text style={styles.errorText}>Nenhum produto disponível nesta distribuidora.</Text>
         ) : (
           <>
-            <Text style={styles.sectionTitle}>Destaques</Text>
-            <View style={styles.threeColumns}>
-              {highlights.map((item) => renderProduct(item, `highlight-${item.id}`))}
-            </View>
+            {highlights.length > 0 ? (
+              <View style={styles.sectionCard}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Destaques</Text>
+                  <Text style={styles.sectionSubtitle}>Os primeiros itens da loja</Text>
+                </View>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.highlightsRow}
+                >
+                  {highlights.map((item) => renderProduct(item, `highlight-${item.id}`, true))}
+                </ScrollView>
+              </View>
+            ) : null}
 
-            <Text style={styles.productsTitle}>Produtos</Text>
-            <View style={styles.threeColumns}>
-              {produtosFiltrados.map((item) => renderProduct(item, `product-${item.id}`))}
+            <View style={styles.sectionCard}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Produtos</Text>
+                <Text style={styles.sectionSubtitle}>
+                  {produtosFiltrados.length} item(ns) no catálogo
+                </Text>
+              </View>
+              <View style={styles.twoColumns}>
+                {produtosFiltrados.map((item) => renderProduct(item, `product-${item.id}`))}
+              </View>
             </View>
           </>
         )}
@@ -245,233 +281,3 @@ export function StoreVitrineScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FAFAFA',
-  },
-  topGradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 350,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    marginHorizontal: 15,
-    marginBottom: 16,
-    paddingHorizontal: 15,
-    height: 45,
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: GOLD,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 10,
-    fontSize: 16,
-    color: '#111',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 95,
-  },
-
-  banner: {
-    height: 160,
-    backgroundColor: '#D9D9D9',
-  },
-  bannerImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-
-  heartBanner: {
-    position: 'absolute',
-    top: 7,
-    right: 13,
-  },
-
-  storeCard: {
-    marginHorizontal: 25,
-    marginTop: -45,
-    backgroundColor: '#FFF',
-    borderRadius: 15,
-    borderWidth: 1.2,
-    borderColor: GOLD,
-    paddingHorizontal: 9,
-    paddingTop: 37,
-    paddingBottom: 12,
-  },
-
-  storeLogo: {
-    position: 'absolute',
-    top: -37,
-    alignSelf: 'center',
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: '#FFCB3C',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#FFF',
-  },
-  storeLogoInitial: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#FFF',
-  },
-
-  storeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  storeTitle: {
-    flex: 1,
-    fontSize: 23,
-    fontWeight: '800',
-    color: '#000',
-  },
-
-  divider: {
-    height: 1,
-    backgroundColor: GOLD,
-    marginVertical: 6,
-  },
-
-  delivery: {
-    fontSize: 13,
-    color: '#111',
-  },
-  deliveryMeta: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
-  },
-
-  sectionTitle: {
-    fontSize: 15,
-    color: '#111',
-    marginTop: 18,
-    marginLeft: 21,
-    marginBottom: 10,
-  },
-
-  productsTitle: {
-    fontSize: 15,
-    color: '#111',
-    marginTop: 8,
-    marginLeft: 21,
-    marginBottom: 10,
-  },
-
-  threeColumns: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 18,
-  },
-
-  productSmall: {
-    width: '30%',
-    marginBottom: 12,
-  },
-  productSmallDisabled: {
-    opacity: 0.72,
-  },
-
-  imageBox: {
-    width: '100%',
-    height: 90,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#EEEEEE',
-    position: 'relative',
-  },
-  productImage: {
-    width: '100%',
-    height: '100%',
-  },
-  stockPill: {
-    position: 'absolute',
-    bottom: 4,
-    left: 4,
-    right: 4,
-    borderRadius: 6,
-    paddingVertical: 2,
-    paddingHorizontal: 4,
-  },
-  stockPillText: {
-    color: '#FFF',
-    fontSize: 9,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  errorText: {
-    textAlign: 'center',
-    color: '#666',
-    marginTop: 20,
-    paddingHorizontal: 20,
-  },
-
-  price: {
-    fontSize: 13,
-    color: '#000',
-    marginTop: 7,
-  },
-
-  name: {
-    fontSize: 13,
-    color: '#000',
-    marginTop: 1,
-  },
-  productCode: {
-    fontSize: 10,
-    color: '#888',
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  stockHint: {
-    fontSize: 10,
-    marginTop: 2,
-    fontWeight: '600',
-  },
-
-  cartButton: {
-    position: 'absolute',
-    right: 15,
-    bottom: 20,
-    backgroundColor: GOLD,
-    height: 50,
-    paddingHorizontal: 25,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.18,
-    shadowRadius: 5,
-    zIndex: 20,
-  },
-
-  cartText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-});

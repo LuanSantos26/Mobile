@@ -1,42 +1,9 @@
 import { Platform } from 'react-native';
 import { API_BASE_URL } from '../config/api';
+import { extractErrorMessage, parseResponse } from './http';
+import type { Produto, ProdutoPayload } from '../types/produto';
 
-function extractErrorMessage(data: Record<string, unknown>, fallback: string): string {
-  if (typeof data.erro === 'string' && data.erro.trim()) {
-    return data.erro;
-  }
-  if (typeof data.message === 'string' && data.message.trim()) {
-    return data.message;
-  }
-  if (typeof data.error === 'string' && data.error.trim()) {
-    return data.error;
-  }
-  return fallback;
-}
-
-export interface Produto {
-  id: number;
-  empresaId: number;
-  codigo?: string;
-  codigoOrigem?: string;
-  nome: string;
-  precoVenda: number;
-  unidade: string;
-  descricao?: string;
-  imagemUrl?: string;
-  ativo: number;
-  estoque?: number;
-}
-
-export interface ProdutoPayload {
-  nome: string;
-  precoVenda: number;
-  unidade: string;
-  descricao?: string;
-  imagemUrl?: string;
-  estoque?: number;
-  empresaId: number;
-}
+export type { Produto, ProdutoPayload };
 
 export function normalizarProduto(data: Produto): Produto {
   return {
@@ -45,21 +12,6 @@ export function normalizarProduto(data: Produto): Produto {
     estoque: normalizarEstoque(data.estoque),
     ativo: Number(data.ativo ?? 1),
   };
-}
-
-async function parseResponse<T>(response: Response): Promise<T> {
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(
-      extractErrorMessage(
-        data as Record<string, unknown>,
-        'Não foi possível concluir a operação.',
-      ),
-    );
-  }
-
-  return data as T;
 }
 
 export async function listarProdutos(empresaId: number): Promise<Produto[]> {

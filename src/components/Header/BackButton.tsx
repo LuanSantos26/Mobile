@@ -6,6 +6,7 @@ import {
   StyleProp,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { COMPANY_COLORS } from '../../theme/theme';
 
 export const BACK_BUTTON_SIZE = 32;
 export const CHEVRON_SIZE = 18;
@@ -14,12 +15,14 @@ interface BackButtonProps {
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
+  iconColor?: string;
 }
 
 export function BackButton({
   onPress,
   style,
   accessibilityLabel = 'Voltar',
+  iconColor = COMPANY_COLORS.primary,
 }: BackButtonProps) {
   return (
     <TouchableOpacity
@@ -28,7 +31,7 @@ export function BackButton({
       activeOpacity={0.7}
       accessibilityLabel={accessibilityLabel}
     >
-      <Ionicons name="chevron-back" size={CHEVRON_SIZE} color="#F8B125" />
+      <Ionicons name="chevron-back" size={CHEVRON_SIZE} color={iconColor} />
     </TouchableOpacity>
   );
 }

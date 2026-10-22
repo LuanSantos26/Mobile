@@ -1,8 +1,7 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   TextInput,
   ScrollView,
@@ -10,155 +9,74 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { BackTitleHeader } from '../../components/Header/BackTitleHeader';
 import { HeaderCartBadge } from '../../components/Header/HeaderCartBadge';
-import { useAppGoBack } from '../../hooks/useAppGoBack';
-import { usePurchaseCart } from '../../context/PurchaseCartContext';
-import { RemoteImage } from '../../components/Header/RemoteImage';
+import { RemoteImage } from '../../components/media/RemoteImage';
 import { getImageUrl } from '../../config/api';
-import {
-  buscarProduto,
-  corEstoque,
-  formatarPreco,
-  labelEstoque,
-  normalizarEstoque,
-} from '../../services/productService';
-import { listarProdutosFornecedor } from '../../services/marketplaceService';
-
-const GOLD = '#F8B125';
+import { formatarPreco } from '../../services/productService';
+import { styles } from './styles';
+import { useProductDetail } from './useProductDetail';
+import { useAuth } from '../../context/AuthContext';
+import { ClienteProductDetail } from './ClienteProductDetail';
 
 export function ProductDetailScreen() {
-  const navigation = useNavigation<any>();
-  const goBack = useAppGoBack('Cart');
-  const route = useRoute<any>();
-  const { addItem, itemCount, itens } = usePurchaseCart();
+  const {
+    navigation,
+    goBack,
+    itemCount,
+    fornecedorNome,
+    fornecedorDescricao,
+    fornecedorLogoUrl,
+    isCatalogo,
+    productName,
+    descricao,
+    imagemUrl,
+    unidade,
+    precoVenda,
+    productCodigo,
+    loading,
+    quantity,
+    setQuantity,
+    observation,
+    setObservation,
+    feedback,
+    adding,
+    estoque,
+    estoqueRestante,
+    esgotado,
+    estoqueLabel,
+    estoqueColor,
+    handleAddToCart,
+  } = useProductDetail();
+  const { perfilUso } = useAuth();
 
-  const fornecedorId = route.params?.fornecedorId as number;
-  const fornecedorNome = route.params?.fornecedorNome as string ?? 'Distribuidora';
-  const fornecedorDescricao = route.params?.fornecedorDescricao as string | undefined;
-  const fornecedorLogoUrl = route.params?.fornecedorLogoUrl as string | undefined;
-  const produtoId = route.params?.produtoId as number;
-  const origem = route.params?.origem as string | undefined;
-  const isCatalogo = origem === 'catalogo';
-
-  const [productName, setProductName] = useState(route.params?.productName || 'Produto');
-  const [descricao, setDescricao] = useState(route.params?.descricao as string | undefined);
-  const [imagemUrl, setImagemUrl] = useState(route.params?.imagemUrl as string | undefined);
-  const [unidade, setUnidade] = useState((route.params?.unidade as string) ?? 'UN');
-  const [precoVenda, setPrecoVenda] = useState(Number(route.params?.precoVenda ?? 0));
-  const [estoque, setEstoque] = useState(normalizarEstoque(route.params?.estoque));
-  const [productCodigo, setProductCodigo] = useState(route.params?.codigo as string | undefined);
-  const [loading, setLoading] = useState(false);
-
-  const [quantity, setQuantity] = useState(1);
-  const [observation, setObservation] = useState('');
-  const [feedback, setFeedback] = useState('');
-  const [adding, setAdding] = useState(false);
-
-  const qtdNoCarrinho = useMemo(
-    () =>
-      itens.find(
-        (item) => item.fornecedorId === fornecedorId && item.produtoId === produtoId,
-      )?.quantidade ?? 0,
-    [itens, fornecedorId, produtoId],
-  );
-
-  const estoqueRestante = isCatalogo
-    ? estoque
-    : Math.max(0, estoque - qtdNoCarrinho);
-  const esgotado = estoqueRestante <= 0;
-  const estoqueLabel = labelEstoque(isCatalogo ? estoque : estoqueRestante);
-  const estoqueColor = corEstoque(isCatalogo ? estoque : estoqueRestante);
-
-  const carregarProduto = useCallback(async () => {
-    if (!produtoId) return;
-    setLoading(true);
-    try {
-      if (isCatalogo) {
-        const produto = await buscarProduto(produtoId);
-        setProductName(produto.nome);
-        setDescricao(produto.descricao);
-        setImagemUrl(produto.imagemUrl);
-        setUnidade(produto.unidade);
-        setPrecoVenda(produto.precoVenda);
-        setEstoque(normalizarEstoque(produto.estoque));
-        setProductCodigo(produto.codigo);
-        return;
-      }
-
-      if (!fornecedorId) return;
-      const lista = await listarProdutosFornecedor(fornecedorId);
-      const produto = lista.find((p) => p.id === produtoId);
-      if (produto) {
-        setProductName(produto.nome);
-        setDescricao(produto.descricao);
-        setImagemUrl(produto.imagemUrl);
-        setUnidade(produto.unidade);
-        setPrecoVenda(produto.precoVenda);
-        setEstoque(normalizarEstoque(produto.estoque));
-        setProductCodigo(produto.codigo);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [fornecedorId, produtoId, isCatalogo]);
-
-  useFocusEffect(
-    useCallback(() => {
-      carregarProduto();
-    }, [carregarProduto]),
-  );
-
-  const handleAddToCart = async () => {
-    if (!fornecedorId || !produtoId) {
-      setFeedback('Produto ou fornecedor inválido.');
-      return;
-    }
-
-    if (esgotado) {
-      setFeedback('Produto esgotado no momento.');
-      return;
-    }
-
-    if (quantity > estoqueRestante) {
-      setFeedback(`Apenas ${estoqueRestante} unidade(s) disponível(is).`);
-      return;
-    }
-
-    setAdding(true);
-    setFeedback('');
-
-    const ok = await addItem(
-      {
-        id: produtoId,
-        empresaId: fornecedorId,
-        nome: productName,
-        precoVenda,
-        unidade,
-        descricao,
-        imagemUrl,
-        ativo: 1,
-        estoque: estoqueRestante,
-      },
-      { id: fornecedorId, nome: fornecedorNome },
-      quantity,
+  if (perfilUso === 'Cliente' && !isCatalogo) {
+    return (
+      <ClienteProductDetail
+        productName={productName}
+        descricao={descricao}
+        imagemUrl={imagemUrl}
+        unidade={unidade}
+        precoVenda={precoVenda}
+        productCodigo={productCodigo}
+        fornecedorNome={fornecedorNome}
+        fornecedorLogoUrl={fornecedorLogoUrl}
+        quantity={quantity}
+        setQuantity={setQuantity}
+        estoqueRestante={estoqueRestante}
+        esgotado={esgotado}
+        adding={adding}
+        feedback={feedback}
+        loading={loading}
+        onBack={goBack}
+        onOpenStore={goBack}
+        onAddToCart={handleAddToCart}
+      />
     );
-
-    setAdding(false);
-
-    if (ok) {
-      setFeedback('Produto adicionado ao carrinho!');
-    } else {
-      setFeedback('Quantidade indisponível em estoque.');
-    }
-  };
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-      <LinearGradient colors={['#F8B125', '#FAFAFA']} style={styles.topGradient} />
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -241,7 +159,7 @@ export function ProductDetailScreen() {
             </Text>
           </View>
           {!isCatalogo ? (
-            <Ionicons name="chevron-forward" size={20} color="#666" />
+          <Ionicons name="chevron-forward" size={16} color="#D4B56A" />
           ) : null}
         </TouchableOpacity>
 
@@ -346,288 +264,3 @@ export function ProductDetailScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FAFAFA',
-  },
-  topGradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 280,
-  },
-  scrollContent: {
-    paddingBottom: 130,
-    paddingHorizontal: 16,
-  },
-  heroCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#EEE',
-    marginBottom: 14,
-  },
-  imageWrap: {
-    height: 220,
-    backgroundColor: '#F0F0F0',
-  },
-  heroImage: {
-    width: '100%',
-    height: '100%',
-  },
-  heroPlaceholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  heroBody: {
-    padding: 16,
-  },
-  productName: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#111',
-    lineHeight: 26,
-  },
-  productCode: {
-    fontSize: 12,
-    color: '#888',
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-    gap: 8,
-  },
-  price: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: GOLD,
-  },
-  unitChip: {
-    backgroundColor: '#FFF8E8',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  unitChipText: {
-    fontSize: 13,
-    color: '#666',
-    fontWeight: '600',
-  },
-  stockBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    marginTop: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-    backgroundColor: '#FAFAFA',
-    gap: 6,
-  },
-  stockText: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  storeCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#EEE',
-    marginBottom: 14,
-    gap: 10,
-  },
-  storeLogo: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  storeInfo: {
-    flex: 1,
-  },
-  storeLabel: {
-    fontSize: 11,
-    color: '#888',
-    fontWeight: '600',
-  },
-  storeName: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#111',
-    marginTop: 2,
-  },
-  storeDesc: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
-  },
-  section: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#EEE',
-    marginBottom: 14,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#111',
-    marginBottom: 8,
-  },
-  description: {
-    fontSize: 14,
-    color: '#444',
-    lineHeight: 21,
-  },
-  observationTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 8,
-  },
-  observationTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#111',
-  },
-  observationInput: {
-    minHeight: 72,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#DDD',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: '#111',
-    textAlignVertical: 'top',
-    backgroundColor: '#FAFAFA',
-  },
-  feedbackText: {
-    textAlign: 'center',
-    marginBottom: 8,
-    fontWeight: '600',
-    fontSize: 13,
-  },
-  feedbackOk: {
-    color: '#2E7D32',
-  },
-  feedbackErr: {
-    color: '#C62828',
-  },
-  bottomBar: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    bottom: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  quantityBox: {
-    flex: 1,
-    maxWidth: 140,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: GOLD,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-  },
-  quantityButton: {
-    width: 36,
-    height: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  quantityButtonDisabled: {
-    opacity: 0.45,
-  },
-  quantityText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  addButton: {
-    flex: 1.4,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#222',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-  },
-  addButtonDisabled: {
-    backgroundColor: '#999',
-  },
-  addButtonText: {
-    color: '#FFF',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  addButtonPrice: {
-    color: '#FFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  checkoutFab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 78,
-    backgroundColor: '#333',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  checkoutFabText: {
-    color: '#FFF',
-    fontWeight: '600',
-    fontSize: 12,
-  },
-  catalogFooter: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    bottom: 18,
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#EEE',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  catalogStockBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  catalogStockText: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  catalogPrice: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: GOLD,
-  },
-});

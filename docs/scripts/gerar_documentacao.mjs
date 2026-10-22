@@ -1,5 +1,5 @@
 /**
- * Gerador da Documentação Oficial QuickStock (ABNT + DOCX)
+ * Gerador da Documentação Oficial Stock4event (ABNT + DOCX)
  * Executar: node gerar_documentacao.mjs
  */
 import fs from "fs";
@@ -28,8 +28,8 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DOCS_DIR = path.resolve(__dirname, "..");
 const DIAGRAMAS_DIR = path.join(DOCS_DIR, "diagramas");
-const OUTPUT_DOCX = path.join(DOCS_DIR, "DOCUMENTACAO_OFICIAL_QUICKSTOCK.docx");
-const OUTPUT_MD = path.join(DOCS_DIR, "DOCUMENTACAO_OFICIAL_QUICKSTOCK.md");
+const OUTPUT_DOCX = path.join(DOCS_DIR, "DOCUMENTACAO_OFICIAL_STOCK4EVENT.docx");
+const OUTPUT_MD = path.join(DOCS_DIR, "DOCUMENTACAO_OFICIAL_STOCK4EVENT.md");
 
 const FONT = "Times New Roman";
 const SIZE = 24; // 12pt
@@ -219,7 +219,7 @@ const PHYSICAL_TABLES = [
   {
     name: "barracas",
     cols: [
-      ["id", "BIGINT", "PK, IDENTITY", "Identificador da barraquinha"],
+      ["id", "BIGINT", "PK, IDENTITY", "Identificador do quiosque"],
       ["evento_id", "BIGINT", "FK → eventos", "Evento vinculado"],
       ["nome", "VARCHAR(100)", "NOT NULL", "Nome do ponto de venda"],
       ["responsavel_id", "BIGINT", "FK → usuarios", "Usuário responsável"],
@@ -230,18 +230,18 @@ const PHYSICAL_TABLES = [
     name: "estoque_barraca",
     cols: [
       ["id", "BIGINT", "PK, IDENTITY", "Identificador do registro"],
-      ["barraca_id", "BIGINT", "FK → barracas", "Barraquinha"],
+      ["barraca_id", "BIGINT", "FK → barracas", "Quiosque"],
       ["produto_id", "BIGINT", "FK → produtos", "Produto"],
       ["quantidade", "NUMERIC(10,3)", "NOT NULL", "Quantidade em estoque"],
       ["atualizado_em", "TIMESTAMP", "AUTO", "Última atualização"],
-      ["—", "—", "UNIQUE(barraca_id, produto_id)", "Um produto por barraquinha"],
+      ["—", "—", "UNIQUE(barraca_id, produto_id)", "Um produto por quiosque"],
     ],
   },
   {
     name: "pedido",
     cols: [
       ["id", "BIGINT", "PK, IDENTITY", "Identificador do pedido PDV"],
-      ["barraca_id", "BIGINT", "FK → barracas", "Barraquinha de origem"],
+      ["barraca_id", "BIGINT", "FK → barracas", "Quiosque de origem"],
       ["operador_id", "BIGINT", "FK → usuarios", "Operador do pedido"],
       ["valor_total", "NUMERIC(10,2)", "DEFAULT 0", "Valor total do pedido"],
       ["status", "VARCHAR(20)", "DEFAULT 'aberto'", "Status do pedido"],
@@ -348,7 +348,7 @@ function buildCoverSection() {
   return [
     para("[PREENCHER: NOME DA INSTITUIÇÃO DE ENSINO]", { center: true, noIndent: true, after: 400 }),
     para("[PREENCHER: NOME DO AUTOR]", { center: true, noIndent: true, after: 800 }),
-    para("QUICKSTOCK", { center: true, noIndent: true, bold: true, after: 120 }),
+    para("STOCK4EVENT", { center: true, noIndent: true, bold: true, after: 120 }),
     para("Sistema mobile de gestão de estoque e marketplace B2B para o setor de bebidas", {
       center: true,
       noIndent: true,
@@ -363,7 +363,7 @@ function buildCoverSection() {
 function buildTitlePageSection() {
   return [
     para("[PREENCHER: NOME DO AUTOR]", { center: true, noIndent: true, after: 600 }),
-    para("QUICKSTOCK", { center: true, noIndent: true, bold: true, after: 120 }),
+    para("STOCK4EVENT", { center: true, noIndent: true, bold: true, after: 120 }),
     para("Sistema mobile de gestão de estoque e marketplace B2B para o setor de bebidas", {
       center: true,
       noIndent: true,
@@ -389,10 +389,10 @@ function buildMainContent() {
     // 1 INTRODUÇÃO
     heading1("1 Introdução"),
     para(
-      "O comércio de bebidas e atacado enfrenta desafios recorrentes na gestão de estoque em múltiplos pontos de venda e na reposição de mercadorias junto a distribuidoras. Processos manuais, planilhas dispersas e a falta de integração entre controle interno e compras externas dificultam a operação de bares, revendas e empreendedores que operam barraquinhas em eventos."
+      "O comércio de bebidas e atacado enfrenta desafios recorrentes na gestão de estoque em múltiplos pontos de venda e na reposição de mercadorias junto a distribuidoras. Processos manuais, planilhas dispersas e a falta de integração entre controle interno e compras externas dificultam a operação de bares, revendas e empreendedores que operam quiosques em eventos."
     ),
     para(
-      "O QuickStock foi desenvolvido como resposta a esse cenário: uma solução composta por aplicativo mobile (React Native / Expo) e API REST (Spring Boot), integrados a um banco de dados PostgreSQL. O sistema permite que empresas compradoras gerenciem catálogo de produtos, barraquinhas com estoque por filial, comprem de distribuidoras via marketplace integrado, acompanhem pedidos e configurem endereços e formas de pagamento."
+      "O Stock4event foi desenvolvido como resposta a esse cenário: uma solução composta por aplicativo mobile (React Native / Expo) e API REST (Spring Boot), integrados a um banco de dados PostgreSQL. O sistema permite que empresas compradoras gerenciem catálogo de produtos, quiosques com estoque por filial, comprem de distribuidoras via marketplace integrado, acompanhem pedidos e configurem endereços e formas de pagamento."
     ),
     heading2("1.1 Objetivo geral"),
     para(
@@ -400,44 +400,47 @@ function buildMainContent() {
     ),
     heading2("1.2 Objetivos específicos"),
     bullet("Implementar cadastro unificado de empresa e usuário com autenticação JWT."),
-    bullet("Disponibilizar CRUD de produtos, barraquinhas e estoque por ponto de venda."),
+    bullet("Disponibilizar CRUD de produtos, quiosques e estoque por ponto de venda."),
     bullet("Construir marketplace B2B com vitrine, sacola, checkout e rastreamento de pedidos."),
+    bullet("Permitir que o cliente monte quiosques próprios para eventos a partir das compras recebidas."),
     bullet("Modelar e persistir dados em PostgreSQL com integridade referencial."),
     bullet("Documentar arquitetura, frontend, backend e modelagem de dados conforme normas ABNT."),
     heading2("1.3 Justificativa"),
     para(
-      "A digitalização do controle de estoque e das compras entre empresas reduz erros operacionais, agiliza reposição e aproxima a experiência do usuário de aplicativos de delivery já consolidados no mercado. O QuickStock unifica, em um único app, gestão interna e compras externas, agregando valor acadêmico e prático ao demonstrar integração mobile-backend-banco de dados."
+      "A digitalização do controle de estoque e das compras entre empresas reduz erros operacionais, agiliza reposição e aproxima a experiência do usuário de aplicativos de delivery já consolidados no mercado. O Stock4event unifica, em um único app, gestão interna e compras externas, agregando valor acadêmico e prático ao demonstrar integração mobile-backend-banco de dados."
     ),
     heading2("1.4 Escopo"),
     para(
-      "Este documento abrange a arquitetura do sistema, o frontend mobile, o backend API, a modelagem conceitual, lógica e física do banco de dados, além de limitações conhecidas e referências bibliográficas. Não inclui manual de implantação em produção nem testes automatizados formais."
+      "Este documento abrange a arquitetura do sistema, o frontend mobile, o backend API, a modelagem conceitual, lógica e física do banco de dados, além de limitações conhecidas e referências bibliográficas. Inclui testes unitários das regras de estoque dos quiosques do cliente. Não inclui manual de implantação em produção nem testes de integração ou ponta a ponta."
     ),
 
     // 2 METODOLOGIA
     heading1("2 Metodologia e arquitetura"),
     para(
-      "O desenvolvimento seguiu abordagem incremental, com entregas por domínio funcional: autenticação, gestão interna (produtos e barraquinhas), marketplace B2B, checkout, acompanhamento de pedidos e configurações. A comunicação entre camadas utiliza HTTP/JSON na porta 8080."
+      "O desenvolvimento seguiu abordagem incremental, com entregas por domínio funcional: autenticação, gestão interna (produtos e quiosques), marketplace B2B, checkout, acompanhamento de pedidos e configurações. A comunicação entre camadas utiliza HTTP/JSON na porta 8081."
     ),
     heading2("2.1 Stack tecnológica"),
     makeTable(
       ["Camada", "Tecnologia", "Versão"],
       [
-        ["Mobile", "Expo / React Native / TypeScript", "54.0.6 / 0.83.2"],
+        ["Mobile", "Expo / React Native / TypeScript", "54 / 0.81 / 5.9"],
         ["Backend", "Spring Boot / Java", "3.4.0 / 17"],
         ["Banco de dados", "PostgreSQL", "18.x"],
         ["ORM", "Spring Data JPA / Hibernate", "6.6"],
         ["Autenticação", "JWT (jjwt) + BCrypt", "0.12.6"],
+        ["Testes (mobile)", "Jest + jest-expo", "29.7 / 54"],
       ]
     ),
     para("", { after: 200, noIndent: true }),
     heading2("2.2 Arquitetura cliente-servidor"),
     imageParagraph("arquitetura-sistema.png", 520, 200),
-    caption("Figura 1 – Arquitetura geral do sistema QuickStock"),
+    caption("Figura 1 – Arquitetura geral do sistema Stock4event"),
     para(
       "O aplicativo mobile organiza-se em telas (screens), contexts para estado global, services para chamadas HTTP e componentes reutilizáveis. O backend segue camadas Controller → Service → Repository → Entity. O PostgreSQL armazena dados persistentes; imagens de produtos ficam em uploads/produtos/ no servidor."
     ),
     heading2("2.3 Repositórios"),
     bullet("Mobile: https://github.com/LuanSantos26/Mobile"),
+    bullet("Mobile (versão com quiosques do cliente e novo layout): https://github.com/marcelo435/Mobile"),
     bullet("BackEnd: https://github.com/LuanSantos26/QuickStock-BackEnd"),
 
     // 3 DESENVOLVIMENTO
@@ -446,7 +449,7 @@ function buildMainContent() {
     // 3.1 FRONTEND
     heading2("3.1 Frontend mobile"),
     para(
-      "O frontend QuickStock é um aplicativo Expo 54 com React Native 0.83 e TypeScript. A navegação utiliza React Navigation (Native Stack) com gate de autenticação: usuários não autenticados acessam Welcome, Login e Register; autenticados acessam o stack principal com Home, marketplace, sacola e demais telas."
+      "O frontend Stock4event é um aplicativo Expo 54 com React Native 0.81 e TypeScript. A navegação utiliza React Navigation (Native Stack) com gate de autenticação: usuários não autenticados acessam Welcome, Login e Register; autenticados acessam o stack principal. O app atende dois perfis, escolhidos no cadastro: Cliente (comerciante que compra de fornecedores) e Fornecedor (distribuidora que vende e gerencia o catálogo). Cada perfil tem telas e barra inferior próprias, com o mesmo layout e cores diferentes."
     ),
     heading3("3.1.1 Estrutura de pastas"),
     makeTable(
@@ -454,10 +457,12 @@ function buildMainContent() {
       [
         ["src/screens/", "Telas da aplicação"],
         ["src/components/", "Componentes reutilizáveis (ScreenHeader, BottomTabBar, modais)"],
-        ["src/context/", "Estado global (Auth, Products, Barraquinhas, PurchaseCart)"],
+        ["src/context/", "Estado global (Auth, Products, Quiosque, PurchaseCart)"],
         ["src/services/", "Integração REST com a API"],
         ["src/config/api.ts", "URL base e helper de imagens"],
-        ["src/theme/theme.ts", "Cores, fontes e espaçamentos"],
+        ["src/navigation/", "Rotas de autenticação e principais, e tipos das rotas"],
+        ["src/utils/", "Funções puras (regras de estoque dos quiosques, máscaras, datas) e testes em __tests__/"],
+        ["src/theme/theme.ts", "Paletas por perfil (CLIENTE_COLORS, COMPANY_COLORS), fontes e espaçamentos"],
       ]
     ),
     para("", { after: 200, noIndent: true }),
@@ -467,49 +472,82 @@ function buildMainContent() {
       [
         ["AuthContext", "Sessão JWT, login, logout, restore e updateUser"],
         ["ProductsContext", "Catálogo de produtos da empresa logada"],
-        ["BarraquinhasContext", "Barraquinhas/filiais da empresa"],
+        ["QuiosqueContext", "Quiosques da empresa logada (fornecedor ou cliente)"],
         ["PurchaseCartContext", "Sacola B2B (um fornecedor por vez)"],
+        ["ConfirmDialogContext", "Diálogo de confirmação reutilizável (ex.: excluir quiosque)"],
       ]
     ),
     para("", { after: 200, noIndent: true }),
     heading3("3.1.3 Telas principais"),
+    para("Telas do perfil Fornecedor:", { noIndent: true, after: 80 }),
     makeTable(
       ["Rota", "Tela", "Função"],
       [
-        ["Welcome / Login / Register", "Autenticação", "Acesso e cadastro unificado"],
-        ["Home", "Dashboard", "Catálogo próprio e resumo visual"],
-        ["Cart", "Marketplace", "Lista de distribuidoras e pedidos recentes"],
-        ["StoreVitrine", "Vitrine", "Produtos de um fornecedor"],
-        ["ProductDetail", "Detalhe", "Quantidade e adição à sacola"],
-        ["Sacola", "Checkout", "Endereço, pagamento e finalização"],
+        ["Welcome / Login / Register", "Autenticação", "Acesso, cadastro unificado e escolha de perfil"],
+        ["Home", "Início", "Saudação, estoque, ações rápidas e resumo financeiro"],
+        ["Quiosque", "Quiosques", "CRUD de pontos de venda e estoque"],
+        ["AddItem", "Produtos", "CRUD do catálogo"],
+        ["EmpresaVendas / EmpresaGraficos", "Vendas", "Resumo de vendas e gráficos"],
+        ["Configuracoes", "Ajustes", "Edição de usuário, senha e empresa"],
+        ["Logistica / Camioneiros / CadastroCamioneiros", "Logística", "Entregas e caminhoneiros"],
+        ["Cart / StoreVitrine / ProductDetail / Sacola", "Compra B2B", "Marketplace, vitrine, detalhe e checkout"],
         ["PedidoAcompanhamento", "Tracking", "Timeline com polling a cada 5 s"],
-        ["AddItem", "Produtos", "CRUD do catálogo (botão + central)"],
-        ["Barraquinhas", "Filiais", "CRUD de pontos de venda e estoque"],
-        ["FormasPagamento", "Pagamentos", "CRUD de formas salvas"],
-        ["Configuracoes", "Perfil", "Edição de usuário e empresa"],
-        ["Cards", "Financeiro", "Estatísticas via API (aba mock em Carteira)"],
+        ["Cards / FormasPagamento / Enderecos", "Conta", "Financeiro, formas de pagamento e endereços"],
+      ]
+    ),
+    para("", { after: 200, noIndent: true }),
+    para("Telas do perfil Cliente:", { noIndent: true, after: 80 }),
+    makeTable(
+      ["Rota", "Tela", "Função"],
+      [
+        ["Home", "Início", "Destaque, ações rápidas e quiosques disponíveis"],
+        ["Explorar", "Produtos", "Categorias, produtos e quiosques de fornecedores"],
+        ["StoreVitrine / ProductDetail", "Vitrine e detalhe", "Produtos de um quiosque e adição ao carrinho"],
+        ["Reservas", "Carrinho", "Itens, endereço e finalização do pedido"],
+        ["Pedidos / PedidoAcompanhamento", "Pedidos", "Histórico e acompanhamento"],
+        ["ClienteQuiosques / ClienteQuiosqueForm", "Quiosques", "Quiosques próprios montados com as compras recebidas"],
+        ["Perfil / Configuracoes / Enderecos / FormasPagamento", "Perfil", "Dados, endereços e pagamentos"],
       ]
     ),
     para("", { after: 200, noIndent: true }),
     heading3("3.1.4 Componentes e navegação"),
     para(
-      "O ScreenHeader padroniza o cabeçalho autenticado (menu hambúrguer, calendário, notificações e sacola). A saudação e o calendário aparecem apenas na Home. O BottomTabBar customizado oferece sete ações e botão central (+) para cadastro de produtos. O menu lateral (HamburgerButton) abre modal com Barraquinhas, Formas de pagamento, Configurações e Sair."
+      "Os dois perfis seguem o mesmo layout: cabeçalho sólido na cor do perfil, com cantos inferiores arredondados, logo, título e subtítulo; cards brancos; botões em formato pílula; e barra inferior preenchida na cor do perfil, com ícones brancos. O Cliente usa amarelo (#F8B125, CLIENTE_COLORS) e o Fornecedor usa azul-marinho (#123B6D, COMPANY_COLORS). No Fornecedor, o ScreenHeader monta o cabeçalho das abas principais (menu, logo, notificações e saudação na Home), o BackTitleHeader monta o das telas internas (voltar e título) e o TabScreenLayout reúne cabeçalho e conteúdo. O BottomTabBar mostra cinco abas para o Fornecedor (Início, Quiosques, Produtos, Vendas e Ajustes) e delega ao ClienteTabBar as seis abas do Cliente (Início, Produtos, Carrinho, Pedidos, Quiosques e Perfil). O menu lateral do Fornecedor (HamburgerButton) abre Início, Quiosques, Endereços, Configurações e Sair."
     ),
     imageParagraph("fluxo-navegacao.png", 480, 360),
     caption("Figura 2 – Fluxo principal de navegação do aplicativo"),
     heading3("3.1.5 Integração com a API"),
     para(
-      "Nove services encapsulam chamadas REST: authService, productService, barracaService, marketplaceService, enderecoService, formaPagamentoService, financeiroService, notificacaoService e sessionStorage (AsyncStorage). A URL base é resolvida em api.ts conforme o ambiente (localhost, 10.0.2.2 no Android ou IP do Expo Go). O token JWT é persistido na chave @quickstock_session."
+      "Nove services encapsulam chamadas REST: authService, productService, barracaService, marketplaceService, enderecoService, formaPagamentoService, financeiroService, notificacaoService e sessionStorage (AsyncStorage). A URL base é resolvida em api.ts conforme o ambiente (localhost, 10.0.2.2 no Android ou IP do Expo Go). O token JWT é persistido na chave @stock4event_session."
+    ),
+
+    heading3("3.1.6 Quiosques do cliente"),
+    para(
+      "O cliente pode montar quiosques próprios para vender em eventos, usando como estoque o que comprou e recebeu pelo app. A funcionalidade foi feita só no aplicativo, reaproveitando a API existente: os quiosques são gravados em /api/barracas com o empresaId do cliente, e o estoque disponível vem dos produtos da empresa do cliente (ProductsContext), que o backend preenche quando um pedido é entregue."
+    ),
+    makeTable(
+      ["Regra", "Como funciona"],
+      [
+        ["Divisão do estoque", "A soma de um produto em todos os quiosques não pode passar do estoque comprado. Disponível = estoque − quantidade nos outros quiosques."],
+        ["Preço de venda", "Informado pelo cliente para cada produto com quantidade; gravado no produto (vale para todos os quiosques dele)."],
+        ["Preço pago (referência)", "Preço unitário do pedido entregue mais recente com item de mesmo nome; não aparece se não houver correspondência."],
+        ["Validação", "Nome obrigatório, ao menos um produto, quantidade dentro do disponível e preço maior que zero quando há quantidade."],
+        ["Aviso", "A lista sinaliza 'Estoque acima do disponível' quando um quiosque passa do que o cliente tem."],
+      ]
+    ),
+    para("", { after: 200, noIndent: true }),
+    para(
+      "As regras ficam em src/utils/estoqueQuiosque.ts, como funções puras, cobertas por 22 testes unitários (Jest). Duas premissas dependem do backend e não foram validadas sem o servidor: que os itens de pedidos entregues viram produtos da empresa compradora, com estoque, e que /api/barracas aceita quiosques de empresas do tipo cliente."
     ),
 
     // 3.2 BACKEND
     heading2("3.2 Backend API"),
     para(
-      "O backend QuickStock-BackEnd é uma API REST monolítica Spring Boot 3.4 em Java 17, executada na porta 8080. Organiza-se em 17 controllers, 11 services, 17 repositories e 14 entidades JPA mapeadas para PostgreSQL."
+      "O backend Stock4event-BackEnd é uma API REST monolítica Spring Boot 3.4 em Java 17, executada na porta 8081. Organiza-se em 17 controllers, 11 services, 17 repositories e 14 entidades JPA mapeadas para PostgreSQL."
     ),
     heading3("3.2.1 Camadas"),
     bullet("Controller: expõe endpoints REST sob /api/*"),
-    bullet("Service: regras de negócio (marketplace, compras, barraquinhas, JWT)"),
+    bullet("Service: regras de negócio (marketplace, compras, quiosques, JWT)"),
     bullet("Repository: acesso via Spring Data JPA"),
     bullet("Entity / DTO: persistência e transferência de dados"),
     heading3("3.2.2 Endpoints principais"),
@@ -518,7 +556,7 @@ function buildMainContent() {
       [
         ["Autenticação", "/api/cadastro, /api/usuarios/login, /api/usuarios/me", "POST, GET"],
         ["Produtos", "/api/produtos, /api/produtos/upload", "GET, POST, PUT, DELETE"],
-        ["Barraquinhas", "/api/barracas, /api/barracas/{id}/estoque", "GET, POST, PUT, DELETE"],
+        ["Quiosque", "/api/barracas, /api/barracas/{id}/estoque", "GET, POST, PUT, DELETE"],
         ["Marketplace", "/api/marketplace/fornecedores", "GET"],
         ["Pedidos B2B", "/api/solicitacoes-compra", "GET, POST"],
         ["Endereços", "/api/enderecos", "GET, POST"],
@@ -535,17 +573,17 @@ function buildMainContent() {
     heading3("3.2.4 Regras de negócio relevantes"),
     bullet("Solicitação de compra: valida fornecedor (DISTRIBUIDOR ou PLATAFORMA), impede auto-compra, exige endereço e forma de pagamento válidos."),
     bullet("Status inicial do pedido B2B: aguardando_liberacao; após 20 segundos (demo), transição automática para em_rota."),
-    bullet("Barraquinha: cria evento padrão Operação principal se inexistente; estoque sincronizado por produto da empresa."),
+    bullet("Quiosque: cria evento padrão Operação principal se inexistente; estoque sincronizado por produto da empresa."),
     bullet("Seeds: data.sql e ApplicationRunners populam distribuidoras, produtos, endereços e formas de pagamento demo."),
 
     // 3.3 BANCO DE DADOS
     heading2("3.3 Banco de dados"),
     para(
-      "O banco quickstock no PostgreSQL contém 14 tabelas derivadas das entidades JPA. Os relacionamentos são unidirecionais (@ManyToOne no lado filho). A entidade Empresa possui papel dual: COMPRADOR, DISTRIBUIDOR ou PLATAFORMA, permitindo que a mesma tabela represente compradores e fornecedores."
+      "O banco stock4event no PostgreSQL contém 14 tabelas derivadas das entidades JPA. Os relacionamentos são unidirecionais (@ManyToOne no lado filho). A entidade Empresa possui papel dual: COMPRADOR, DISTRIBUIDOR ou PLATAFORMA, permitindo que a mesma tabela represente compradores e fornecedores."
     ),
     heading3("3.3.1 Modelo conceitual"),
     para(
-      "O modelo conceitual representa entidades e relacionamentos em linguagem de negócio, independente de tipos físicos. Três domínios se destacam: (1) Cadastro — Perfil, Empresa, Usuário; (2) Operação presencial (PDV) — Evento, Barraquinha, Estoque, Pedido, Item e Pagamento; (3) Marketplace B2B — Produto, Solicitação de Compra, Item de Solicitação, Endereço de Entrega e Forma de Pagamento Salva."
+      "O modelo conceitual representa entidades e relacionamentos em linguagem de negócio, independente de tipos físicos. Três domínios se destacam: (1) Cadastro — Perfil, Empresa, Usuário; (2) Operação presencial (PDV) — Evento, Quiosque, Estoque, Pedido, Item e Pagamento; (3) Marketplace B2B — Produto, Solicitação de Compra, Item de Solicitação, Endereço de Entrega e Forma de Pagamento Salva."
     ),
     imageParagraph("er-conceitual.png", 520, 400),
     caption("Figura 3 – Modelo conceitual entidade-relacionamento"),
@@ -559,7 +597,7 @@ function buildMainContent() {
       ["Domínio", "Tabelas"],
       [
         ["Cadastro", "perfis, empresas, usuarios"],
-        ["PDV / Barraquinhas", "eventos, barracas, estoque_barraca, pedido, itens_pedido, pagamentos"],
+        ["PDV / Quiosque", "eventos, barracas, estoque_barraca, pedido, itens_pedido, pagamentos"],
         ["Marketplace B2B", "produtos, solicitacoes_compra, itens_solicitacao_compra"],
         ["Checkout", "enderecos_entrega, formas_pagamento_salvas"],
       ]
@@ -581,10 +619,10 @@ function buildMainContent() {
     // 4 CONCLUSÃO
     heading1("4 Conclusão"),
     para(
-      "O QuickStock entrega uma solução funcional de gestão de estoque e marketplace B2B, integrando aplicativo mobile Expo, API Spring Boot e banco PostgreSQL. Foram implementados cadastro unificado, CRUD de produtos e barraquinhas, fluxo completo de compra (vitrine → sacola → pedido → acompanhamento), configurações de perfil, formas de pagamento e notificações."
+      "O Stock4event entrega uma solução funcional de gestão de estoque e marketplace B2B, integrando aplicativo mobile Expo, API Spring Boot e banco PostgreSQL. Foram implementados cadastro unificado com perfis Cliente e Fornecedor, CRUD de produtos e quiosques, quiosques do cliente montados a partir das compras recebidas, fluxo completo de compra (vitrine → sacola → pedido → acompanhamento), configurações de perfil, formas de pagamento e notificações, com identidade visual consistente entre os perfis."
     ),
     para(
-      "Como limitações conhecidas, destacam-se: autenticação JWT parcial (sem filtro global), dados mock na Home e aba Carteira do app, notificações geradas em tempo real sem tabela dedicada e resumo financeiro parcialmente sintético no backend. Trabalhos futuros incluem Spring Security completo, testes automatizados, push notifications e eliminação de dados mock."
+      "Como limitações conhecidas, destacam-se: autenticação JWT parcial (sem filtro global), dados mock na Home e aba Carteira do app, notificações geradas em tempo real sem tabela dedicada, resumo financeiro parcialmente sintético no backend e quiosques do cliente dependentes de o backend lançar as compras entregues no estoque do comprador. Trabalhos futuros incluem Spring Security completo, ampliação dos testes automatizados, push notifications e eliminação de dados mock."
     ),
 
     // REFERÊNCIAS
@@ -684,7 +722,7 @@ async function main() {
   // Markdown versionável simplificado
   fs.writeFileSync(
     OUTPUT_MD,
-    "# QuickStock — Documentação Oficial\n\nDocumento Word gerado em DOCUMENTACAO_OFICIAL_QUICKSTOCK.docx\n\nAtualize executando: cd docs/scripts && npm install && node gerar_documentacao.mjs\n"
+    "# Stock4event — Documentação Oficial\n\nDocumento Word gerado em DOCUMENTACAO_OFICIAL_STOCK4EVENT.docx\n\nAtualize executando: cd docs/scripts && npm install && node gerar_documentacao.mjs\n"
   );
   console.log(`Markdown auxiliar: ${OUTPUT_MD}`);
 }

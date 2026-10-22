@@ -1,149 +1,83 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  ActivityIndicator,
-} from 'react-native';
-import { Background } from '../../components/Header/Background';
+import { Text, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { AuthScreenShell } from '../../components/auth/AuthScreenShell';
 import { CustomInput } from '../../components/Input/CustomInput';
-import { WelcomeHeader, WelcomeBackButton } from '../../components/Header/welcomeHeader';
 import { CustomButton } from '../../components/Button/CustomButton';
 import { useAuth } from '../../context/AuthContext';
-import { LAYOUT } from '../../theme/theme';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/types';
+import { AUTH_NAVY } from '../../theme/authTheme';
+import { styles } from './styles';
+
+// Login salvo só na máquina de quem desenvolve, via .env.local (fora do git).
+const LOGIN_SALVO_EMAIL = __DEV__ ? process.env.EXPO_PUBLIC_LOGIN_EMAIL ?? '' : '';
+const LOGIN_SALVO_SENHA = __DEV__ ? process.env.EXPO_PUBLIC_LOGIN_SENHA ?? '' : '';
 
 export default function LoginScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { signIn } = useAuth();
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
+  const [email, setEmail] = useState(LOGIN_SALVO_EMAIL);
+  const [senha, setSenha] = useState(LOGIN_SALVO_SENHA);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = async () => {
+  const performLogin = async (loginEmail: string, loginSenha: string) => {
     setError('');
-
-    if (!email.trim() || !senha.trim()) {
-      setError('Preencha e-mail e senha.');
-      return;
-    }
-
-    const emailNormalizado = email.trim().toLowerCase();
-    const senhaNormalizada = senha.trim();
-
-    if (emailNormalizado === 'admin' && senhaNormalizada === '1234') {
-      setLoading(true);
-      try {
-        await signIn({ email: 'admin', senha: '1234' });
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : 'Erro ao fazer login. Tente novamente.';
-        setError(message);
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-
     setLoading(true);
-
     try {
-      await signIn({ email: emailNormalizado, senha: senhaNormalizada });
+      await signIn({ email: loginEmail, senha: loginSenha });
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Erro ao fazer login. Tente novamente.';
-      setError(message);
+      setError(err instanceof Error ? err.message : 'Erro ao fazer login. Tente novamente.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleLogin = async () => {
+    if (!email.trim() || !senha.trim()) {
+      setError('Preencha e-mail e senha.');
+      return;
+    }
+
+    await performLogin(email.trim().toLowerCase(), senha.trim());
+  };
+
   return (
-    <Background edges={['left', 'right', 'bottom']}>
-      <WelcomeBackButton />
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <AuthScreenShell>
+      <CustomInput
+        iconName="mail"
+        placeholder="Digite seu e-mail"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <CustomInput
+        iconName="lock"
+        placeholder="Digite sua senha"
+        secureTextEntry
+        value={senha}
+        onChangeText={setSenha}
+      />
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+      {loading ? (
+        <ActivityIndicator color={AUTH_NAVY} style={styles.loader} />
+      ) : (
+        <CustomButton title="Entrar" showArrow onPress={handleLogin} />
+      )}
+
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate('ForgotPassword', {
+            email: email.trim() || undefined,
+          })
+        }
       >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.content}>
-            <WelcomeHeader hideReturnButton />
-            <View style={styles.form}>
-              <CustomInput
-                iconName="mail"
-                placeholder="Digite seu e-mail"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={setEmail}
-              />
-              <CustomInput
-                iconName="lock"
-                placeholder="Digite sua senha"
-                secureTextEntry
-                value={senha}
-                onChangeText={setSenha}
-              />
-
-              {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-              {loading ? (
-                <ActivityIndicator color="#FFF" style={styles.loader} />
-              ) : (
-                <CustomButton title="Login" onPress={handleLogin} />
-              )}
-
-              <TouchableOpacity>
-                <Text style={styles.forgotPassword}>Esqueceu a senha</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </Background>
+        <Text style={styles.forgotPassword}>Esqueceu a senha?</Text>
+      </TouchableOpacity>
+    </AuthScreenShell>
   );
 }
-
-const styles = StyleSheet.create({
-  keyboardView: {
-    flex: 1,
-    width: '100%',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    alignItems: 'center',
-    paddingBottom: 40,
-  },
-  content: {
-    width: LAYOUT.formWidth,
-    flex: 1,
-    justifyContent: 'center',
-    alignSelf: 'center',
-  },
-  form: {
-    width: '100%',
-  },
-  errorText: {
-    color: '#FFE0E0',
-    textAlign: 'center',
-    marginBottom: 8,
-    fontSize: 14,
-  },
-  loader: {
-    marginTop: 20,
-  },
-  forgotPassword: {
-    marginTop: 20,
-    color: 'white',
-    textDecorationLine: 'underline',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-});

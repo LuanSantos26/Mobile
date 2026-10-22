@@ -1,0 +1,21 @@
+{
+  "files.exclude": {
+    "node_modules": true,
+    ".expo": true,
+    "dist": true,
+    "web-build": true
+  },
+  "search.exclude": {
+    "node_modules": true,
+    ".expo": true,
+    "dist": true,
+    "web-build": true
+  },
+  "explorer.compactFolders": false,
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "package.json": "package-lock.json, yarn.lock",
+    "app.json": "app.config.*, eas.json, expo-env.d.ts",
+    "App.tsx": "index.ts"
+  }
+}

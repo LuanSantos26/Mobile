@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Background } from '../../components/Header/Background';
+import { Background } from '../../components/layout/Background';
 import { useNavigation } from '@react-navigation/native';
 import { WelcomeHeader, WelcomeBackButton } from '../../components/Header/welcomeHeader';
 
