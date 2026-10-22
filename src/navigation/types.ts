@@ -15,6 +15,10 @@ export type RootStackParamList = {
   Perfil: undefined;
   Quiosque: undefined;
   Configuracoes: undefined;
+  PerfilLoja: undefined;
+  DadosPessoais: undefined;
+  AlterarSenha: undefined;
+  DadosEmpresa: undefined;
   FormasPagamento: undefined;
   Enderecos: undefined;
   AddItem: undefined;

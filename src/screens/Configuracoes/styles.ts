@@ -90,6 +90,110 @@ export const styles = StyleSheet.create({
   saveButtonDisabled: {
     opacity: 0.7,
   },
+  navCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  navIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COMPANY_COLORS.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navSubtitle: {
+    fontSize: 12,
+    color: '#888',
+  },
+  backRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 12,
+  },
+  backText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COMPANY_COLORS.primary,
+  },
+  capaBox: {
+    height: 140,
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginTop: 4,
+    backgroundColor: COMPANY_COLORS.primarySoft,
+    borderWidth: 1,
+    borderColor: COMPANY_COLORS.primaryBorder,
+  },
+  capaImage: {
+    width: '100%',
+    height: '100%',
+  },
+  imagePlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  imagePlaceholderText: {
+    fontSize: 13,
+    color: '#888',
+  },
+  imageEditBadge: {
+    position: 'absolute',
+    right: 6,
+    bottom: 6,
+    backgroundColor: COMPANY_COLORS.primary,
+    borderRadius: 12,
+    padding: 5,
+  },
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: -32,
+    marginLeft: 12,
+    marginBottom: 4,
+  },
+  logoBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3,
+    borderColor: '#FFF',
+    backgroundColor: COMPANY_COLORS.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 40,
+  },
+  imageActions: {
+    marginLeft: 14,
+    marginTop: 32,
+    gap: 4,
+  },
+  imageActionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COMPANY_COLORS.primary,
+  },
+  imageRemoveText: {
+    fontSize: 13,
+    color: '#D64545',
+  },
+  textArea: {
+    minHeight: 90,
+  },
+  counter: {
+    fontSize: 12,
+    color: '#888',
+    textAlign: 'right',
+    marginTop: 4,
+  },
 });
 
 const PRIMARY = CLIENTE_COLORS.primary;
@@ -203,5 +307,43 @@ export const clienteStyles = StyleSheet.create({
     fontSize: 13,
     marginBottom: 8,
     textAlign: 'center',
+  },
+  fotoWrap: {
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 4,
+  },
+  fotoBox: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: '#EEF2F7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  fotoImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 48,
+  },
+  fotoBadge: {
+    position: 'absolute',
+    right: 2,
+    bottom: 2,
+    backgroundColor: GOLD,
+    borderRadius: 14,
+    padding: 6,
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  fotoAction: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: PRIMARY,
+  },
+  fotoRemove: {
+    fontSize: 13,
+    color: '#C62828',
   },
 });
