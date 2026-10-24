@@ -9,6 +9,10 @@ import { CheckoutScreen } from '../screens/Checkout/CheckoutScreen';
 import { SacolaScreen } from '../screens/Sacola/SacolaScreen';
 import { PedidoAcompanhamentoScreen } from '../screens/PedidoAcompanhamento/PedidoAcompanhamentoScreen';
 import { ConfiguracoesScreen } from '../screens/Configuracoes/ConfiguracoesScreen';
+import { PerfilLojaScreen } from '../screens/Configuracoes/PerfilLojaScreen';
+import { DadosPessoaisScreen } from '../screens/Configuracoes/DadosPessoaisScreen';
+import { AlterarSenhaScreen } from '../screens/Configuracoes/AlterarSenhaScreen';
+import { DadosEmpresaScreen } from '../screens/Configuracoes/DadosEmpresaScreen';
 import { FormasPagamentoScreen } from '../screens/FormasPagamento/FormasPagamentoScreen';
 import { EnderecosScreen } from '../screens/Enderecos/EnderecosScreen';
 import { ManageProductsScreen } from '../screens/ManageProducts/ManageProductsScreen';
@@ -42,6 +46,10 @@ export function MainNavigator() {
     <Stack.Screen name="Perfil" component={PerfilScreen} />
     <Stack.Screen name="Quiosque" component={QuiosqueScreen} />
     <Stack.Screen name="Configuracoes" component={ConfiguracoesScreen} />
+    <Stack.Screen name="PerfilLoja" component={PerfilLojaScreen} />
+    <Stack.Screen name="DadosPessoais" component={DadosPessoaisScreen} />
+    <Stack.Screen name="AlterarSenha" component={AlterarSenhaScreen} />
+    <Stack.Screen name="DadosEmpresa" component={DadosEmpresaScreen} />
     <Stack.Screen name="FormasPagamento" component={FormasPagamentoScreen} />
     <Stack.Screen name="Enderecos" component={EnderecosScreen} />
     <Stack.Screen name="AddItem" component={ManageProductsScreen} />

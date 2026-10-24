@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -11,6 +11,7 @@ import { useHeaderTopPadding } from '../../utils/safeArea';
 import { RootStackParamList } from '../../navigation/types';
 import { PRIMARY, styles } from './styles';
 import { BrandLogo } from '../../components/brand/BrandLogo';
+import { getImageUrl } from '../../config/api';
 
 const MENU = [
   {
@@ -86,7 +87,11 @@ export function PerfilScreen() {
         <View style={styles.sheet}>
           <View style={styles.userCard}>
             <View style={styles.avatar}>
-              <Ionicons name="person-outline" size={24} color={PRIMARY} />
+              {user?.fotoUrl ? (
+                <Image source={{ uri: getImageUrl(user.fotoUrl) }} style={styles.avatarImage} />
+              ) : (
+                <Ionicons name="person-outline" size={24} color={PRIMARY} />
+              )}
             </View>
             <View style={styles.userCopy}>
               <Text style={styles.userName} numberOfLines={1}>

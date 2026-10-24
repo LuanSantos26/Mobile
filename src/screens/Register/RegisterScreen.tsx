@@ -17,6 +17,8 @@ import {
 import { AUTH_NAVY } from '../../theme/authTheme';
 import { styles } from './styles';
 
+const EMAIL_FORMATO = /^[^@\s]+@[^@\s.]+(\.[^@\s.]+)+$/;
+
 export function RegisterScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'Register'>>();
@@ -41,6 +43,12 @@ export function RegisterScreen() {
 
     if (!nome.trim() || !email.trim() || !senha.trim()) {
       setError('Preencha nome, e-mail e senha.');
+      return;
+    }
+
+    // Mesma regra do backend (UsuarioRequestDTO): só orienta o formato, não prova que o e-mail existe.
+    if (!EMAIL_FORMATO.test(email.trim())) {
+      setError('Informe um e-mail válido, como nome@exemplo.com.');
       return;
     }
 

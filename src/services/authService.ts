@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { apiFetch, NETWORK_ERROR_MESSAGE, parseResponse } from './http';
 import type {
   CadastroContaPayload,
@@ -139,4 +140,46 @@ export async function atualizarEmpresa(
   });
 
   return parseResponse<UsuarioLogado['empresa']>(response);
+}
+
+async function enviarImagem(
+  rota: string,
+  nomeBase: string,
+  uri: string,
+  mimeType: string,
+): Promise<string> {
+  const normalizedMime = mimeType === 'image/jpg' ? 'image/jpeg' : mimeType || 'image/jpeg';
+  const extension = normalizedMime === 'image/png' ? 'png' : normalizedMime === 'image/webp' ? 'webp' : 'jpg';
+  const fileName = `${nomeBase}.${extension}`;
+  const formData = new FormData();
+
+  if (Platform.OS === 'web') {
+    const fileResponse = await fetch(uri);
+    const blob = await fileResponse.blob();
+    formData.append('file', blob, fileName);
+  } else {
+    formData.append('file', {
+      uri,
+      name: fileName,
+      type: normalizedMime,
+    } as unknown as Blob);
+  }
+
+  const response = await apiFetch(rota, {
+    method: 'POST',
+    body: formData,
+  });
+
+  const data = await parseResponse<{ imagemUrl: string }>(response);
+  return data.imagemUrl;
+}
+
+/** Envia a foto ou a capa da loja e devolve a URL a gravar em logoUrl/capaUrl. */
+export function uploadImagemEmpresa(uri: string, mimeType = 'image/jpeg'): Promise<string> {
+  return enviarImagem('/api/empresas/upload', 'empresa', uri, mimeType);
+}
+
+/** Envia a foto de perfil do usuário e devolve a URL a gravar em fotoUrl. */
+export function uploadFotoUsuario(uri: string, mimeType = 'image/jpeg'): Promise<string> {
+  return enviarImagem('/api/usuarios/upload', 'usuario', uri, mimeType);
 }
